@@ -130,6 +130,13 @@ function stackAlignClass(position: ToastPosition): string {
   return "tf-toast-stack--right";
 }
 
+function stackAxisClass(position: ToastPosition): string | null {
+  if (position.startsWith("bottom-")) {
+    return "tf-toast-stack-inner--bottom";
+  }
+  return null;
+}
+
 function handleDismiss(id: ToastId) {
   store.dismiss(id);
 }
@@ -146,8 +153,10 @@ function beforeLeave(el: Element) {
   }
 
   const top = element.offsetTop;
+  const parentHeight = parent.clientHeight;
   const parentWidth = parent.clientWidth;
 
+  parent.style.minHeight = `${parentHeight}px`;
   element.style.position = "absolute";
   element.style.width = `${parentWidth}px`;
   element.style.left = "0";
@@ -158,6 +167,11 @@ function beforeLeave(el: Element) {
 
 function afterLeave(el: Element) {
   const element = el as HTMLElement;
+  const parent = element.parentElement;
+  if (parent) {
+    parent.style.minHeight = "";
+  }
+
   element.style.position = "";
   element.style.width = "";
   element.style.left = "";
@@ -235,7 +249,7 @@ watch(
         @before-leave="beforeLeave"
         @after-leave="afterLeave"
         tag="div"
-        class="tf-toast-stack-inner"
+        :class="['tf-toast-stack-inner', stackAxisClass(position)]"
         :style="{ gap: config.gap }"
       >
         <div
@@ -289,6 +303,11 @@ watch(
   flex-direction: column;
   position: relative;
   width: 100%;
+}
+
+.tf-toast-stack-inner--bottom {
+  min-height: 100%;
+  justify-content: flex-end;
 }
 
 .tf-toast-stack--left {
