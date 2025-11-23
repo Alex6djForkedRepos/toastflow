@@ -202,6 +202,7 @@ export function createToastStore(
       toasts: state.toasts.map((t) => (t.id === id ? updated : t)),
     };
 
+    emitEvent({ id, kind: "timer-reset" });
     notify();
   }
 

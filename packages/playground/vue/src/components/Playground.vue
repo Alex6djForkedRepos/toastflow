@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import {computed, ref} from "vue";
-import {type ToastContext, useToast} from "vue-toastflow";
+import { computed, ref } from 'vue'
+import { type ToastContext, useToast } from 'vue-toastflow'
 import type {
   PauseStrategy,
   ToastId,
@@ -8,7 +8,7 @@ import type {
   ToastOrder,
   ToastPosition,
   ToastType,
-} from "toastflow-core";
+} from 'toastflow-core'
 import {
   ArrowDown,
   ArrowDownLeft,
@@ -16,122 +16,122 @@ import {
   ArrowUp,
   ArrowUpLeft,
   ArrowUpRight,
-} from "lucide-vue-next";
+} from 'lucide-vue-next'
 
-const {show, update, dismissAll} = useToast();
+const { show, update, dismissAll } = useToast()
 
 /* ----- options / enums ----- */
 
 const positionOptions: {
-  value: ToastPosition;
-  label: string;
-  icon: string;
-  short: string;
+  value: ToastPosition
+  label: string
+  icon: string
+  short: string
 }[] = [
-  {value: "top-left", label: "Top left", icon: "↖", short: "TL"},
-  {value: "top-center", label: "Top center", icon: "↑", short: "TC"},
-  {value: "top-right", label: "Top right", icon: "↗", short: "TR"},
-  {value: "bottom-left", label: "Bottom left", icon: "↙", short: "BL"},
-  {value: "bottom-center", label: "Bottom center", icon: "↓", short: "BC"},
-  {value: "bottom-right", label: "Bottom right", icon: "↘", short: "BR"},
-];
+  { value: 'top-left', label: 'Top left', icon: '↖', short: 'TL' },
+  { value: 'top-center', label: 'Top center', icon: '↑', short: 'TC' },
+  { value: 'top-right', label: 'Top right', icon: '↗', short: 'TR' },
+  { value: 'bottom-left', label: 'Bottom left', icon: '↙', short: 'BL' },
+  { value: 'bottom-center', label: 'Bottom center', icon: '↓', short: 'BC' },
+  { value: 'bottom-right', label: 'Bottom right', icon: '↘', short: 'BR' },
+]
 
 function iconForPosition(position: ToastPosition) {
-  if (position === "top-left") {
-    return ArrowUpLeft;
+  if (position === 'top-left') {
+    return ArrowUpLeft
   }
-  if (position === "top-center") {
-    return ArrowUp;
+  if (position === 'top-center') {
+    return ArrowUp
   }
-  if (position === "top-right") {
-    return ArrowUpRight;
+  if (position === 'top-right') {
+    return ArrowUpRight
   }
-  if (position === "bottom-left") {
-    return ArrowDownLeft;
+  if (position === 'bottom-left') {
+    return ArrowDownLeft
   }
-  if (position === "bottom-center") {
-    return ArrowDown;
+  if (position === 'bottom-center') {
+    return ArrowDown
   }
-  return ArrowDownRight;
+  return ArrowDownRight
 }
 
 const typeOptions: { value: ToastType; label: string }[] = [
-  {value: "default", label: "Default"},
-  {value: "success", label: "Success"},
-  {value: "error", label: "Error"},
-  {value: "warning", label: "Warning"},
-  {value: "info", label: "Info"},
-];
+  { value: 'default', label: 'Default' },
+  { value: 'success', label: 'Success' },
+  { value: 'error', label: 'Error' },
+  { value: 'warning', label: 'Warning' },
+  { value: 'info', label: 'Info' },
+]
 
 const orderOptions: { value: ToastOrder; label: string }[] = [
-  {value: "newest", label: "Newest"},
-  {value: "oldest", label: "Oldest"},
-];
+  { value: 'newest', label: 'Newest' },
+  { value: 'oldest', label: 'Oldest' },
+]
 
 const pauseStrategyOptions: { value: PauseStrategy; label: string }[] = [
-  {value: "resume", label: "Resume"},
-  {value: "reset", label: "Reset"},
-];
+  { value: 'resume', label: 'Resume' },
+  { value: 'reset', label: 'Reset' },
+]
 
 /* ----- reactive state ----- */
 
-const position = ref<ToastPosition>("top-right");
-const type = ref<ToastType>("success");
+const position = ref<ToastPosition>('top-right')
+const type = ref<ToastType>('success')
 
-const offset = ref("16px");
-const gap = ref("8px");
-const zIndex = ref(9999);
-const width = ref("350px");
+const offset = ref('16px')
+const gap = ref('8px')
+const zIndex = ref(9999)
+const width = ref('350px')
 
-const duration = ref(5000);
-const maxVisible = ref(5);
+const duration = ref(5000)
+const maxVisible = ref(5)
 
-const preventDuplicates = ref(false);
-const order = ref<ToastOrder>("newest");
+const preventDuplicates = ref(false)
+const order = ref<ToastOrder>('newest')
 
-const progressBar = ref(true);
-const pauseOnHover = ref(true);
-const pauseStrategy = ref<PauseStrategy>("resume");
+const progressBar = ref(true)
+const pauseOnHover = ref(true)
+const pauseStrategy = ref<PauseStrategy>('resume')
 
-const closeButton = ref(true);
-const closeOnClick = ref(false);
+const closeButton = ref(true)
+const closeOnClick = ref(false)
 
-const useOnMount = ref(false);
-const useOnUnmount = ref(false);
-const useOnClick = ref(false);
-const useOnClose = ref(false);
+const useOnMount = ref(false)
+const useOnUnmount = ref(false)
+const useOnClick = ref(false)
+const useOnClose = ref(false)
 
-const title = ref("");
-const description = ref("");
+const title = ref('')
+const description = ref('')
 
-const lastId = ref<ToastId | null>(null);
+const lastId = ref<ToastId | null>(null)
 
 /* ----- helpers ----- */
 
 function defaultTitleForType(t: ToastType): string {
-  if (t === "success") {
-    return "Saved";
+  if (t === 'success') {
+    return 'Saved'
   }
-  if (t === "error") {
-    return "Something went wrong";
+  if (t === 'error') {
+    return 'Something went wrong'
   }
-  if (t === "warning") {
-    return "Heads up";
+  if (t === 'warning') {
+    return 'Heads up'
   }
-  return "Information";
+  return 'Information'
 }
 
 function defaultDescriptionForType(t: ToastType): string {
-  if (t === "success") {
-    return "Your changes have been stored.";
+  if (t === 'success') {
+    return 'Your changes have been stored.'
   }
-  if (t === "error") {
-    return "Check the console for more details.";
+  if (t === 'error') {
+    return 'Check the console for more details.'
   }
-  if (t === "warning") {
-    return "Please double-check your input.";
+  if (t === 'warning') {
+    return 'Please double-check your input.'
   }
-  return "This is just an informational toast.";
+  return 'This is just an informational toast.'
 }
 
 /* ----- computed config for show() ----- */
@@ -155,104 +155,102 @@ const baseConfig = computed<Partial<ToastOptions>>(function () {
     pauseStrategy: pauseStrategy.value,
 
     animation: {
-      enter: "Toastflow__animation-enter",
-      leave: "Toastflow__animation-leave",
-      move: "Toastflow__animation-move",
-      clearAll: "Toastflow__animation-clearAll",
+      enter: 'Toastflow__animation-enter',
+      leave: 'Toastflow__animation-leave',
+      move: 'Toastflow__animation-move',
+      clearAll: 'Toastflow__animation-clearAll',
     },
 
     closeButton: closeButton.value,
     closeOnClick: closeOnClick.value,
-  };
+  }
 
   if (useOnMount.value) {
     config.onMount = function (ctx: ToastContext) {
-      console.log("[toastflow] onMount", ctx);
-    };
+      console.log('[toastflow] onMount', ctx)
+    }
   }
 
   if (useOnUnmount.value) {
     config.onUnmount = function (ctx: ToastContext) {
-      console.log("[toastflow] onUnmount", ctx);
-    };
+      console.log('[toastflow] onUnmount', ctx)
+    }
   }
 
   if (useOnClick.value) {
     config.onClick = function (ctx: ToastContext, event: MouseEvent) {
-      console.log("[toastflow] onClick", ctx, event);
-    };
+      console.log('[toastflow] onClick', ctx, event)
+    }
   }
 
   if (useOnClose.value) {
     config.onClose = function (ctx: ToastContext) {
-      console.log("[toastflow] onClose", ctx);
-    };
+      console.log('[toastflow] onClose', ctx)
+    }
   }
 
-  return config;
-});
+  return config
+})
 
 /* ----- actions ----- */
 
 function push(typeOverride?: ToastType) {
-  const toastType = typeOverride ?? type.value;
+  const toastType = typeOverride ?? type.value
 
   lastId.value = show({
     ...baseConfig.value,
     type: toastType,
     title: title.value || defaultTitleForType(toastType),
     description: description.value || defaultDescriptionForType(toastType),
-  });
+  })
 }
 
 function pushBurst() {
   for (let i = 0; i < 5; i += 1) {
-    push(type.value);
+    push(type.value)
   }
 }
 
 function updateLast() {
   if (!lastId.value) {
-    return;
+    return
   }
 
   update(lastId.value, {
-    title: (title.value || "Updated toast") + " (updated)",
-    description:
-      description.value ||
-      "This toast was updated from the Toastflow playground.",
-  });
+    title: (title.value || 'Updated toast') + ' (updated)',
+    description: description.value || 'This toast was updated from the Toastflow playground.',
+  })
 }
 
 function resetToDefaults() {
-  position.value = "top-right";
-  type.value = "success";
+  position.value = 'top-right'
+  type.value = 'success'
 
-  offset.value = "16px";
-  gap.value = "8px";
-  zIndex.value = 9999;
-  width.value = "350px";
+  offset.value = '16px'
+  gap.value = '8px'
+  zIndex.value = 9999
+  width.value = '350px'
 
-  duration.value = 5000;
-  maxVisible.value = 5;
+  duration.value = 5000
+  maxVisible.value = 5
 
-  preventDuplicates.value = false;
-  order.value = "newest";
+  preventDuplicates.value = false
+  order.value = 'newest'
 
-  progressBar.value = true;
-  pauseOnHover.value = true;
-  pauseStrategy.value = "resume";
+  progressBar.value = true
+  pauseOnHover.value = true
+  pauseStrategy.value = 'resume'
 
-  closeButton.value = true;
-  closeOnClick.value = false;
+  closeButton.value = true
+  closeOnClick.value = false
 
-  useOnMount.value = false;
-  useOnUnmount.value = false;
-  useOnClick.value = false;
-  useOnClose.value = false;
+  useOnMount.value = false
+  useOnUnmount.value = false
+  useOnClick.value = false
+  useOnClose.value = false
 
-  title.value = "";
-  description.value = "";
+  title.value = ''
+  description.value = ''
 }
 </script>
 
@@ -270,20 +268,16 @@ function resetToDefaults() {
       >
         <span>Last toast ID:</span>
         <span class="font-mono text-[0.7rem] text-slate-700">
-          {{ lastId ?? "—" }}
+          {{ lastId ?? '—' }}
         </span>
       </div>
     </div>
 
     <div class="grid gap-5 md:grid-cols-4 text-xs md:text-sm">
       <!-- POSITION + TYPE -->
-      <section
-        class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100"
-      >
+      <section class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100">
         <div>
-          <h2
-            class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400"
-          >
+          <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Position
           </h2>
 
@@ -305,16 +299,14 @@ function resetToDefaults() {
                 class="mb-1 h-4 w-4 group-hover:scale-105"
               />
               <span class="text-[0.6rem] uppercase tracking-[0.16em]">
-          {{ pos.label.split(' ')[1] }}
-        </span>
+                {{ pos.label.split(' ')[1] }}
+              </span>
             </button>
           </div>
         </div>
 
         <div>
-          <h2
-            class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400"
-          >
+          <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Type
           </h2>
           <div class="flex flex-wrap gap-2">
@@ -347,13 +339,9 @@ function resetToDefaults() {
       </section>
 
       <!-- CONFIG TOGGLES -->
-      <section
-        class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100"
-      >
+      <section class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100">
         <div>
-          <h2
-            class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400"
-          >
+          <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Behavior
           </h2>
           <div class="flex flex-col gap-2">
@@ -425,9 +413,7 @@ function resetToDefaults() {
         </div>
 
         <div>
-          <h2
-            class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400"
-          >
+          <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Order &amp; Pause
           </h2>
           <div class="flex flex-wrap gap-2">
@@ -465,13 +451,9 @@ function resetToDefaults() {
       </section>
 
       <!-- TIMING + LAYOUT -->
-      <section
-        class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100"
-      >
+      <section class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100">
         <div>
-          <h2
-            class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400"
-          >
+          <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Timing &amp; limits
           </h2>
           <div class="space-y-2">
@@ -499,9 +481,7 @@ function resetToDefaults() {
         </div>
 
         <div>
-          <h2
-            class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400"
-          >
+          <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Layout
           </h2>
           <div class="space-y-2">
@@ -548,13 +528,9 @@ function resetToDefaults() {
       </section>
 
       <!-- EVENTS + CONTENT -->
-      <section
-        class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100"
-      >
+      <section class="space-y-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100">
         <div>
-          <h2
-            class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400"
-          >
+          <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Events (console.log)
           </h2>
           <div class="flex flex-wrap gap-2">
@@ -613,9 +589,7 @@ function resetToDefaults() {
         </div>
 
         <div>
-          <h2
-            class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400"
-          >
+          <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
             Content
           </h2>
           <div class="space-y-2">
