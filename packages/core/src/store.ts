@@ -1,4 +1,4 @@
-import {
+import type {
   ToastConfig,
   ToastContext,
   ToastEvent,
@@ -22,7 +22,7 @@ interface TimerState {
   paused: boolean;
 }
 
-export const defaults: ToastConfig = {
+const defaults: ToastConfig = {
   offset: "16px",
   gap: "8px",
   zIndex: 9999,
@@ -30,19 +30,19 @@ export const defaults: ToastConfig = {
   duration: 5000,
   maxVisible: 5,
   position: "top-right",
-  preventDuplicates: true,
+  preventDuplicates: false,
   order: "newest",
   progressBar: true,
   pauseOnHover: true,
   pauseStrategy: "resume",
   animation: {
-    enter: "Toastflow__animation-enter",
-    leave: "Toastflow__animation-leave",
-    move: "Toastflow__animation-move",
+    name: "Toastflow__animation",
+    bump: "Toastflow__animation-bump",
     clearAll: "Toastflow__animation-clearAll",
   },
   closeButton: true,
   closeOnClick: false,
+  supportHtml: false,
 };
 
 export function createToastStore(
@@ -53,10 +53,7 @@ export function createToastStore(
   const eventListeners = new Set<EventListener>();
   const timers = new Map<ToastId, TimerState>();
 
-  const resolvedGlobalConfig: ToastConfig = {
-    ...defaults,
-    ...globalConfig,
-  };
+  const resolvedGlobalConfig: ToastConfig = getConfig();
 
   function notify() {
     for (const listener of listeners) {
@@ -416,6 +413,13 @@ export function createToastStore(
     });
   }
 
+  function getConfig(): ToastConfig {
+    return {
+      ...defaults,
+      ...globalConfig,
+    };
+  }
+
   return {
     getState,
     subscribe,
@@ -426,6 +430,7 @@ export function createToastStore(
     dismissAll,
     pause,
     resume,
+    getConfig,
   };
 }
 
@@ -445,6 +450,10 @@ function insertToast(
   existing: ToastInstance[],
   next: ToastInstance,
 ): ToastInstance[] {
+  if (next.duration === 0 || !Number.isFinite(next.duration)) {
+    next.progressBar = false;
+  }
+
   const position = next.position;
   const order = next.order;
 

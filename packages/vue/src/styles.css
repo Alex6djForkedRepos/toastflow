@@ -47,7 +47,7 @@
     --tf-toast-accent-info: var(--info-text);
 
     /* icon */
-    --tf-toast-icon-size: 18px;
+    --tf-toast-icon-size: 20px;
 
     --tf-toast-icon-default: var(--normal-text);
     --tf-toast-icon-success: var(--success-text);
@@ -76,78 +76,71 @@
     animation-play-state: paused;
 }
 
-.tf-toast[data-position^="top-"] {
+.tf-toast-item[data-position^="top-"] {
     --tf-toast-motion-offset: -10px;
 }
 
-.tf-toast[data-position^="bottom-"] {
+.tf-toast-item[data-position^="bottom-"] {
     --tf-toast-motion-offset: 10px;
 }
 
-.Toastflow__animation-enter {
-    animation-name: tf-toast-enter;
-    animation-duration: 220ms;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+.Toastflow__animation-enter-active {
+    animation: Toastflow__enter-kf 260ms cubic-bezier(0.5, 1, 0.25, 1);
     animation-fill-mode: both;
-    will-change: transform, opacity;
 }
 
-@keyframes tf-toast-enter {
-    0% {
-        transform: translate3d(0, var(--tf-toast-motion-offset), 0) scale(0.9);
-        opacity: 0;
-    }
-    100% {
-        transform: translate3d(0, 0, 0) scale(1);
-        opacity: 1;
-    }
-}
-
-.Toastflow__animation-leave {
-    animation-name: tf-toast-leave;
-    animation-duration: 220ms;
-    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+.Toastflow__animation-leave-active {
+    animation: Toastflow__leave-kf 220ms ease;
     animation-fill-mode: both;
-    will-change: transform, opacity;
-}
-
-@keyframes tf-toast-leave {
-    0% {
-        transform: translate3d(0, 0, 0) scale(1);
-        opacity: 1;
-    }
-    100% {
-        transform: translate3d(0, var(--tf-toast-motion-offset), 0) scale(0.9);
-        opacity: 0;
-    }
-}
-
-.Toastflow__animation-move {
-    transition: transform 220ms cubic-bezier(0.4, 0, 0.6, 1);
 }
 
 .Toastflow__animation-clearAll {
-    animation-name: tf-toast-fade-out;
-    animation-duration: 180ms;
-    animation-timing-function: ease-out;
+    animation: Toastflow__clearAll-kf 260ms cubic-bezier(0.22, 1, 0.36, 1);
     animation-fill-mode: both;
-    will-change: opacity;
 }
 
-@keyframes tf-toast-fade-out {
-    from {
+.Toastflow__animation-move {
+    transition: transform 260ms cubic-bezier(0.5, 1, 0.25, 1);
+    will-change: transform;
+}
+
+.Toastflow__animation-bump {
+    animation: Toastflow__bump-kf 140ms ease-out;
+    animation-fill-mode: both;
+}
+
+@keyframes Toastflow__enter-kf {
+    0% {
+        transform: translate3d(0, var(--tf-toast-motion-offset), 0) scale(0.9);
+        opacity: 0;
+    }
+    100% {
+        transform: translate3d(0, 0, 0) scale(1);
         opacity: 1;
     }
-    to {
+}
+
+@keyframes Toastflow__leave-kf {
+    0% {
+        transform: translate3d(0, 0, 0) scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: translate3d(0, var(--tf-toast-motion-offset), 0) scale(0.9);
         opacity: 0;
     }
 }
 
-.tf-toast--bump {
-    animation: tf-toast-bump 140ms ease-out;
+@keyframes Toastflow__clearAll-kf {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
 }
 
-@keyframes tf-toast-bump {
+@keyframes Toastflow__bump-kf {
     0% {
         transform: scale(1);
     }
@@ -158,4 +151,3 @@
         transform: scale(1);
     }
 }
-

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import { type ToastContext, useToast } from 'vue-toastflow'
+import { computed, inject, ref } from 'vue'
+import { type ToastContext, type ToastStore, useToast } from 'vue-toastflow'
 import type {
   PauseStrategy,
   ToastId,
@@ -17,6 +17,14 @@ import {
   ArrowUpLeft,
   ArrowUpRight,
 } from 'lucide-vue-next'
+import { toastStoreKey } from 'vue-toastflow/src/symbols.ts'
+
+const injectedStore = inject<ToastStore | null>(toastStoreKey, null)
+if (!injectedStore) {
+  throw new Error('[vue-toastflow] Plugin not installed')
+}
+const store: ToastStore = injectedStore
+const config = store.getConfig()
 
 const { show, update, dismissAll } = useToast()
 
@@ -75,26 +83,28 @@ const pauseStrategyOptions: { value: PauseStrategy; label: string }[] = [
 
 /* ----- reactive state ----- */
 
-const position = ref<ToastPosition>('top-right')
+const position = ref<ToastPosition>(config.position)
 const type = ref<ToastType>('success')
 
-const offset = ref('16px')
-const gap = ref('8px')
-const zIndex = ref(9999)
-const width = ref('350px')
+const offset = ref(config.offset)
+const gap = ref(config.gap)
+const zIndex = ref(config.zIndex)
+const width = ref(config.width)
 
-const duration = ref(5000)
-const maxVisible = ref(5)
+const duration = ref(config.duration)
+const maxVisible = ref(config.maxVisible)
 
-const preventDuplicates = ref(false)
-const order = ref<ToastOrder>('newest')
+const preventDuplicates = ref(config.preventDuplicates)
+const order = ref<ToastOrder>(config.order)
 
-const progressBar = ref(true)
-const pauseOnHover = ref(true)
-const pauseStrategy = ref<PauseStrategy>('resume')
+const progressBar = ref(config.progressBar)
+const pauseOnHover = ref(config.pauseOnHover)
+const pauseStrategy = ref<PauseStrategy>(config.pauseStrategy)
 
-const closeButton = ref(true)
-const closeOnClick = ref(false)
+const closeButton = ref(config.closeButton)
+const closeOnClick = ref(config.closeOnClick)
+
+const supportHtml = ref(config.supportHtml)
 
 const useOnMount = ref(false)
 const useOnUnmount = ref(false)
@@ -103,6 +113,8 @@ const useOnClose = ref(false)
 
 const title = ref('')
 const description = ref('')
+const fallbackTitle = ref(true)
+const fallbackDescription = ref(true)
 
 const lastId = ref<ToastId | null>(null)
 
@@ -134,10 +146,21 @@ function defaultDescriptionForType(t: ToastType): string {
   return 'This is just an informational toast.'
 }
 
+function resolveContent(value: string, fallback: string, allowFallback: boolean) {
+  const trimmed = value.trim()
+  if (trimmed) {
+    return trimmed
+  }
+  if (allowFallback) {
+    return fallback
+  }
+  return ''
+}
+
 /* ----- computed config for show() ----- */
 
 const baseConfig = computed<Partial<ToastOptions>>(function () {
-  const config: Partial<ToastOptions> = {
+  const reactiveConfig: Partial<ToastOptions> = {
     offset: offset.value,
     gap: gap.value,
     zIndex: zIndex.value,
@@ -155,53 +178,64 @@ const baseConfig = computed<Partial<ToastOptions>>(function () {
     pauseStrategy: pauseStrategy.value,
 
     animation: {
-      enter: 'Toastflow__animation-enter',
-      leave: 'Toastflow__animation-leave',
-      move: 'Toastflow__animation-move',
-      clearAll: 'Toastflow__animation-clearAll',
+      name: config.animation.name,
+      bump: config.animation.bump,
+      clearAll: config.animation.clearAll,
     },
 
     closeButton: closeButton.value,
     closeOnClick: closeOnClick.value,
+
+    supportHtml: supportHtml.value,
   }
 
   if (useOnMount.value) {
-    config.onMount = function (ctx: ToastContext) {
+    reactiveConfig.onMount = function (ctx: ToastContext) {
       console.log('[toastflow] onMount', ctx)
     }
   }
 
   if (useOnUnmount.value) {
-    config.onUnmount = function (ctx: ToastContext) {
+    reactiveConfig.onUnmount = function (ctx: ToastContext) {
       console.log('[toastflow] onUnmount', ctx)
     }
   }
 
   if (useOnClick.value) {
-    config.onClick = function (ctx: ToastContext, event: MouseEvent) {
+    reactiveConfig.onClick = function (ctx: ToastContext, event: MouseEvent) {
       console.log('[toastflow] onClick', ctx, event)
     }
   }
 
   if (useOnClose.value) {
-    config.onClose = function (ctx: ToastContext) {
+    reactiveConfig.onClose = function (ctx: ToastContext) {
       console.log('[toastflow] onClose', ctx)
     }
   }
 
-  return config
+  return reactiveConfig
 })
 
 /* ----- actions ----- */
 
 function push(typeOverride?: ToastType) {
   const toastType = typeOverride ?? type.value
+  const resolvedTitle = resolveContent(
+    title.value,
+    defaultTitleForType(toastType),
+    fallbackTitle.value,
+  )
+  const resolvedDescription = resolveContent(
+    description.value,
+    defaultDescriptionForType(toastType),
+    fallbackDescription.value,
+  )
 
   lastId.value = show({
     ...baseConfig.value,
     type: toastType,
-    title: title.value || defaultTitleForType(toastType),
-    description: description.value || defaultDescriptionForType(toastType),
+    title: resolvedTitle,
+    description: resolvedDescription,
   })
 }
 
@@ -216,13 +250,20 @@ function updateLast() {
     return
   }
 
+  const updatedTitle = resolveContent(title.value, 'Updated toast', fallbackTitle.value)
+  const updatedDescription = resolveContent(
+    description.value,
+    'This toast was updated from the Toastflow playground.',
+    fallbackDescription.value,
+  )
+
   update(lastId.value, {
-    title: (title.value || 'Updated toast') + ' (updated)',
-    description: description.value || 'This toast was updated from the Toastflow playground.',
+    title: updatedTitle ? `${updatedTitle} (updated)` : '',
+    description: updatedDescription,
   })
 }
 
-function resetToDefaults() {
+function resetToconfig() {
   position.value = 'top-right'
   type.value = 'success'
 
@@ -244,6 +285,8 @@ function resetToDefaults() {
   closeButton.value = true
   closeOnClick.value = false
 
+  supportHtml.value = false
+
   useOnMount.value = false
   useOnUnmount.value = false
   useOnClick.value = false
@@ -251,6 +294,8 @@ function resetToDefaults() {
 
   title.value = ''
   description.value = ''
+  fallbackTitle.value = true
+  fallbackDescription.value = true
 }
 </script>
 
@@ -409,6 +454,19 @@ function resetToDefaults() {
             >
               <span>Close on click</span>
             </button>
+
+            <button
+              type="button"
+              class="inline-flex items-center justify-between rounded-xl border px-3 py-1.5 text-xs font-medium transition-all"
+              :class="
+                supportHtml
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
+              "
+              @click="supportHtml = !supportHtml"
+            >
+              <span>Support HTML</span>
+            </button>
           </div>
         </div>
 
@@ -474,15 +532,17 @@ function resetToDefaults() {
                 v-model.number="maxVisible"
                 type="number"
                 class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs outline-none transition focus:border-slate-400 focus:bg-white"
-                min="1"
+                min="0"
               />
             </label>
+
+            <p class="text-[0.65rem] text-slate-400">Use 0 for unlimited.</p>
           </div>
         </div>
 
         <div>
           <h2 class="mb-3 text-[0.7rem] font-semibold uppercase tracking-[0.18em] text-slate-400">
-            Layout
+            Layout (global)
           </h2>
           <div class="space-y-2">
             <label class="flex flex-col gap-1">
@@ -613,6 +673,38 @@ function resetToDefaults() {
               />
             </label>
           </div>
+
+          <div class="flex flex-wrap gap-2 py-2">
+            <button
+              type="button"
+              class="rounded-full border px-3 py-1 text-xs font-medium transition-all"
+              :class="
+                fallbackTitle
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
+              "
+              @click="fallbackTitle = !fallbackTitle"
+            >
+              Fallback title
+            </button>
+
+            <button
+              type="button"
+              class="rounded-full border px-3 py-1 text-xs font-medium transition-all"
+              :class="
+                fallbackDescription
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
+              "
+              @click="fallbackDescription = !fallbackDescription"
+            >
+              Fallback description
+            </button>
+          </div>
+          <p class="text-[0.65rem] text-slate-400">
+            When enabled, toast will use a default title and description if these fields are left
+            blank. Turn off fallback to send exactly what you enter (including empty).
+          </p>
         </div>
       </section>
     </div>
@@ -659,7 +751,7 @@ function resetToDefaults() {
         <button
           type="button"
           class="rounded-2xl border border-slate-300 bg-white px-4 py-1.5 text-xs font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-          @click="resetToDefaults"
+          @click="resetToconfig"
         >
           Reset config
         </button>

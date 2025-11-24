@@ -2,8 +2,7 @@
 import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue";
 import Toast from "./Toast.vue";
 import { toastStoreKey } from "../symbols";
-import {
-  defaults,
+import type {
   ToastConfig,
   ToastId,
   ToastInstance,
@@ -27,15 +26,6 @@ if (!injectedStore) {
 const store: ToastStore = injectedStore;
 
 const toasts = ref<ToastInstance[]>([]);
-const animationByPosition = ref<
-  Record<ToastPosition, ToastInstance["animation"] | null>
->(
-  Object.fromEntries(
-    positions.map(function (position) {
-      return [position, null];
-    }),
-  ) as Record<ToastPosition, ToastInstance["animation"] | null>,
-);
 
 // event-driven keys
 const progressResetMap = ref<Record<ToastId, number>>({});
@@ -94,10 +84,10 @@ const grouped = computed(function () {
   return byPos;
 });
 
-const config = ref<ToastConfig>({ ...defaults });
+const config: ToastConfig = store.getConfig();
 
 function stackStyle(position: ToastPosition): Record<string, string> {
-  const { offset, width } = config.value;
+  const { offset, width } = config;
   // Lock the stack width, so it doesn't collapse when leaving items get absolute-positioned
   const style: Record<string, string> = { width, maxWidth: "100%" };
 
@@ -141,10 +131,6 @@ function handleDismiss(id: ToastId) {
   store.dismiss(id);
 }
 
-function animationConfig(position: ToastPosition) {
-  return animationByPosition.value[position] ?? null;
-}
-
 function beforeLeave(el: Element) {
   const element = el as HTMLElement;
   const parent = element.parentElement;
@@ -181,30 +167,8 @@ function afterLeave(el: Element) {
 }
 
 watch(
-  grouped,
-  function (next) {
-    for (const position of positions) {
-      const first = next[position]?.[0];
-      animationByPosition.value[position] = first?.animation ?? null;
-    }
-  },
-  { immediate: true },
-);
-
-watch(
   toasts,
   function (current) {
-    const head = current[0];
-    if (head) {
-      config.value = {
-        ...config.value,
-        offset: head.offset ?? defaults.offset,
-        gap: head.gap ?? defaults.gap,
-        zIndex: head.zIndex ?? defaults.zIndex,
-        width: head.width ?? defaults.width,
-      };
-    }
-
     const ids = new Set(
       current.map(function (toast) {
         return toast.id;
@@ -228,7 +192,7 @@ watch(
 </script>
 
 <template>
-  <div class="tf-toast-root" :style="{ zIndex: String(config.zIndex) }">
+  <div class="tf-toast-root" :style="{ zIndex: config.zIndex }">
     <div
       v-for="position in positions"
       :key="position"
@@ -237,15 +201,7 @@ watch(
       :style="stackStyle(position)"
     >
       <TransitionGroup
-        :enter-active-class="
-          animationConfig(position)?.enter ?? 'Toastflow__animation-enter'
-        "
-        :leave-active-class="
-          animationConfig(position)?.leave ?? 'Toastflow__animation-leave'
-        "
-        :move-class="
-          animationConfig(position)?.move ?? 'Toastflow__animation-move'
-        "
+        :name="config.animation.name"
         @before-leave="beforeLeave"
         @after-leave="afterLeave"
         tag="div"
@@ -257,16 +213,15 @@ watch(
           :key="toast.id"
           class="tf-toast-item"
           :style="{ width: config.width, maxWidth: '100%' }"
+          :data-position="toast.position"
         >
           <slot
             v-if="$slots.default"
             :toast="toast"
             :progressResetKey="getProgressResetKey(toast.id)"
             :duplicateKey="getDuplicateKey(toast.id)"
-            :clearAllClass="
-              animationConfig(position)?.clearAll ??
-              'Toastflow__animation-clearAll'
-            "
+            :bumpAnimationClass="config.animation.bump"
+            :clearAllAnimationClass="config.animation.clearAll"
             :dismiss="handleDismiss"
           />
 
@@ -275,10 +230,8 @@ watch(
             :toast="toast"
             :progressResetKey="getProgressResetKey(toast.id)"
             :duplicateKey="getDuplicateKey(toast.id)"
-            :clearAllClass="
-              animationConfig(position)?.clearAll ??
-              'Toastflow__animation-clearAll'
-            "
+            :bumpAnimationClass="config.animation.bump"
+            :clearAllAnimationClass="config.animation.clearAll"
             @dismiss="handleDismiss"
           />
         </div>
@@ -296,6 +249,9 @@ watch(
 
 .tf-toast-stack {
   position: absolute;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
 }
 
 .tf-toast-stack-inner {
@@ -311,15 +267,15 @@ watch(
 }
 
 .tf-toast-stack--left {
-  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 .tf-toast-stack--center {
-  align-items: center;
+  justify-content: center;
 }
 
 .tf-toast-stack--right {
-  align-items: flex-end;
+  justify-content: flex-end;
 }
 
 .tf-toast-item {

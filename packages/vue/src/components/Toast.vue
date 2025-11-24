@@ -1,16 +1,36 @@
 ﻿<script setup lang="ts">
-import {computed, type CSSProperties, inject, ref, watch} from "vue";
+import { computed, type CSSProperties, inject, ref, watch } from "vue";
 import ToastProgress from "./ToastProgress.vue";
-import type {ToastContext, ToastId, ToastInstance, ToastStore, ToastType,} from "toastflow-core";
-import {toastStoreKey} from "../symbols";
+import type {
+  ToastContext,
+  ToastId,
+  ToastInstance,
+  ToastStore,
+  ToastType,
+} from "toastflow-core";
+import { toastStoreKey } from "../symbols";
 
-import {AlertTriangle, BadgeInfo, CheckCircle2, Info, X as XIcon, XCircle,} from "lucide-vue-next";
+import {
+  AlertTriangle,
+  BadgeInfo,
+  CheckCircle2,
+  Info,
+  X,
+  XCircle,
+} from "lucide-vue-next";
 
-const {toast, progressResetKey, duplicateKey, clearAllClass} = defineProps<{
+const {
+  toast,
+  progressResetKey,
+  duplicateKey,
+  bumpAnimationClass,
+  clearAllAnimationClass,
+} = defineProps<{
   toast: ToastInstance;
   progressResetKey?: number;
   duplicateKey?: number;
-  clearAllClass?: string;
+  bumpAnimationClass?: string;
+  clearAllAnimationClass?: string;
 }>();
 
 const emit = defineEmits<{
@@ -26,12 +46,15 @@ const store: ToastStore = injectedStore;
 const isHovered = ref(false);
 const isBumped = ref(false);
 
-const typeMeta: Record<ToastType, {
-  accent: string;
-  icon: string;
-  close: string;
-  component: typeof CheckCircle2;
-}> = {
+const typeMeta: Record<
+  ToastType,
+  {
+    accent: string;
+    icon: string;
+    close: string;
+    component: typeof CheckCircle2;
+  }
+> = {
   success: {
     accent: "tf-toast-accent--success",
     icon: "tf-toast-icon--success",
@@ -141,55 +164,47 @@ function handleMouseLeave() {
 const progressKeyLocal = ref(0);
 
 watch(
-    () => progressResetKey,
-    function () {
-      if (progressResetKey == null) {
-        return;
-      }
-      progressKeyLocal.value += 1;
-    },
+  () => progressResetKey,
+  function () {
+    if (progressResetKey == null) {
+      return;
+    }
+    progressKeyLocal.value += 1;
+  },
 );
 
 watch(
-    () => duplicateKey,
-    function () {
-      if (duplicateKey == null) {
-        return;
-      }
+  () => duplicateKey,
+  function () {
+    if (duplicateKey == null) {
+      return;
+    }
 
-      progressKeyLocal.value += 1;
+    progressKeyLocal.value += 1;
 
-      isBumped.value = false;
-      requestAnimationFrame(function () {
-        isBumped.value = true;
-      });
-    },
+    isBumped.value = false;
+    requestAnimationFrame(function () {
+      isBumped.value = true;
+    });
+  },
 );
 </script>
 
 <template>
-  <div
-      :role="role"
-      :aria-live="ariaLive"
-      class="tf-toast-wrapper"
-  >
+  <div :role="role" :aria-live="ariaLive" class="tf-toast-wrapper">
     <div
-        class="tf-toast"
-        :data-position="toast.position"
-        :class="[
+      class="tf-toast"
+      :class="[
         accentClass,
-        toast.phase === 'clear-all' ? clearAllClass : null,
-        {
-          'tf-toast--paused': isHovered,
-          'tf-toast--bump':
-            isBumped &&
-            toast.phase !== 'leaving' &&
-            toast.phase !== 'clear-all',
-        },
+        isBumped && toast.phase !== 'leaving' && toast.phase !== 'clear-all'
+          ? bumpAnimationClass
+          : null,
+        toast.phase === 'clear-all' ? clearAllAnimationClass : null,
+        isHovered ? 'tf-toast--paused' : null,
       ]"
-        @click="handleClick"
-        @mouseenter="handleMouseEnter"
-        @mouseleave="handleMouseLeave"
+      @click="handleClick"
+      @mouseenter="handleMouseEnter"
+      @mouseleave="handleMouseLeave"
     >
       <div class="tf-toast-surface">
         <!-- main row -->
@@ -198,9 +213,9 @@ watch(
           <div class="tf-toast-icon" :class="iconWrapperClass">
             <slot name="icon" :toast="toast">
               <component
-                  :is="defaultIconComponent"
-                  class="tf-toast-icon-svg"
-                  aria-hidden="true"
+                :is="defaultIconComponent"
+                class="tf-toast-icon-svg"
+                aria-hidden="true"
               />
             </slot>
           </div>
@@ -208,42 +223,56 @@ watch(
           <!-- content -->
           <div class="tf-toast-body">
             <div class="tf-toast-text">
-              <p class="tf-toast-title">
+              <p
+                v-if="toast.title && !toast.supportHtml"
+                class="tf-toast-title"
+              >
                 {{ toast.title }}
               </p>
               <p
-                  v-if="toast.description"
-                  class="tf-toast-description"
+                v-else-if="toast.title && toast.supportHtml"
+                class="tf-toast-title"
+                v-html="toast.title"
+              />
+
+              <p
+                v-if="toast.description && !toast.supportHtml"
+                class="tf-toast-description"
               >
                 {{ toast.description }}
               </p>
+              <p
+                v-else-if="toast.description && toast.supportHtml"
+                class="tf-toast-description"
+                v-html="toast.description"
+              />
             </div>
           </div>
         </div>
 
         <!-- bottom progress -->
         <div
-            v-if="toast.progressBar"
-            class="tf-toast-progress-wrapper"
-            :style="progressStyle"
+          v-if="toast.progressBar"
+          class="tf-toast-progress-wrapper"
+          :style="progressStyle"
         >
           <slot name="progress" :toast="toast">
-            <ToastProgress :key="progressKeyLocal" :type="toast.type"/>
+            <ToastProgress :key="progressKeyLocal" :type="toast.type" />
           </slot>
         </div>
       </div>
 
       <!-- close button floating top-right -->
       <button
-          v-if="toast.closeButton"
-          type="button"
-          class="tf-toast-close"
-          :class="closeWrapperClass"
-          aria-label="Close notification"
-          @click.stop="handleCloseClick"
+        v-if="toast.closeButton"
+        type="button"
+        class="tf-toast-close"
+        :class="closeWrapperClass"
+        aria-label="Close notification"
+        @click.stop="handleCloseClick"
       >
         <slot name="close-icon" :toast="toast">
-          <XIcon class="tf-toast-close-icon" aria-hidden="true"/>
+          <X class="tf-toast-close-icon" aria-hidden="true" />
         </slot>
       </button>
     </div>
@@ -270,7 +299,11 @@ watch(
   --tf-toast-border-color: var(--normal-border);
   --tf-toast-color: var(--normal-text);
   --tf-toast-description-color: var(--normal-text);
-  --tf-toast-progress-bg: color-mix(in srgb, var(--normal-text) 15%, transparent);
+  --tf-toast-progress-bg: color-mix(
+    in srgb,
+    var(--normal-text) 15%,
+    transparent
+  );
 }
 
 .tf-toast-accent--success {
@@ -278,7 +311,11 @@ watch(
   --tf-toast-border-color: var(--success-border);
   --tf-toast-color: var(--success-text);
   --tf-toast-description-color: var(--success-text);
-  --tf-toast-progress-bg: color-mix(in srgb, var(--success-text) 18%, transparent);
+  --tf-toast-progress-bg: color-mix(
+    in srgb,
+    var(--success-text) 18%,
+    transparent
+  );
 }
 
 .tf-toast-accent--error {
@@ -286,7 +323,11 @@ watch(
   --tf-toast-border-color: var(--error-border);
   --tf-toast-color: var(--error-text);
   --tf-toast-description-color: var(--error-text);
-  --tf-toast-progress-bg: color-mix(in srgb, var(--error-text) 18%, transparent);
+  --tf-toast-progress-bg: color-mix(
+    in srgb,
+    var(--error-text) 18%,
+    transparent
+  );
 }
 
 .tf-toast-accent--warning {
@@ -294,7 +335,11 @@ watch(
   --tf-toast-border-color: var(--warning-border);
   --tf-toast-color: var(--warning-text);
   --tf-toast-description-color: var(--warning-text);
-  --tf-toast-progress-bg: color-mix(in srgb, var(--warning-text) 18%, transparent);
+  --tf-toast-progress-bg: color-mix(
+    in srgb,
+    var(--warning-text) 18%,
+    transparent
+  );
 }
 
 .tf-toast-accent--info {
@@ -322,7 +367,7 @@ watch(
 
 .tf-toast-main {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--tf-toast-gap);
 }
 
@@ -423,6 +468,4 @@ watch(
   bottom: 0;
   margin: 0;
 }
-
-/* bump animation flag already tied to class tf-toast--bump */
 </style>
