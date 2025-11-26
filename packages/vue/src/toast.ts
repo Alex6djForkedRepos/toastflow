@@ -5,6 +5,7 @@ import {
   ToastId,
   ToastLoadingConfig,
   ToastLoadingInput,
+  ToastLoadingResult,
   ToastShowInput,
   ToastState,
   ToastStore,
@@ -39,7 +40,7 @@ export const toast = {
   loading<T>(
     input: ToastLoadingInput<T>,
     config: ToastLoadingConfig<T>,
-  ): Promise<T> {
+  ): ToastLoadingResult<T> {
     return getToastStore().loading(input, config);
   },
   update(id: ToastId, options: ToastUpdateInput): void {

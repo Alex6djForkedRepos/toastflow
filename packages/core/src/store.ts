@@ -6,6 +6,7 @@ import type {
   ToastInstance,
   ToastLoadingConfig,
   ToastLoadingInput,
+  ToastLoadingResult,
   ToastOptions,
   ToastOrder,
   ToastShowInput,
@@ -188,7 +189,7 @@ export function createToastStore(
   function loading<T>(
     input: ToastLoadingInput<T>,
     config: ToastLoadingConfig<T>,
-  ): Promise<T> {
+  ): ToastLoadingResult<T> {
     const loadingOptions: ToastShowInput = {
       ...config.loading,
       type: "loading",
@@ -253,10 +254,14 @@ export function createToastStore(
       task = typeof input === "function" ? input() : input;
     } catch (error) {
       applyIfActive(errorOptions(error));
-      return Promise.reject(error);
+      const rejected = Promise.reject(error) as ToastLoadingResult<T>;
+      rejected.toastId = toastId;
+      return rejected;
     }
 
-    return task.then(handleSuccess, handleError);
+    const result = task.then(handleSuccess, handleError) as ToastLoadingResult<T>;
+    result.toastId = toastId;
+    return result;
   }
 
   function update(id: ToastId, options: ToastUpdateInput): void {

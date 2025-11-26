@@ -283,10 +283,10 @@ function pushLoading() {
       } else {
         reject(new Error('Promise rejected'));
       }
-    }, 1400);
+    }, 1500);
   });
 
-  toast.loading(task, {
+  const pending = toast.loading(task, {
     loading: loadingConfig,
     success() {
       const content = ensureContent(
@@ -314,6 +314,8 @@ function pushLoading() {
       };
     },
   });
+
+  lastId.value = pending.toastId;
 }
 
 function push(typeOverride?: ToastType) {

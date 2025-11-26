@@ -103,6 +103,8 @@ export type ToastLoadingRender<T> =
   | ToastContentInput
   | ((value: T) => ToastContentInput);
 
+export type ToastLoadingResult<T> = Promise<T> & { toastId: ToastId };
+
 export interface ToastInstance extends ToastOptions {
   id: ToastId;
   createdAt: number;
@@ -137,5 +139,5 @@ export interface ToastStore {
   loading<T>(
     input: ToastLoadingInput<T>,
     config: ToastLoadingConfig<T>,
-  ): Promise<T>;
+  ): ToastLoadingResult<T>;
 }
