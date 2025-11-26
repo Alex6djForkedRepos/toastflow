@@ -4,12 +4,15 @@ import type {
   ToastEvent,
   ToastId,
   ToastInstance,
+  ToastLoadingConfig,
+  ToastLoadingInput,
   ToastOptions,
   ToastOrder,
-  ToastPromiseConfig,
-  ToastPromiseInput,
+  ToastShowInput,
   ToastState,
   ToastStore,
+  ToastType,
+  ToastUpdateInput,
 } from "./types";
 import { v4 as uuidv4 } from "uuid";
 
@@ -41,6 +44,7 @@ const defaults: ToastConfig = {
     name: "Toastflow__animation",
     bump: "Toastflow__animation-bump",
     clearAll: "Toastflow__animation-clearAll",
+    update: "Toastflow__animation-update",
   },
   closeButton: true,
   closeOnClick: false,
@@ -56,6 +60,7 @@ export function createToastStore(
   const listeners = new Set<Listener>();
   const eventListeners = new Set<EventListener>();
   const timers = new Map<ToastId, TimerState>();
+  const promiseRuns = new Map<ToastId, symbol>();
 
   const resolvedGlobalConfig: ToastConfig = getConfig();
 
@@ -90,7 +95,9 @@ export function createToastStore(
     };
   }
 
-  function show(options: Partial<ToastOptions>): ToastId {
+  function show(options: ToastShowInput): ToastId {
+    assertShowInput(options, "show");
+
     const toast = resolveConfig(resolvedGlobalConfig, options);
 
     if (toast.preventDuplicates) {
@@ -178,68 +185,90 @@ export function createToastStore(
     return id;
   }
 
-  function promise<T>(
-    input: ToastPromiseInput<T>,
-    config: ToastPromiseConfig<T>,
+  function loading<T>(
+    input: ToastLoadingInput<T>,
+    config: ToastLoadingConfig<T>,
   ): Promise<T> {
-    const loadingOptions: Partial<ToastOptions> = {
-      type: "promise",
+    const loadingOptions: ToastShowInput = {
       ...config.loading,
+      type: "loading",
       duration: Infinity,
       progressBar: false,
     };
 
-    const toastId = show(loadingOptions);
+    assertShowInput(loadingOptions, "loading.loading");
 
-    const successOptions = function (value: T): Partial<ToastOptions> {
+    const runToken = Symbol("toastflow-loading-run");
+    const toastId = show(loadingOptions);
+    promiseRuns.set(toastId, runToken);
+
+    function successOptions(value: T): ToastShowInput {
       const resolved =
         typeof config.success === "function"
           ? config.success(value)
           : config.success;
 
+      assertContentFields(resolved, "loading.success");
+
       return {
-        type: "success",
         ...resolvedGlobalConfig,
         ...resolved,
+        type: "success",
       };
-    };
+    }
 
-    const errorOptions = function (error: unknown): Partial<ToastOptions> {
+    function errorOptions(error: unknown): ToastShowInput {
       const resolved =
         typeof config.error === "function" ? config.error(error) : config.error;
 
+      assertContentFields(resolved, "loading.error");
+
       return {
-        type: "error",
         ...resolvedGlobalConfig,
         ...resolved,
+        type: "error",
       };
-    };
+    }
 
-    const handleSuccess = function (value: T): T {
-      update(toastId, successOptions(value));
+    function applyIfActive(options: ToastShowInput) {
+      if (promiseRuns.get(toastId) !== runToken) {
+        return;
+      }
+      promiseRuns.delete(toastId);
+      update(toastId, options);
+    }
+
+    function handleSuccess(value: T): T {
+      applyIfActive(successOptions(value));
       return value;
-    };
+    }
 
-    const handleError = function (error: unknown): never {
-      update(toastId, errorOptions(error));
+    function handleError(error: unknown): never {
+      applyIfActive(errorOptions(error));
       throw error;
-    };
+    }
 
     let task: Promise<T>;
     try {
       task = typeof input === "function" ? input() : input;
     } catch (error) {
-      update(toastId, errorOptions(error));
+      applyIfActive(errorOptions(error));
       return Promise.reject(error);
     }
 
     return task.then(handleSuccess, handleError);
   }
 
-  function update(id: ToastId, options: Partial<ToastOptions>): void {
+  function update(id: ToastId, options: ToastUpdateInput): void {
     const existing = state.toasts.find((t) => t.id === id);
     if (!existing) {
       return;
+    }
+
+    assertUpdateInput(options);
+
+    if (options.type) {
+      assertToastType(options.type, "update");
     }
 
     const merged: ToastOptions = {
@@ -264,6 +293,7 @@ export function createToastStore(
     };
 
     emitEvent({ id, kind: "timer-reset" });
+    emitEvent({ id, kind: "update" });
     notify();
   }
 
@@ -275,6 +305,7 @@ export function createToastStore(
     }
 
     clearAutoDismiss(id);
+    promiseRuns.delete(id);
 
     const context: ToastContext = {
       id,
@@ -330,6 +361,7 @@ export function createToastStore(
 
     for (const toast of current) {
       clearAutoDismiss(toast.id);
+      promiseRuns.delete(toast.id);
 
       const context: ToastContext = {
         id: toast.id,
@@ -488,6 +520,10 @@ export function createToastStore(
     return {
       ...defaults,
       ...globalConfig,
+      animation: {
+        ...defaults.animation,
+        ...(globalConfig.animation ?? {}),
+      },
     };
   }
 
@@ -496,7 +532,7 @@ export function createToastStore(
     subscribe,
     subscribeEvents,
     show,
-    promise,
+    loading,
     update,
     dismiss,
     dismissAll,
@@ -508,16 +544,72 @@ export function createToastStore(
 
 // ------------- helpers -------------
 
+const VALID_TYPES = new Set<ToastType>([
+  "loading",
+  "default",
+  "success",
+  "error",
+  "info",
+  "warning",
+]);
+
+function assertToastType(type: ToastType, caller: string) {
+  if (!VALID_TYPES.has(type)) {
+    throw new Error(`[toastflow-core] ${caller} requires a valid toast type.`);
+  }
+}
+
+function assertContentFields(
+  options: { title?: unknown; description?: unknown },
+  caller: string,
+): asserts options is { title?: string; description?: string } {
+  const hasTitle = isNonEmptyString(options.title);
+  const hasDescription = isNonEmptyString(options.description);
+
+  if (!hasTitle && !hasDescription) {
+    throw new Error(
+      `[toastflow-core] ${caller} requires a non-empty title or description.`,
+    );
+  }
+}
+
+function assertShowInput(options: ToastShowInput, caller: string) {
+  assertToastType(options.type, caller);
+  assertContentFields(options, caller);
+}
+
+function assertUpdateInput(options: ToastUpdateInput) {
+  assertContentFields(options, "update");
+}
+
+function isNonEmptyString(value: unknown): boolean {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
 function resolveConfig(
   base: ToastConfig,
-  overrides: Partial<ToastOptions>,
+  overrides: ToastOptions | ToastShowInput | ToastUpdateInput,
 ): ToastOptions {
+  const {
+    type,
+    title,
+    description,
+    animation: animationOverride,
+    ...restOverrides
+  } = overrides as Partial<ToastOptions>;
+
+  const animation = {
+    ...base.animation,
+    ...(animationOverride ?? {}),
+  };
+
   return {
-    type: "default",
-    title: "",
-    description: "",
     ...base,
-    ...overrides,
+    ...restOverrides,
+    animation,
+    type: type ?? "default",
+    title: title ?? "",
+    description: description ?? "",
   };
 }
 

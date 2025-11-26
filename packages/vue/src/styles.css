@@ -10,9 +10,9 @@
     --normal-border: #e6e8eb;
     --normal-text: #11181c;
 
-    --promise-bg: hsl(48, 100%, 96%);
-    --promise-border: hsl(46, 100%, 88%);
-    --promise-text: hsl(40, 100%, 32%);
+    --loading-bg: hsl(48, 100%, 96%);
+    --loading-border: hsl(46, 100%, 88%);
+    --loading-text: hsl(40, 100%, 32%);
 
     --tf-toast-bg: var(--normal-bg);
     --tf-toast-color: var(--normal-text);
@@ -44,7 +44,7 @@
     --tf-toast-gap: 0.8rem;
 
     /* accent bar */
-    --tf-toast-accent-promise: var(--promise-text);
+    --tf-toast-accent-loading: var(--loading-text);
     --tf-toast-accent-default: var(--normal-text);
     --tf-toast-accent-success: var(--success-text);
     --tf-toast-accent-error: var(--error-text);
@@ -54,7 +54,7 @@
     /* icon */
     --tf-toast-icon-size: 24px;
 
-    --tf-toast-icon-promise: var(--promise-text);
+    --tf-toast-icon-loading: var(--loading-text);
     --tf-toast-icon-default: var(--normal-text);
     --tf-toast-icon-success: var(--success-text);
     --tf-toast-icon-error: var(--error-text);
@@ -115,6 +115,11 @@
     animation-fill-mode: both;
 }
 
+.Toastflow__animation-update {
+    animation: Toastflow__update-kf 320ms cubic-bezier(0.33, 1, 0.68, 1);
+    animation-fill-mode: both;
+}
+
 @keyframes Toastflow__enter-kf {
     0% {
         transform: translate3d(0, var(--tf-toast-motion-offset), 0) scale(0.9);
@@ -154,6 +159,21 @@
         transform: scale(1.01);
     }
     100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes Toastflow__update-kf {
+    0% {
+        opacity: 0.4;
+        transform: scale(0.985);
+    }
+    40% {
+        opacity: 1;
+        transform: scale(1.01);
+    }
+    100% {
+        opacity: 1;
         transform: scale(1);
     }
 }

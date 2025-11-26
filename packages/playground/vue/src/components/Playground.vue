@@ -3,6 +3,7 @@ import { computed, ref } from 'vue';
 import { toast, type ToastContext } from 'vue-toastflow';
 import type {
   PauseStrategy,
+  ToastContentInput,
   ToastId,
   ToastOptions,
   ToastOrder,
@@ -56,8 +57,8 @@ function iconForPosition(position: ToastPosition) {
 }
 
 const typeOptions: { value: ToastType; label: string }[] = [
-  { value: 'promise', label: 'Promise' },
   { value: 'default', label: 'Default' },
+  { value: 'loading', label: 'Loading' },
   { value: 'success', label: 'Success' },
   { value: 'error', label: 'Error' },
   { value: 'warning', label: 'Warning' },
@@ -114,7 +115,7 @@ const lastId = ref<ToastId | null>(null);
 /* ----- helpers ----- */
 
 function defaultTitleForType(t: ToastType): string {
-  if (t === 'promise') {
+  if (t === 'loading') {
     return 'Working on it';
   }
   if (t === 'success') {
@@ -130,7 +131,7 @@ function defaultTitleForType(t: ToastType): string {
 }
 
 function defaultDescriptionForType(t: ToastType): string {
-  if (t === 'promise') {
+  if (t === 'loading') {
     return 'Hang tight while we finish this task.';
   }
   if (t === 'success') {
@@ -150,10 +151,26 @@ function resolveContent(value: string, fallback: string, allowFallback: boolean)
   if (trimmed) {
     return trimmed;
   }
-  if (allowFallback) {
-    return fallback;
+  return allowFallback ? fallback : '';
+}
+
+function ensureContent(
+  titleValue: string,
+  descriptionValue: string,
+  fallbackTitle: string,
+  fallbackDescription: string,
+) {
+  const hasTitle = titleValue.trim().length > 0;
+  const hasDescription = descriptionValue.trim().length > 0;
+
+  if (hasTitle || hasDescription) {
+    return { title: titleValue, description: descriptionValue };
   }
-  return '';
+
+  console.warn(
+    '[toastflow playground] At least one of title/description is required. Applying defaults.',
+  );
+  return { title: fallbackTitle, description: fallbackDescription };
 }
 
 /* ----- computed config for show() ----- */
@@ -217,22 +234,28 @@ const baseConfig = computed<Partial<ToastOptions>>(function () {
 
 /* ----- actions ----- */
 
-function pushPromise() {
+function pushLoading() {
   const loadingTitle = resolveContent(
     title.value,
-    defaultTitleForType('promise'),
+    defaultTitleForType('loading'),
     fallbackTitle.value,
   );
   const loadingDescription = resolveContent(
     description.value,
-    defaultDescriptionForType('promise'),
+    defaultDescriptionForType('loading'),
     fallbackDescription.value,
   );
 
-  const loadingConfig: Partial<ToastOptions> = {
+  const loadingConfigBase = ensureContent(
+    loadingTitle,
+    loadingDescription,
+    defaultTitleForType('loading'),
+    defaultDescriptionForType('loading'),
+  );
+
+  const loadingConfig: ToastContentInput = {
     ...baseConfig.value,
-    title: loadingTitle,
-    description: loadingDescription,
+    ...loadingConfigBase,
   };
 
   const successTitle = resolveContent(
@@ -263,21 +286,31 @@ function pushPromise() {
     }, 1400);
   });
 
-  toast.promise(task, {
+  toast.loading(task, {
     loading: loadingConfig,
     success() {
+      const content = ensureContent(
+        successTitle,
+        successDescription,
+        defaultTitleForType('success'),
+        defaultDescriptionForType('success'),
+      );
       return {
         ...baseConfig.value,
-        title: successTitle,
-        description: successDescription,
+        ...content,
       };
     },
     error(error: unknown) {
       const message = error instanceof Error && error.message ? error.message : errorDescription;
+      const content = ensureContent(
+        errorTitle,
+        message,
+        defaultTitleForType('error'),
+        defaultDescriptionForType('error'),
+      );
       return {
         ...baseConfig.value,
-        title: errorTitle,
-        description: message,
+        ...content,
       };
     },
   });
@@ -286,8 +319,8 @@ function pushPromise() {
 function push(typeOverride?: ToastType) {
   const toastType = typeOverride ?? type.value;
 
-  if (toastType === 'promise') {
-    pushPromise();
+  if (toastType === 'loading') {
+    pushLoading();
     return;
   }
 
@@ -302,11 +335,17 @@ function push(typeOverride?: ToastType) {
     fallbackDescription.value,
   );
 
+  const content = ensureContent(
+    resolvedTitle,
+    resolvedDescription,
+    defaultTitleForType(toastType),
+    defaultDescriptionForType(toastType),
+  );
+
   lastId.value = toast.show({
     ...baseConfig.value,
     type: toastType,
-    title: resolvedTitle,
-    description: resolvedDescription,
+    ...content,
   });
 }
 
@@ -441,7 +480,7 @@ function resetToDefaults() {
               <span
                 class="h-1.5 w-1.5 rounded-full"
                 :class="{
-                  'bg-yellow-600': t.value === 'promise',
+                  'bg-yellow-600': t.value === 'loading',
                   'bg-gray-600': t.value === 'default',
                   'bg-emerald-600': t.value === 'success',
                   'bg-rose-600': t.value === 'error',
@@ -774,8 +813,8 @@ function resetToDefaults() {
             </button>
           </div>
           <p class="text-[0.65rem] text-slate-400">
-            When enabled, toast will use a default title and description if these fields are left
-            blank. Turn off fallback to send exactly what you enter (including empty).
+            At least one of title/description is required. Leave one empty if you want, but if both
+            are blank we will auto-fill defaults (logging a warning).
           </p>
         </div>
       </section>

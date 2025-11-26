@@ -27,6 +27,7 @@ const toasts = ref<ToastInstance[]>([]);
 // event-driven keys
 const progressResetMap = ref<Record<ToastId, number>>({});
 const duplicateMap = ref<Record<ToastId, number>>({});
+const updateMap = ref<Record<ToastId, number>>({});
 
 let unsubscribeState: (() => void) | null = null;
 let unsubscribeEvents: (() => void) | null = null;
@@ -43,6 +44,10 @@ onMounted(function () {
 
     if (event.kind === "duplicate") {
       duplicateMap.value[event.id] = Math.random();
+    }
+
+    if (event.kind === "update") {
+      updateMap.value[event.id] = Math.random();
     }
   });
 });
@@ -62,6 +67,10 @@ function getProgressResetKey(id: ToastId): number {
 
 function getDuplicateKey(id: ToastId): number {
   return duplicateMap.value[id] ?? 0;
+}
+
+function getUpdateKey(id: ToastId): number {
+  return updateMap.value[id] ?? 0;
 }
 
 const grouped = computed(function () {
@@ -202,6 +211,12 @@ watch(
         delete duplicateMap.value[key as ToastId];
       }
     }
+
+    for (const key of Object.keys(updateMap.value)) {
+      if (!ids.has(key as ToastId)) {
+        delete updateMap.value[key as ToastId];
+      }
+    }
   },
   { deep: false },
 );
@@ -268,8 +283,10 @@ watch(
             :toast="toast"
             :progressResetKey="getProgressResetKey(toast.id)"
             :duplicateKey="getDuplicateKey(toast.id)"
+            :updateKey="getUpdateKey(toast.id)"
             :bumpAnimationClass="animationForToast(toast).bump"
             :clearAllAnimationClass="animationForToast(toast).clearAll"
+            :updateAnimationClass="animationForToast(toast).update"
             :dismiss="handleDismiss"
           />
 
@@ -278,8 +295,10 @@ watch(
             :toast="toast"
             :progressResetKey="getProgressResetKey(toast.id)"
             :duplicateKey="getDuplicateKey(toast.id)"
+            :updateKey="getUpdateKey(toast.id)"
             :bumpAnimationClass="animationForToast(toast).bump"
             :clearAllAnimationClass="animationForToast(toast).clearAll"
+            :updateAnimationClass="animationForToast(toast).update"
             @dismiss="handleDismiss"
           />
         </div>

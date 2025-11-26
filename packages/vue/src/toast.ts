@@ -1,12 +1,14 @@
 import {
   ToastConfig,
+  ToastContentInput,
   ToastEvent,
   ToastId,
-  ToastOptions,
-  ToastPromiseConfig,
-  ToastPromiseInput,
+  ToastLoadingConfig,
+  ToastLoadingInput,
+  ToastShowInput,
   ToastState,
   ToastStore,
+  ToastUpdateInput,
 } from "toastflow-core";
 
 let globalStore: ToastStore | null = null;
@@ -31,16 +33,16 @@ export const toast = {
   subscribeEvents(listener: (event: ToastEvent) => void): () => void {
     return getToastStore().subscribeEvents(listener);
   },
-  show(options: Partial<ToastOptions>): ToastId {
+  show(options: ToastShowInput): ToastId {
     return getToastStore().show(options);
   },
-  promise<T>(
-    input: ToastPromiseInput<T>,
-    config: ToastPromiseConfig<T>,
+  loading<T>(
+    input: ToastLoadingInput<T>,
+    config: ToastLoadingConfig<T>,
   ): Promise<T> {
-    return getToastStore().promise(input, config);
+    return getToastStore().loading(input, config);
   },
-  update(id: ToastId, options: Partial<ToastOptions>): void {
+  update(id: ToastId, options: ToastUpdateInput): void {
     return getToastStore().update(id, options);
   },
   dismiss(id: ToastId): void {
@@ -59,19 +61,19 @@ export const toast = {
     return getToastStore().getConfig();
   },
 
-  toast(options: Partial<ToastOptions>): ToastId {
+  toast(options: ToastContentInput): ToastId {
     return getToastStore().show({ ...options, type: "default" });
   },
-  success(options: Partial<ToastOptions>): ToastId {
+  success(options: ToastContentInput): ToastId {
     return getToastStore().show({ ...options, type: "success" });
   },
-  error(options: Partial<ToastOptions>): ToastId {
+  error(options: ToastContentInput): ToastId {
     return getToastStore().show({ ...options, type: "error" });
   },
-  info(options: Partial<ToastOptions>): ToastId {
+  info(options: ToastContentInput): ToastId {
     return getToastStore().show({ ...options, type: "info" });
   },
-  warning(options: Partial<ToastOptions>): ToastId {
+  warning(options: ToastContentInput): ToastId {
     return getToastStore().show({ ...options, type: "warning" });
   },
 };

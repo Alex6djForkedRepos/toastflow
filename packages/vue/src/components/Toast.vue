@@ -21,14 +21,18 @@ const {
   toast,
   progressResetKey,
   duplicateKey,
+  updateKey,
   bumpAnimationClass,
   clearAllAnimationClass,
+  updateAnimationClass,
 } = defineProps<{
   toast: ToastInstance;
   progressResetKey?: number;
   duplicateKey?: number;
+  updateKey?: number;
   bumpAnimationClass?: string;
   clearAllAnimationClass?: string;
+  updateAnimationClass?: string;
 }>();
 
 const emit = defineEmits<{
@@ -43,6 +47,7 @@ const store: ToastStore = injectedStore;
 
 const isHovered = ref(false);
 const isBumped = ref(false);
+const isUpdated = ref(false);
 
 const typeMeta: Record<
   ToastType,
@@ -83,10 +88,10 @@ const typeMeta: Record<
     close: "tf-toast-close--default",
     component: QuestionMarkCircle,
   },
-  promise: {
-    accent: "tf-toast-accent--promise",
-    icon: "tf-toast-icon--promise",
-    close: "tf-toast-close--promise",
+  loading: {
+    accent: "tf-toast-accent--loading",
+    icon: "tf-toast-icon--loading",
+    close: "tf-toast-close--loading",
     component: ArrowPath,
   },
 };
@@ -130,7 +135,7 @@ function createContext(): ToastContext {
     type: toast.type,
     title: toast.title,
     description: toast.description,
-    createdAt: Date.now(),
+    createdAt: toast.createdAt,
   };
 }
 
@@ -187,12 +192,34 @@ watch(
 
     progressKeyLocal.value += 1;
 
-    isBumped.value = false;
-    requestAnimationFrame(function () {
-      isBumped.value = true;
-    });
+    triggerBump();
   },
 );
+
+watch(
+  () => updateKey,
+  function () {
+    if (updateKey == null) {
+      return;
+    }
+
+    triggerUpdate();
+  },
+);
+
+function triggerBump() {
+  isBumped.value = false;
+  requestAnimationFrame(function () {
+    isBumped.value = true;
+  });
+}
+
+function triggerUpdate() {
+  isUpdated.value = false;
+  requestAnimationFrame(function () {
+    isUpdated.value = true;
+  });
+}
 </script>
 
 <template>
@@ -205,6 +232,10 @@ watch(
           toast.phase !== 'leaving' &&
           toast.phase !== 'clear-all' &&
           bumpAnimationClass,
+        isUpdated &&
+          toast.phase !== 'leaving' &&
+          toast.phase !== 'clear-all' &&
+          updateAnimationClass,
         toast.phase === 'clear-all' && clearAllAnimationClass,
         isHovered && 'tf-toast--paused',
       ]"
@@ -221,7 +252,7 @@ watch(
               <component
                 :is="defaultIconComponent"
                 class="tf-toast-icon-svg"
-                :class="[toast.type === 'promise' && 'tf-toast-icon-spin']"
+                :class="[toast.type === 'loading' && 'tf-toast-icon-spin']"
                 aria-hidden="true"
               />
             </slot>
@@ -301,14 +332,14 @@ watch(
   --tf-toast-close-border-color: var(--tf-toast-border-color);
 }
 
-.tf-toast-accent--promise {
-  --tf-toast-bg: var(--promise-bg);
-  --tf-toast-border-color: var(--promise-border);
-  --tf-toast-color: var(--promise-text);
-  --tf-toast-description-color: var(--promise-text);
+.tf-toast-accent--loading {
+  --tf-toast-bg: var(--loading-bg);
+  --tf-toast-border-color: var(--loading-border);
+  --tf-toast-color: var(--loading-text);
+  --tf-toast-description-color: var(--loading-text);
   --tf-toast-progress-bg: color-mix(
     in srgb,
-    var(--promise-text) 20%,
+    var(--loading-text) 20%,
     transparent
   );
 }
@@ -414,8 +445,8 @@ watch(
 
 /* per-type icon color */
 
-.tf-toast-icon--promise .tf-toast-icon-svg {
-  color: var(--tf-toast-icon-promise);
+.tf-toast-icon--loading .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-loading);
 }
 
 .tf-toast-icon--default .tf-toast-icon-svg {
