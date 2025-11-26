@@ -9,13 +9,27 @@ export type ToastPosition =
   | "bottom-right";
 export type ToastOrder = "newest" | "oldest";
 export type PauseStrategy = "resume" | "reset";
-export type ToastType = "default" | "success" | "error" | "info" | "warning";
+export type ToastType =
+  | "promise"
+  | "default"
+  | "success"
+  | "error"
+  | "info"
+  | "warning";
 export type ToastPhase = "enter" | "leaving" | "clear-all";
 export type ToastEventKind = "duplicate" | "timer-reset";
 
 export interface ToastEvent {
   id: ToastId;
   kind: ToastEventKind;
+}
+
+export type ToastPromiseInput<T> = Promise<T> | (() => Promise<T>);
+
+export interface ToastPromiseConfig<T> {
+  loading: Partial<ToastOptions>;
+  success: Partial<ToastOptions> | ((value: T) => Partial<ToastOptions>);
+  error: Partial<ToastOptions> | ((error: unknown) => Partial<ToastOptions>);
 }
 
 export interface ToastAnimation {
@@ -102,4 +116,9 @@ export interface ToastStore {
   resume(id: ToastId): void;
 
   getConfig(): ToastConfig;
+
+  promise<T>(
+    input: ToastPromiseInput<T>,
+    config: ToastPromiseConfig<T>,
+  ): Promise<T>;
 }

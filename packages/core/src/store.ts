@@ -6,6 +6,8 @@ import type {
   ToastInstance,
   ToastOptions,
   ToastOrder,
+  ToastPromiseConfig,
+  ToastPromiseInput,
   ToastState,
   ToastStore,
 } from "./types";
@@ -44,6 +46,8 @@ const defaults: ToastConfig = {
   closeOnClick: false,
   supportHtml: false,
 };
+
+const HIDE_ANIMATION_DURATION = 50;
 
 export function createToastStore(
   globalConfig: Partial<ToastConfig> = {},
@@ -86,7 +90,7 @@ export function createToastStore(
     };
   }
 
-  function show(options: ToastOptions): ToastId {
+  function show(options: Partial<ToastOptions>): ToastId {
     const toast = resolveConfig(resolvedGlobalConfig, options);
 
     if (toast.preventDuplicates) {
@@ -174,6 +178,64 @@ export function createToastStore(
     return id;
   }
 
+  function promise<T>(
+    input: ToastPromiseInput<T>,
+    config: ToastPromiseConfig<T>,
+  ): Promise<T> {
+    const loadingOptions: Partial<ToastOptions> = {
+      type: "promise",
+      ...config.loading,
+      duration: Infinity,
+      progressBar: false,
+    };
+
+    const toastId = show(loadingOptions);
+
+    const successOptions = function (value: T): Partial<ToastOptions> {
+      const resolved =
+        typeof config.success === "function"
+          ? config.success(value)
+          : config.success;
+
+      return {
+        type: "success",
+        ...resolvedGlobalConfig,
+        ...resolved,
+      };
+    };
+
+    const errorOptions = function (error: unknown): Partial<ToastOptions> {
+      const resolved =
+        typeof config.error === "function" ? config.error(error) : config.error;
+
+      return {
+        type: "error",
+        ...resolvedGlobalConfig,
+        ...resolved,
+      };
+    };
+
+    const handleSuccess = function (value: T): T {
+      update(toastId, successOptions(value));
+      return value;
+    };
+
+    const handleError = function (error: unknown): never {
+      update(toastId, errorOptions(error));
+      throw error;
+    };
+
+    let task: Promise<T>;
+    try {
+      task = typeof input === "function" ? input() : input;
+    } catch (error) {
+      update(toastId, errorOptions(error));
+      return Promise.reject(error);
+    }
+
+    return task.then(handleSuccess, handleError);
+  }
+
   function update(id: ToastId, options: Partial<ToastOptions>): void {
     const existing = state.toasts.find((t) => t.id === id);
     if (!existing) {
@@ -204,8 +266,6 @@ export function createToastStore(
     emitEvent({ id, kind: "timer-reset" });
     notify();
   }
-
-  const HIDE_ANIMATION_DURATION = 50;
 
   function dismiss(id: ToastId): void {
     const toast = state.toasts.find((t) => t.id === id);
@@ -436,6 +496,7 @@ export function createToastStore(
     subscribe,
     subscribeEvents,
     show,
+    promise,
     update,
     dismiss,
     dismissAll,
@@ -449,9 +510,12 @@ export function createToastStore(
 
 function resolveConfig(
   base: ToastConfig,
-  overrides: ToastOptions,
+  overrides: Partial<ToastOptions>,
 ): ToastOptions {
   return {
+    type: "default",
+    title: "",
+    description: "",
     ...base,
     ...overrides,
   };

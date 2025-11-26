@@ -10,6 +10,10 @@
     --normal-border: #e6e8eb;
     --normal-text: #11181c;
 
+    --promise-bg: hsl(48, 100%, 96%);
+    --promise-border: hsl(46, 100%, 88%);
+    --promise-text: hsl(40, 100%, 32%);
+
     --tf-toast-bg: var(--normal-bg);
     --tf-toast-color: var(--normal-text);
     --tf-toast-border-color: var(--normal-border);
@@ -40,6 +44,7 @@
     --tf-toast-gap: 0.8rem;
 
     /* accent bar */
+    --tf-toast-accent-promise: var(--promise-text);
     --tf-toast-accent-default: var(--normal-text);
     --tf-toast-accent-success: var(--success-text);
     --tf-toast-accent-error: var(--error-text);
@@ -47,8 +52,9 @@
     --tf-toast-accent-info: var(--info-text);
 
     /* icon */
-    --tf-toast-icon-size: 20px;
+    --tf-toast-icon-size: 24px;
 
+    --tf-toast-icon-promise: var(--promise-text);
     --tf-toast-icon-default: var(--normal-text);
     --tf-toast-icon-success: var(--success-text);
     --tf-toast-icon-error: var(--error-text);
@@ -56,7 +62,7 @@
     --tf-toast-icon-info: var(--info-text);
 
     /* close button */
-    --tf-toast-close-size: 20px;
+    --tf-toast-close-size: 18px;
 
     --tf-toast-close-border-color: var(--tf-toast-border-color);
     --tf-toast-close-color: var(--tf-toast-color);

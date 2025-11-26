@@ -3,6 +3,8 @@ import {
   ToastEvent,
   ToastId,
   ToastOptions,
+  ToastPromiseConfig,
+  ToastPromiseInput,
   ToastState,
   ToastStore,
 } from "toastflow-core";
@@ -31,6 +33,12 @@ export const toast = {
   },
   show(options: Partial<ToastOptions>): ToastId {
     return getToastStore().show(options);
+  },
+  promise<T>(
+    input: ToastPromiseInput<T>,
+    config: ToastPromiseConfig<T>,
+  ): Promise<T> {
+    return getToastStore().promise(input, config);
   },
   update(id: ToastId, options: Partial<ToastOptions>): void {
     return getToastStore().update(id, options);

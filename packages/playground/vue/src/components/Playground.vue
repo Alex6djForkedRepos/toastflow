@@ -56,6 +56,7 @@ function iconForPosition(position: ToastPosition) {
 }
 
 const typeOptions: { value: ToastType; label: string }[] = [
+  { value: 'promise', label: 'Promise' },
   { value: 'default', label: 'Default' },
   { value: 'success', label: 'Success' },
   { value: 'error', label: 'Error' },
@@ -113,6 +114,9 @@ const lastId = ref<ToastId | null>(null);
 /* ----- helpers ----- */
 
 function defaultTitleForType(t: ToastType): string {
+  if (t === 'promise') {
+    return 'Working on it';
+  }
   if (t === 'success') {
     return 'Saved';
   }
@@ -126,6 +130,9 @@ function defaultTitleForType(t: ToastType): string {
 }
 
 function defaultDescriptionForType(t: ToastType): string {
+  if (t === 'promise') {
+    return 'Hang tight while we finish this task.';
+  }
   if (t === 'success') {
     return 'Your changes have been stored.';
   }
@@ -210,8 +217,80 @@ const baseConfig = computed<Partial<ToastOptions>>(function () {
 
 /* ----- actions ----- */
 
+function pushPromise() {
+  const loadingTitle = resolveContent(
+    title.value,
+    defaultTitleForType('promise'),
+    fallbackTitle.value,
+  );
+  const loadingDescription = resolveContent(
+    description.value,
+    defaultDescriptionForType('promise'),
+    fallbackDescription.value,
+  );
+
+  const loadingConfig: Partial<ToastOptions> = {
+    ...baseConfig.value,
+    title: loadingTitle,
+    description: loadingDescription,
+  };
+
+  const successTitle = resolveContent(
+    title.value,
+    defaultTitleForType('success'),
+    fallbackTitle.value,
+  );
+  const successDescription = resolveContent(
+    description.value,
+    defaultDescriptionForType('success'),
+    fallbackDescription.value,
+  );
+
+  const errorTitle = resolveContent(title.value, defaultTitleForType('error'), fallbackTitle.value);
+  const errorDescription = resolveContent(
+    description.value,
+    defaultDescriptionForType('error'),
+    fallbackDescription.value,
+  );
+
+  const task = new Promise<string>(function (resolve, reject) {
+    setTimeout(function () {
+      if (Math.random() > 0.35) {
+        resolve('done');
+      } else {
+        reject(new Error('Promise rejected'));
+      }
+    }, 1400);
+  });
+
+  toast.promise(task, {
+    loading: loadingConfig,
+    success() {
+      return {
+        ...baseConfig.value,
+        title: successTitle,
+        description: successDescription,
+      };
+    },
+    error(error: unknown) {
+      const message = error instanceof Error && error.message ? error.message : errorDescription;
+      return {
+        ...baseConfig.value,
+        title: errorTitle,
+        description: message,
+      };
+    },
+  });
+}
+
 function push(typeOverride?: ToastType) {
   const toastType = typeOverride ?? type.value;
+
+  if (toastType === 'promise') {
+    pushPromise();
+    return;
+  }
+
   const resolvedTitle = resolveContent(
     title.value,
     defaultTitleForType(toastType),
@@ -362,6 +441,7 @@ function resetToDefaults() {
               <span
                 class="h-1.5 w-1.5 rounded-full"
                 :class="{
+                  'bg-yellow-600': t.value === 'promise',
                   'bg-gray-600': t.value === 'default',
                   'bg-emerald-600': t.value === 'success',
                   'bg-rose-600': t.value === 'error',

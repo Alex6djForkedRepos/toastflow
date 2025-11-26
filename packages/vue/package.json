@@ -12,7 +12,6 @@
     "vue": "^3.4.0"
   },
   "dependencies": {
-    "lucide-vue-next": "^0.554.0",
     "toastflow-core": "workspace:*"
   },
   "devDependencies": {

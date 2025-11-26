@@ -9,15 +9,13 @@ import type {
   ToastType,
 } from "toastflow-core";
 import { toastStoreKey } from "../symbols";
-
-import {
-  AlertTriangle,
-  BadgeInfo,
-  CheckCircle2,
-  Info,
-  X,
-  XCircle,
-} from "lucide-vue-next";
+import CheckCircle from "./icons/CheckCircle.vue";
+import XCircle from "./icons/XCircle.vue";
+import Bell from "./icons/Bell.vue";
+import InfoCircle from "./icons/InfoCircle.vue";
+import QuestionMarkCircle from "./icons/QuestionMarkCircle.vue";
+import ArrowPath from "./icons/ArrowPath.vue";
+import XMark from "./icons/XMark.vue";
 
 const {
   toast,
@@ -52,14 +50,14 @@ const typeMeta: Record<
     accent: string;
     icon: string;
     close: string;
-    component: typeof CheckCircle2;
+    component: any;
   }
 > = {
   success: {
     accent: "tf-toast-accent--success",
     icon: "tf-toast-icon--success",
     close: "tf-toast-close--success",
-    component: CheckCircle2,
+    component: CheckCircle,
   },
   error: {
     accent: "tf-toast-accent--error",
@@ -71,19 +69,25 @@ const typeMeta: Record<
     accent: "tf-toast-accent--warning",
     icon: "tf-toast-icon--warning",
     close: "tf-toast-close--warning",
-    component: AlertTriangle,
+    component: Bell,
   },
   info: {
     accent: "tf-toast-accent--info",
     icon: "tf-toast-icon--info",
     close: "tf-toast-close--info",
-    component: Info,
+    component: InfoCircle,
   },
   default: {
     accent: "tf-toast-accent--default",
     icon: "tf-toast-icon--default",
     close: "tf-toast-close--default",
-    component: BadgeInfo,
+    component: QuestionMarkCircle,
+  },
+  promise: {
+    accent: "tf-toast-accent--promise",
+    icon: "tf-toast-icon--promise",
+    close: "tf-toast-close--promise",
+    component: ArrowPath,
   },
 };
 
@@ -126,6 +130,7 @@ function createContext(): ToastContext {
     type: toast.type,
     title: toast.title,
     description: toast.description,
+    createdAt: Date.now(),
   };
 }
 
@@ -196,11 +201,12 @@ watch(
       class="tf-toast"
       :class="[
         accentClass,
-        isBumped && toast.phase !== 'leaving' && toast.phase !== 'clear-all'
-          ? bumpAnimationClass
-          : null,
-        toast.phase === 'clear-all' ? clearAllAnimationClass : null,
-        isHovered ? 'tf-toast--paused' : null,
+        isBumped &&
+          toast.phase !== 'leaving' &&
+          toast.phase !== 'clear-all' &&
+          bumpAnimationClass,
+        toast.phase === 'clear-all' && clearAllAnimationClass,
+        isHovered && 'tf-toast--paused',
       ]"
       @click="handleClick"
       @mouseenter="handleMouseEnter"
@@ -215,6 +221,7 @@ watch(
               <component
                 :is="defaultIconComponent"
                 class="tf-toast-icon-svg"
+                :class="[toast.type === 'promise' && 'tf-toast-icon-spin']"
                 aria-hidden="true"
               />
             </slot>
@@ -272,7 +279,7 @@ watch(
         @click.stop="handleCloseClick"
       >
         <slot name="close-icon" :toast="toast">
-          <X class="tf-toast-close-icon" aria-hidden="true" />
+          <XMark class="tf-toast-close-icon" aria-hidden="true" />
         </slot>
       </button>
     </div>
@@ -294,6 +301,18 @@ watch(
   --tf-toast-close-border-color: var(--tf-toast-border-color);
 }
 
+.tf-toast-accent--promise {
+  --tf-toast-bg: var(--promise-bg);
+  --tf-toast-border-color: var(--promise-border);
+  --tf-toast-color: var(--promise-text);
+  --tf-toast-description-color: var(--promise-text);
+  --tf-toast-progress-bg: color-mix(
+    in srgb,
+    var(--promise-text) 20%,
+    transparent
+  );
+}
+
 .tf-toast-accent--default {
   --tf-toast-bg: var(--normal-bg);
   --tf-toast-border-color: var(--normal-border);
@@ -301,7 +320,7 @@ watch(
   --tf-toast-description-color: var(--normal-text);
   --tf-toast-progress-bg: color-mix(
     in srgb,
-    var(--normal-text) 15%,
+    var(--normal-text) 20%,
     transparent
   );
 }
@@ -313,7 +332,7 @@ watch(
   --tf-toast-description-color: var(--success-text);
   --tf-toast-progress-bg: color-mix(
     in srgb,
-    var(--success-text) 18%,
+    var(--success-text) 20%,
     transparent
   );
 }
@@ -325,7 +344,7 @@ watch(
   --tf-toast-description-color: var(--error-text);
   --tf-toast-progress-bg: color-mix(
     in srgb,
-    var(--error-text) 18%,
+    var(--error-text) 20%,
     transparent
   );
 }
@@ -337,7 +356,7 @@ watch(
   --tf-toast-description-color: var(--warning-text);
   --tf-toast-progress-bg: color-mix(
     in srgb,
-    var(--warning-text) 18%,
+    var(--warning-text) 20%,
     transparent
   );
 }
@@ -347,7 +366,7 @@ watch(
   --tf-toast-border-color: var(--info-border);
   --tf-toast-color: var(--info-text);
   --tf-toast-description-color: var(--info-text);
-  --tf-toast-progress-bg: color-mix(in srgb, var(--info-text) 18%, transparent);
+  --tf-toast-progress-bg: color-mix(in srgb, var(--info-text) 20%, transparent);
 }
 
 /* card */
@@ -371,7 +390,22 @@ watch(
   gap: var(--tf-toast-gap);
 }
 
-/* icon - no bubble bg, just lucide */
+/* icon */
+
+.tf-toast-icon-spin {
+  display: inline-block;
+  animation: tf-toast-spin 0.8s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes tf-toast-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
 
 .tf-toast-icon-svg {
   width: var(--tf-toast-icon-size);
@@ -379,6 +413,14 @@ watch(
 }
 
 /* per-type icon color */
+
+.tf-toast-icon--promise .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-promise);
+}
+
+.tf-toast-icon--default .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-default);
+}
 
 .tf-toast-icon--success .tf-toast-icon-svg {
   color: var(--tf-toast-icon-success);
@@ -394,10 +436,6 @@ watch(
 
 .tf-toast-icon--info .tf-toast-icon-svg {
   color: var(--tf-toast-icon-info);
-}
-
-.tf-toast-icon--default .tf-toast-icon-svg {
-  color: var(--tf-toast-icon-default);
 }
 
 /* body */
