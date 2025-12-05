@@ -1,23 +1,31 @@
-# Toastflow
+﻿# Toastflow
 
-Lightweight, opinionated toasts that feel good out of the box. Built as a small TypeScript core with a Vue 3 renderer.
+Framework-agnostic toast engine with a Vue 3 renderer. Typed core, smooth stack animations, CSS-first theming, and full
+control over layout and behavior.
 
-## Why you’ll like it
+## What's inside
 
-- ⚡️ Drop-in Vue plugin with typed helpers (`toast.success`, `toast.loading`, …)
-- 🛡️ Duplicate protection with bump + timer reset (including loading flows)
-- ⏳ Promise-friendly loading that auto-swaps to success/error per run
-- 🎛️ Per-stack limits, ordering, pause-on-hover, close-on-click, HTML opt-in
-- 🎨 Theming via CSS vars and overridable animation class names
+- [toastflow-core](packages/core): tiny, framework-agnostic store with a typed API.
+- [vue-toastflow](packages/vue): Vue 3 layer with `<ToastContainer />`, a global `toast` helper, defaults, and icons.
+
+## Why it exists
+
+- Testable, framework-agnostic store that can power Vue today (and other renderers later).
+- Layout + animation are yours: no black-box component you cannot restyle.
+- Works both in components and in plain TS/JS modules (services, API clients, etc.).
+- Predictable rules for duplicates, timers, pause-on-hover, close-on-click, clear-all.
+- CSS-driven: swap the look by editing a handful of vars.
 
 ## Install
 
 ```bash
-npm install vue-toastflow
-# or pnpm add vue-toastflow
+pnpm add vue-toastflow
+# or: npm install vue-toastflow
 ```
 
-## Quick start (Vue 3)
+## Quick start (Vue 3 + TS)
+
+1) Register the plugin once (all config keys, typescript, etc. live in [types.ts](packages/core/src/types.ts)):
 
 ```ts
 // main.ts
@@ -26,77 +34,166 @@ import App from "./App.vue";
 import {createToastflow, ToastContainer} from "vue-toastflow";
 
 const app = createApp(App);
-app.use(createToastflow());          // pass ToastConfig here if you want
+
+app.use(
+    createToastflow({
+        // optional global defaults
+        position: "top-right",
+        duration: 5000,
+    }),
+);
+
+// register globally or import locally where you render it
 app.component("ToastContainer", ToastContainer);
+
+// call toast.* only after the plugin is installed (also in services/modules)
 app.mount("#app");
 ```
 
-Render the container once:
+2) Drop a single container in your root layout:
 
 ```vue
-
+<!-- App.vue -->
 <template>
-  <AppLayout/>
   <ToastContainer/>
+  <RouterView/>
 </template>
 ```
 
-Fire toasts (title or description required):
+3) Fire toasts anywhere (all accessible methods available in [toast.ts](packages/vue/src/toast.ts)):
 
 ```ts
 import {toast} from "vue-toastflow";
 
 toast.success({title: "Saved", description: "Your changes are live."});
-toast.warning({description: "Low balance"});          // no title is ok
+toast.warning({description: "Low balance"}); // description-only is fine
 
 const id = toast.error({title: "Oops", description: "Check console."});
 toast.update(id, {description: "Fixed. All good now."});
+toast.dismiss(id);
 ```
 
-Async flows with loading → success/error:
+4) Async flows with `toast.loading`:
 
 ```ts
-const task = toast.loading(
+const run = toast.loading(
     () => fetch("/api/save").then((r) => r.json()),
     {
         loading: {title: "Saving", description: "Hang tight."},
-        success: {title: "Saved", description: "We stored your changes."},
-        error: {title: "Error", description: "Please try again."},
+        success: (data) => ({
+            title: "Saved",
+            description: `Stored item ${data.id}.`,
+        }),
+        error: (err) => ({
+            title: "Error",
+            description: err instanceof Error ? err.message : "Please try again.",
+        }),
     },
 );
-console.log("toast id:", task.toastId);
+
+await run; // Promise result of your task
+console.log(run.toastId); // toast id you can dismiss/update later
 ```
 
-## Configuration (essentials)
+5) HTML content (opt-in):
 
-Pass a partial `ToastConfig` to `createToastflow` or per toast:
+```ts
+toast.info({
+    title: "<strong>New version</strong>",
+    description: "Release notes are <a href='/changelog'>here</a>.",
+    supportHtml: true,
+});
+```
 
-- `position`: `"top-right"` (default), `"top-left"`, `"top-center"`, `"bottom-*"`
-- `duration`: ms before auto-dismiss (`Infinity` to disable)
-- `maxVisible`: per-stack cap (0 = unlimited), `order`: `"newest"` | `"oldest"`
-- `preventDuplicates`: merge identical toasts, bump + reset timer
-- `progressBar`, `pauseOnHover`, `pauseStrategy`, `closeButton`, `closeOnClick`
-- `animation`: class names for enter/leave/bump/update/clearAll
-- `supportHtml`: allow HTML in title/description (opt-in)
+6) Show sent time:
 
-Full type source: `packages/core/src/types.ts`.
+```ts
+toast.success({
+    title: "Saved",
+    showCreatedAt: true,
+    createdAtFormatter: (ts) => new Date(ts).toLocaleString("sk-SK"),
+});
+```
 
-## API highlights
+## Headless / custom card
 
-- `toast.show(options)` low-level entry.
-- Shorthands: `toast.toast`, `toast.success`, `toast.error`, `toast.warning`, `toast.info`.
-- `toast.loading(input, config)` returns a Promise with `toastId`.
-- `toast.update(id, options)`, `toast.dismiss(id)`, `toast.dismissAll()`.
-- Events: `toast.subscribeEvents` gets `duplicate`, `timer-reset`, `update`.
+Use the container slot to render your own card while keeping store logic:
 
-## Styling
+```vue
 
-- Default stylesheet lives at `packages/vue/src/styles.css` (bundled by the package). Override CSS variables or swap
-  animation class names via `animation` in config.
+<ToastContainer
+    v-slot="{
+    toast,
+    dismiss,
+    bumpAnimationClass,
+    clearAllAnimationClass,
+    updateAnimationClass
+  }"
+>
+  <div
+      class="my-toast"
+      :class="[
+      toast.type,
+      bumpAnimationClass,
+      toast.phase === 'clear-all' && clearAllAnimationClass,
+      updateAnimationClass
+    ]"
+      @click="toast.closeOnClick && dismiss(toast.id)"
+  >
+    <header>
+      <strong>{{ toast.title }}</strong>
+      <button @click.stop="dismiss(toast.id)">x</button>
+    </header>
+    <p v-if="toast.description">{{ toast.description }}</p>
+    <small v-if="toast.showCreatedAt">
+      Sent at {{ toast.createdAtFormatter(toast.createdAt) }}
+    </small>
+  </div>
+</ToastContainer>
+```
 
-## Playground
+You still control everything via `toast.show`/`toast.success`/`toast.loading`; only the rendering changes.
 
-- Vue playground: `packages/playground/vue` for hands-on tweaking of options.
+## Configuration
+
+Pass any [types.ts](packages/core/src/types.ts) fields to `createToastflow`; per-toast options override them:
+
+- `position`: "top-right" (default), "top-left", "top-center", "bottom-*"
+- `duration`: `5000` ms by default; `Infinity` or `0` disables auto-dismiss (progress bar auto-hides when disabled)
+- `maxVisible`: `5` per stack; eviction respects `order`
+- `order`: "newest" (default) or "oldest" per stack
+- `preventDuplicates`: `false` by default; matches by position + type + title + description
+- `progressBar`, `pauseOnHover`, `pauseStrategy` ("resume" | "reset")
+- `animation`: class names for enter/leave/move (`name`), bump, clearAll, update (defaults use `Toastflow__*`)
+- `closeButton` (`true`), `closeOnClick` (`false`)
+- `offset` (`16px`), `gap` (`8px`), `width` (`350px`), `zIndex` (`9999`)
+- `supportHtml`: `false` (opt-in)
+- `showCreatedAt` and `createdAtFormatter` for timestamps
+- lifecycle hooks: `onMount`, `onUnmount`, `onClick`, `onClose`
+
+## Slots and theming
+
+- CSS variables live in `packages/vue/src/styles.css` and are auto-imported. Key
+  ones: `--tf-toast-bg`, `--tf-toast-color`, `--tf-toast-border-color`, `--tf-toast-radius`, `--tf-toast-padding`, `--tf-toast-icon-size`, `--tf-toast-progress-height`,
+  per-type colors like `--success-bg`, `--error-text`, etc.
+- `<Toast>` slots: `icon`, `progress`, `close-icon`, `created-at`, plus the default slot for extra content inside the
+  body.
+- `<ToastContainer>` default slot
+  receives `{ toast, dismiss, progressResetKey, duplicateKey, updateKey, bumpAnimationClass, clearAllAnimationClass, updateAnimationClass }`.
+- Animations are pure CSS class names; swap them via `animation` config or override the `Toastflow__*` keyframes.
+
+## Events and store access
+
+- `toast.subscribeEvents(listener)` gets `duplicate`, `timer-reset`, `update` events.
+- `toast.getState()` returns the current snapshot; all helper
+  methods (`toast.show`, `toast.success`, `toast.error`, `toast.warning`, `toast.info`, `toast.loading`, `toast.update`, `toast.dismiss`, `toast.dismissAll`, `toast.pause`, `toast.resume`, `toast.getConfig`)
+  are available after installing the plugin.
+
+## TypeScript
+
+All types live in [types.ts](packages/core/src/types.ts) and are re-exported
+from `vue-toastflow` (`ToastConfig`, `ToastOptions`, `ToastInstance`, `ToastId`, `ToastPosition`, `ToastType`, `ToastEvent`, `ToastStore`,
+etc.).
 
 ## License
 

@@ -28,6 +28,17 @@ interface TimerState {
   paused: boolean;
 }
 
+const defaultCreatedAtFormatter = function (createdAt: number): string {
+  try {
+    return new Date(createdAt).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch (error) {
+    return new Date(createdAt).toISOString();
+  }
+};
+
 const defaults: ToastConfig = {
   offset: "16px",
   gap: "8px",
@@ -50,6 +61,8 @@ const defaults: ToastConfig = {
   closeButton: true,
   closeOnClick: false,
   supportHtml: false,
+  showCreatedAt: false,
+  createdAtFormatter: defaultCreatedAtFormatter,
 };
 
 const HIDE_ANIMATION_DURATION = 50;
@@ -259,7 +272,10 @@ export function createToastStore(
       return rejected;
     }
 
-    const result = task.then(handleSuccess, handleError) as ToastLoadingResult<T>;
+    const result = task.then(
+      handleSuccess,
+      handleError,
+    ) as ToastLoadingResult<T>;
     result.toastId = toastId;
     return result;
   }

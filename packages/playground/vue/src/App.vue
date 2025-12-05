@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ToastContainer } from 'vue-toastflow'
-import Playground from '@/components/Playground.vue'
+import { ToastContainer } from 'vue-toastflow';
+import Playground from '@/components/Playground.vue';
 </script>
 
 <template>

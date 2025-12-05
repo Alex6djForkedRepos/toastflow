@@ -39,6 +39,7 @@
     --tf-toast-title-font-weight: 600;
     --tf-toast-description-font-size: 0.8rem;
     --tf-toast-description-color: var(--tf-toast-color);
+    --tf-toast-created-at-font-size: 0.7rem;
 
     /* layout inside toast */
     --tf-toast-gap: 0.8rem;

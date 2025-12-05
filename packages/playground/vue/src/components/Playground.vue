@@ -100,6 +100,8 @@ const closeOnClick = ref(config.closeOnClick);
 
 const supportHtml = ref(config.supportHtml);
 
+const showCreatedAt = ref(config.showCreatedAt);
+
 const useOnMount = ref(false);
 const useOnUnmount = ref(false);
 const useOnClick = ref(false);
@@ -203,6 +205,8 @@ const baseConfig = computed<Partial<ToastOptions>>(function () {
     closeOnClick: closeOnClick.value,
 
     supportHtml: supportHtml.value,
+
+    showCreatedAt: showCreatedAt.value,
   };
 
   if (useOnMount.value) {
@@ -399,6 +403,8 @@ function resetToDefaults() {
 
   supportHtml.value = false;
 
+  showCreatedAt.value = false;
+
   useOnMount.value = false;
   useOnUnmount.value = false;
   useOnClick.value = false;
@@ -579,6 +585,19 @@ function resetToDefaults() {
               @click="supportHtml = !supportHtml"
             >
               <span>Support HTML</span>
+            </button>
+
+            <button
+              type="button"
+              class="inline-flex items-center justify-between rounded-xl border px-3 py-1.5 text-xs font-medium transition-all"
+              :class="
+                showCreatedAt
+                  ? 'border-slate-900 bg-slate-900 text-white'
+                  : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100'
+              "
+              @click="showCreatedAt = !showCreatedAt"
+            >
+              <span>Created at</span>
             </button>
           </div>
         </div>

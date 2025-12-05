@@ -173,7 +173,6 @@ function beforeLeave(el: Element) {
   element.style.left = "0";
   element.style.right = "0";
   element.style.top = `${top}px`;
-  element.style.pointerEvents = "none";
 }
 
 function afterLeave(el: Element) {
@@ -188,7 +187,6 @@ function afterLeave(el: Element) {
   element.style.left = "";
   element.style.right = "";
   element.style.top = "";
-  element.style.pointerEvents = "";
 }
 
 watch(
@@ -346,6 +344,7 @@ watch(
 }
 
 .tf-toast-item {
+  pointer-events: auto;
   width: 100%;
 }
 </style>

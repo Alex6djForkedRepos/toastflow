@@ -128,6 +128,98 @@ const progressStyle = computed(function (): CSSProperties {
   };
 });
 
+const defaultCreatedAtFormatter = function (createdAt: number): string {
+  return new Date(createdAt).toLocaleTimeString([], {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+};
+
+const hasCreatedAt = computed(function () {
+  return Boolean(toast.showCreatedAt && Number.isFinite(toast.createdAt));
+});
+
+const createdAtText = computed(function () {
+  if (!hasCreatedAt.value) {
+    return "";
+  }
+
+  const formatter =
+    typeof toast.createdAtFormatter === "function"
+      ? toast.createdAtFormatter
+      : defaultCreatedAtFormatter;
+
+  try {
+    return formatter(toast.createdAt);
+  } catch (error) {
+    return defaultCreatedAtFormatter(toast.createdAt);
+  }
+});
+
+const createdAtAriaLabel = computed(function () {
+  if (!createdAtText.value) {
+    return "";
+  }
+  return `Sent at ${createdAtText.value}`;
+});
+
+const titleAriaLabel = computed(function () {
+  return toAriaText(toast.title);
+});
+
+const descriptionAriaLabel = computed(function () {
+  return toAriaText(toast.description);
+});
+
+const toastAriaLabel = computed(function () {
+  const parts = [];
+
+  if (titleAriaLabel.value) {
+    parts.push(titleAriaLabel.value);
+  }
+
+  if (descriptionAriaLabel.value) {
+    parts.push(descriptionAriaLabel.value);
+  }
+
+  if (hasCreatedAt.value && createdAtAriaLabel.value) {
+    parts.push(createdAtAriaLabel.value);
+  }
+
+  if (!parts.length) {
+    parts.push(`${toast.type} notification`);
+  }
+
+  return parts.join(". ");
+});
+
+function toAriaText(value: string): string {
+  if (!value) {
+    return "";
+  }
+  return stripHtmlToText(value);
+}
+
+function stripHtmlToText(value: string): string {
+  const fallback = normalizeWhitespace(value.replace(/<[^>]*>/g, " "));
+
+  if (typeof window === "undefined" || !window.document) {
+    return fallback;
+  }
+
+  try {
+    const container = window.document.createElement("div");
+    container.innerHTML = value;
+    return normalizeWhitespace(container.textContent ?? "");
+  } catch (error) {
+    return fallback;
+  }
+}
+
+function normalizeWhitespace(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
+}
+
 function createContext(): ToastContext {
   return {
     id: toast.id,
@@ -226,6 +318,7 @@ function triggerUpdate() {
   <div :role="role" :aria-live="ariaLive" class="tf-toast-wrapper">
     <div
       class="tf-toast"
+      :aria-label="toastAriaLabel || undefined"
       :class="[
         accentClass,
         isBumped &&
@@ -247,7 +340,11 @@ function triggerUpdate() {
         <!-- main row -->
         <div class="tf-toast-main">
           <!-- icon (slot + lucide defaults) -->
-          <div class="tf-toast-icon" :class="iconWrapperClass">
+          <div
+            class="tf-toast-icon"
+            :class="iconWrapperClass"
+            aria-hidden="true"
+          >
             <slot name="icon" :toast="toast">
               <component
                 :is="defaultIconComponent"
@@ -263,6 +360,7 @@ function triggerUpdate() {
             <div class="tf-toast-text">
               <p
                 v-if="toast.title && !toast.supportHtml"
+                :aria-label="titleAriaLabel || undefined"
                 class="tf-toast-title"
               >
                 {{ toast.title }}
@@ -270,11 +368,13 @@ function triggerUpdate() {
               <p
                 v-else-if="toast.title && toast.supportHtml"
                 class="tf-toast-title"
+                :aria-label="titleAriaLabel || undefined"
                 v-html="toast.title"
-              />
+              ></p>
 
               <p
                 v-if="toast.description && !toast.supportHtml"
+                :aria-label="descriptionAriaLabel || undefined"
                 class="tf-toast-description"
               >
                 {{ toast.description }}
@@ -282,8 +382,19 @@ function triggerUpdate() {
               <p
                 v-else-if="toast.description && toast.supportHtml"
                 class="tf-toast-description"
+                :aria-label="descriptionAriaLabel || undefined"
                 v-html="toast.description"
-              />
+              ></p>
+            </div>
+
+            <slot :toast="toast" />
+
+            <div v-if="hasCreatedAt" class="tf-toast-created-at">
+              <slot name="created-at" :toast="toast" :formatted="createdAtText">
+                <span :aria-label="createdAtAriaLabel || undefined">
+                  {{ createdAtText }}
+                </span>
+              </slot>
             </div>
           </div>
         </div>
@@ -478,6 +589,15 @@ function triggerUpdate() {
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
+}
+
+.tf-toast-created-at {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  color: var(--tf-toast-description-color);
+  font-size: var(--tf-toast-created-at-font-size);
+  font-style: italic;
 }
 
 .tf-toast-title {
