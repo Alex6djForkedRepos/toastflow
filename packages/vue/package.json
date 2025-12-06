@@ -14,13 +14,13 @@
     "toastify"
   ],
   "license": "MIT",
-  "homepage": "https://toastflow.vercel.app/",
+  "homepage": "https://toastflow.adrianjanocko.sk",
   "repository": {
     "type": "git",
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/vue"
   },
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "src/index.ts",
   "module": "src/index.ts",
   "types": "src/index.ts",
@@ -33,7 +33,7 @@
     "vue": "^3.4.0"
   },
   "dependencies": {
-    "toastflow-core": "^1.0.0"
+    "toastflow-core": "workspace:^"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.2",

@@ -7,6 +7,7 @@
   Framework-agnostic toast engine with a Vue 3 renderer. Typed core, smooth stack animations, CSS-first theming, and full control over layout and behavior.
 </p>
 <p align="center">
+  <a href="https://toastflow.adrianjanocko.sk/" target="_blank">Playground</a> &middot;
   <a href="#usage-vuejs-3-composition-api">Usage</a> &middot;
   <a href="#configuration">Configuration</a>
 </p>
