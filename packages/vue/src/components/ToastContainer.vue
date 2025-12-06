@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue";
 import Toast from "./Toast.vue";
 import type {
   ToastAnimation,
@@ -9,7 +9,7 @@ import type {
   ToastPosition,
   ToastStore,
 } from "toastflow-core";
-import { getToastStore } from "../toast";
+import { toastStoreKey } from "../symbols";
 
 const positions: ToastPosition[] = [
   "top-left",
@@ -20,7 +20,11 @@ const positions: ToastPosition[] = [
   "bottom-right",
 ];
 
-const store: ToastStore = getToastStore();
+const injectedStore = inject<ToastStore | null>(toastStoreKey, null);
+if (!injectedStore) {
+  throw new Error("[vue-toastflow] Plugin not installed");
+}
+const store: ToastStore = injectedStore;
 
 const toasts = ref<ToastInstance[]>([]);
 
