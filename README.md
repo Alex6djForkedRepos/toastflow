@@ -58,8 +58,9 @@ you can render it your way while keeping predictable behaviors.
 
 ## Packages
 
-- [toastflow-core](packages/core): typed, framework-agnostic toast store.
-- [vue-toastflow](packages/vue): Vue 3 renderer with `<ToastContainer />`, a global `toast` helper, defaults, and icons.
+- [toastflow-core](https://www.npmjs.com/package/toastflow-core): typed, framework-agnostic toast store.
+- [vue-toastflow](https://www.npmjs.com/package/vue-toastflow): Vue 3 renderer with `<ToastContainer />`, a
+  global `toast` helper, defaults, and icons.
 - [playground-vue](packages/playground/vue): Vite + Vue demo playground for manual testing.
 
 ## Built with
