@@ -1,3 +1,5 @@
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/adrianjanocko/toastflow)
+
 <p align="center">
   <img src="images/banner.png" alt="Toastflow banner" width="900" />
 </p>
