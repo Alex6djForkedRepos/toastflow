@@ -1,4 +1,4 @@
-﻿<script setup lang="ts">
+<script setup lang="ts">
 import { computed, type CSSProperties, inject, ref, watch } from "vue";
 import ToastProgress from "./ToastProgress.vue";
 import type {
@@ -42,10 +42,6 @@ const emit = defineEmits<{
 
 const injectedStore = inject<ToastStore | null>(toastStoreKey, null);
 const store: ToastStore = injectedStore ?? getToastStore();
-
-const isHovered = ref(false);
-const isBumped = ref(false);
-const isUpdated = ref(false);
 
 const typeMeta: Record<
   ToastType,
@@ -94,111 +90,302 @@ const typeMeta: Record<
   },
 };
 
-const role = computed(function () {
-  return assertiveTypes.has(toast.type) ? "alert" : "status";
-});
-
-const ariaLive = computed(function () {
-  return assertiveTypes.has(toast.type) ? "assertive" : "polite";
-});
-
-const accentClass = computed(function () {
-  return typeMeta[toast.type].accent;
-});
-
-const iconWrapperClass = computed(function () {
-  return typeMeta[toast.type].icon;
-});
-
-const closeWrapperClass = computed(function () {
-  return typeMeta[toast.type].close;
-});
-
-const defaultIconComponent = computed(function () {
-  return typeMeta[toast.type].component;
-});
-
 const assertiveTypes = new Set<ToastType>(["error", "warning"]);
 
-const progressStyle = computed(function (): CSSProperties {
-  return {
-    "--tf-toast-progress-duration": `${toast.duration}ms`,
-  };
-});
+const {
+  accentClass,
+  iconWrapperClass,
+  closeWrapperClass,
+  defaultIconComponent,
+} = useTypeMeta(toast);
+const {
+  role,
+  ariaLive,
+  hasCreatedAt,
+  createdAtText,
+  createdAtAriaLabel,
+  titleAriaLabel,
+  descriptionAriaLabel,
+  toastAriaLabel,
+} = useAria(toast);
+const { progressStyle, showProgressBar, progressKeyLocal } = useProgress(
+  toast,
+  progressResetKey,
+  duplicateKey,
+);
+const { isBumped, isUpdated } = useAnimations(duplicateKey, updateKey);
+const { isHovered, handleMouseEnter, handleMouseLeave } = useHoverPause(
+  toast,
+  store,
+);
+const { handleClick, handleCloseClick } = useClickHandlers(toast, emit);
 
-const defaultCreatedAtFormatter = function (createdAt: number): string {
-  return new Date(createdAt).toLocaleTimeString([], {
-    hour: "2-digit",
-    minute: "2-digit",
+function useTypeMeta(toast: ToastInstance) {
+  const accentClass = computed(function () {
+    return typeMeta[toast.type].accent;
   });
-};
 
-const hasCreatedAt = computed(function () {
-  return Boolean(toast.showCreatedAt && Number.isFinite(toast.createdAt));
-});
+  const iconWrapperClass = computed(function () {
+    return typeMeta[toast.type].icon;
+  });
 
-const createdAtText = computed(function () {
-  if (!hasCreatedAt.value) {
-    return "";
+  const closeWrapperClass = computed(function () {
+    return typeMeta[toast.type].close;
+  });
+
+  const defaultIconComponent = computed(function () {
+    return typeMeta[toast.type].component;
+  });
+
+  return {
+    accentClass,
+    iconWrapperClass,
+    closeWrapperClass,
+    defaultIconComponent,
+  };
+}
+
+function useAria(toast: ToastInstance) {
+  const role = computed(function () {
+    return assertiveTypes.has(toast.type) ? "alert" : "status";
+  });
+
+  const ariaLive = computed(function () {
+    return assertiveTypes.has(toast.type) ? "assertive" : "polite";
+  });
+
+  const hasCreatedAt = computed(function () {
+    return Boolean(toast.showCreatedAt && Number.isFinite(toast.createdAt));
+  });
+
+  const createdAtText = computed(function () {
+    if (!hasCreatedAt.value) {
+      return "";
+    }
+
+    try {
+      return toast.createdAtFormatter(toast.createdAt);
+    } catch (error) {
+      console.error(
+        "[vue-toastflow] Something failed in createdAtFormatter",
+        error,
+      );
+    }
+  });
+
+  const createdAtAriaLabel = computed(function () {
+    if (!createdAtText.value) {
+      return "";
+    }
+    return `Sent at ${createdAtText.value}`;
+  });
+
+  const titleAriaLabel = computed(function () {
+    return stripHtmlToText(toast.title);
+  });
+
+  const descriptionAriaLabel = computed(function () {
+    return stripHtmlToText(toast.description);
+  });
+
+  const toastAriaLabel = computed(function () {
+    const parts = [];
+
+    if (titleAriaLabel.value) {
+      parts.push(titleAriaLabel.value);
+    }
+
+    if (descriptionAriaLabel.value) {
+      parts.push(descriptionAriaLabel.value);
+    }
+
+    if (hasCreatedAt.value && createdAtAriaLabel.value) {
+      parts.push(createdAtAriaLabel.value);
+    }
+
+    if (!parts.length) {
+      parts.push(`${toast.type} notification`);
+    }
+
+    return parts.join(". ");
+  });
+
+  return {
+    role,
+    ariaLive,
+    hasCreatedAt,
+    createdAtText,
+    createdAtAriaLabel,
+    titleAriaLabel,
+    descriptionAriaLabel,
+    toastAriaLabel,
+  };
+}
+
+function useProgress(
+  toast: ToastInstance,
+  progressResetKey?: number,
+  duplicateKey?: number,
+) {
+  const progressStyle = computed(function (): CSSProperties {
+    return {
+      "--tf-toast-progress-duration": `${toast.duration}ms`,
+    };
+  });
+
+  const showProgressBar = computed(function () {
+    return (
+      toast.progressBar && Number.isFinite(toast.duration) && toast.duration > 0
+    );
+  });
+
+  const progressKeyLocal = ref(0);
+
+  watch(
+    () => progressResetKey,
+    function () {
+      if (progressResetKey == null) {
+        return;
+      }
+      progressKeyLocal.value += 1;
+    },
+  );
+
+  watch(
+    () => duplicateKey,
+    function () {
+      if (duplicateKey == null) {
+        return;
+      }
+      progressKeyLocal.value += 1;
+    },
+  );
+
+  return {
+    progressStyle,
+    showProgressBar,
+    progressKeyLocal,
+  };
+}
+
+function useAnimations(duplicateKey?: number, updateKey?: number) {
+  const isBumped = ref(false);
+  const isUpdated = ref(false);
+
+  function triggerBump() {
+    isBumped.value = false;
+    requestAnimationFrame(function () {
+      isBumped.value = true;
+    });
   }
 
-  const formatter =
-    typeof toast.createdAtFormatter === "function"
-      ? toast.createdAtFormatter
-      : defaultCreatedAtFormatter;
-
-  try {
-    return formatter(toast.createdAt);
-  } catch (error) {
-    return defaultCreatedAtFormatter(toast.createdAt);
-  }
-});
-
-const createdAtAriaLabel = computed(function () {
-  if (!createdAtText.value) {
-    return "";
-  }
-  return `Sent at ${createdAtText.value}`;
-});
-
-const titleAriaLabel = computed(function () {
-  return toAriaText(toast.title);
-});
-
-const descriptionAriaLabel = computed(function () {
-  return toAriaText(toast.description);
-});
-
-const toastAriaLabel = computed(function () {
-  const parts = [];
-
-  if (titleAriaLabel.value) {
-    parts.push(titleAriaLabel.value);
+  function triggerUpdate() {
+    isUpdated.value = false;
+    requestAnimationFrame(function () {
+      isUpdated.value = true;
+    });
   }
 
-  if (descriptionAriaLabel.value) {
-    parts.push(descriptionAriaLabel.value);
+  watch(
+    () => duplicateKey,
+    function () {
+      if (duplicateKey == null) {
+        return;
+      }
+      triggerBump();
+    },
+  );
+
+  watch(
+    () => updateKey,
+    function () {
+      if (updateKey == null) {
+        return;
+      }
+      triggerUpdate();
+    },
+  );
+
+  return {
+    isBumped,
+    isUpdated,
+  };
+}
+
+function useHoverPause(toast: ToastInstance, store: ToastStore) {
+  const isHovered = ref(false);
+
+  function handleMouseEnter() {
+    if (!toast.pauseOnHover) {
+      return;
+    }
+    isHovered.value = true;
+    store.pause(toast.id);
   }
 
-  if (hasCreatedAt.value && createdAtAriaLabel.value) {
-    parts.push(createdAtAriaLabel.value);
+  function handleMouseLeave() {
+    if (!toast.pauseOnHover) {
+      return;
+    }
+    isHovered.value = false;
+    store.resume(toast.id);
   }
 
-  if (!parts.length) {
-    parts.push(`${toast.type} notification`);
+  return {
+    isHovered,
+    handleMouseEnter,
+    handleMouseLeave,
+  };
+}
+
+function useClickHandlers(
+  toast: ToastInstance,
+  emit: (e: "dismiss", id: ToastId) => void,
+) {
+  function createContext(): ToastContext {
+    return {
+      id: toast.id,
+      position: toast.position,
+      type: toast.type,
+      title: toast.title,
+      description: toast.description,
+      createdAt: toast.createdAt,
+    };
   }
 
-  return parts.join(". ");
-});
+  function handleClick(event: MouseEvent) {
+    const context = createContext();
 
-function toAriaText(value: string): string {
-  if (!value) {
-    return "";
+    if (toast.onClick) {
+      toast.onClick(context, event);
+    }
+
+    if (toast.closeOnClick) {
+      emit("dismiss", toast.id);
+    }
   }
-  return stripHtmlToText(value);
+
+  function handleCloseClick() {
+    emit("dismiss", toast.id);
+  }
+
+  return {
+    handleClick,
+    handleCloseClick,
+  };
+}
+
+// -> Helpers
+
+function normalizeWhitespace(value: string): string {
+  return value.replace(/\s+/g, " ").trim();
 }
 
 function stripHtmlToText(value: string): string {
+  if (!value) {
+    return "";
+  }
+
   const fallback = normalizeWhitespace(value.replace(/<[^>]*>/g, " "));
 
   if (typeof window === "undefined" || !window.document) {
@@ -212,103 +399,6 @@ function stripHtmlToText(value: string): string {
   } catch (error) {
     return fallback;
   }
-}
-
-function normalizeWhitespace(value: string): string {
-  return value.replace(/\s+/g, " ").trim();
-}
-
-function createContext(): ToastContext {
-  return {
-    id: toast.id,
-    position: toast.position,
-    type: toast.type,
-    title: toast.title,
-    description: toast.description,
-    createdAt: toast.createdAt,
-  };
-}
-
-function handleClick(event: MouseEvent) {
-  const context = createContext();
-
-  if (toast.onClick) {
-    toast.onClick(context, event);
-  }
-
-  if (toast.closeOnClick) {
-    emit("dismiss", toast.id);
-  }
-}
-
-function handleCloseClick() {
-  emit("dismiss", toast.id);
-}
-
-function handleMouseEnter() {
-  if (!toast.pauseOnHover) {
-    return;
-  }
-  isHovered.value = true;
-  store.pause(toast.id);
-}
-
-function handleMouseLeave() {
-  if (!toast.pauseOnHover) {
-    return;
-  }
-  isHovered.value = false;
-  store.resume(toast.id);
-}
-
-const progressKeyLocal = ref(0);
-
-watch(
-  () => progressResetKey,
-  function () {
-    if (progressResetKey == null) {
-      return;
-    }
-    progressKeyLocal.value += 1;
-  },
-);
-
-watch(
-  () => duplicateKey,
-  function () {
-    if (duplicateKey == null) {
-      return;
-    }
-
-    progressKeyLocal.value += 1;
-
-    triggerBump();
-  },
-);
-
-watch(
-  () => updateKey,
-  function () {
-    if (updateKey == null) {
-      return;
-    }
-
-    triggerUpdate();
-  },
-);
-
-function triggerBump() {
-  isBumped.value = false;
-  requestAnimationFrame(function () {
-    isBumped.value = true;
-  });
-}
-
-function triggerUpdate() {
-  isUpdated.value = false;
-  requestAnimationFrame(function () {
-    isUpdated.value = true;
-  });
 }
 </script>
 
@@ -399,7 +489,7 @@ function triggerUpdate() {
 
         <!-- bottom progress -->
         <div
-          v-if="toast.progressBar"
+          v-if="showProgressBar"
           class="tf-toast-progress-wrapper"
           :style="progressStyle"
         >
