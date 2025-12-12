@@ -6,6 +6,13 @@
 
 <h1 align="center">Toastflow</h1>
 <p align="center">
+<a href="https://javascriptweekly.com/issues/765" target="_blank">
+  📰 Featured in JavaScript Weekly
+</a> &middot; <a href="https://www.reddit.com/r/vuejs/comments/1pgfoey/tired_of_vue_toast_libraries_so_i_built_my_own/" target="_blank">
+  🔥 Trending on Reddit (/r/vuejs)
+</a>
+</p>
+<p align="center">
   Framework-agnostic toast engine with a Vue 3 renderer. Typed core, smooth stack animations, CSS-first theming, and full control over layout and behavior.
 </p>
 <p align="center">
@@ -67,7 +74,8 @@ you can render it your way while keeping predictable behaviors.
 - [toastflow-core](https://www.npmjs.com/package/toastflow-core): typed, framework-agnostic toast store.
 - [vue-toastflow](https://www.npmjs.com/package/vue-toastflow): Vue 3 renderer with `<ToastContainer />`, a
   global `toast` helper, defaults, and icons.
-- [playground-vue](https://github.com/adrianjanocko/toastflow/blob/main/packages/playground/vue): Vite + Vue demo playground for manual testing.
+- [playground-vue](https://github.com/adrianjanocko/toastflow/blob/main/packages/playground/vue): Vite + Vue demo
+  playground for manual testing.
 
 ## Built with
 
@@ -203,7 +211,8 @@ toast.info({
 
 ## Configuration
 
-Pass any [types.ts](https://github.com/adrianjanocko/toastflow/blob/main/packages/core/src/types.ts) fields to `createToastflow`; per-toast options override them:
+Pass any [types.ts](https://github.com/adrianjanocko/toastflow/blob/main/packages/core/src/types.ts) fields
+to `createToastflow`; per-toast options override them:
 
 - `position`: "top-right" (default), "top-left", "top-center", "bottom-*"
 - `duration`: `5000` ms by default; `Infinity` or `0` disables auto-dismiss (progress bar auto-hides when disabled)
@@ -220,7 +229,8 @@ Pass any [types.ts](https://github.com/adrianjanocko/toastflow/blob/main/package
 
 ## Theming
 
-- CSS variables live in [styles.css](https://github.com/adrianjanocko/toastflow/blob/main/packages/vue/src/styles.css) and are auto-imported with the Vue package.
+- CSS variables live in [styles.css](https://github.com/adrianjanocko/toastflow/blob/main/packages/vue/src/styles.css)
+  and are auto-imported with the Vue package.
 - Key
   variables: `--tf-toast-bg`, `--tf-toast-color`, `--tf-toast-border-color`, `--tf-toast-radius`, `--tf-toast-padding`, `--tf-toast-icon-size`, `--tf-toast-progress-height`,
   plus per-type colors like `--success-bg` and `--error-text`.

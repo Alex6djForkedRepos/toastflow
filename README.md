@@ -6,6 +6,13 @@
 
 <h1 align="center">Toastflow</h1>
 <p align="center">
+<a href="https://javascriptweekly.com/issues/765" target="_blank">
+  📰 Featured in JavaScript Weekly
+</a> &middot; <a href="https://www.reddit.com/r/vuejs/comments/1pgfoey/tired_of_vue_toast_libraries_so_i_built_my_own/" target="_blank">
+  🔥 Trending on Reddit (/r/vuejs)
+</a>
+</p>
+<p align="center">
   Framework-agnostic toast engine with a Vue 3 renderer. Typed core, smooth stack animations, CSS-first theming, and full control over layout and behavior.
 </p>
 <p align="center">
