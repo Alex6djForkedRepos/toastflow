@@ -248,6 +248,16 @@ export interface ToastInstance extends ToastOptions {
   phase?: ToastPhase;
 }
 
+export type ToastStandaloneInstance = {
+  id?: ToastId;
+  title: string;
+  description: string;
+  type?: ToastType;
+  createdAt?: number;
+} & Partial<
+  Omit<ToastInstance, "id" | "title" | "description" | "type" | "createdAt">
+>;
+
 /**
  * Shape of the store's current state.
  */

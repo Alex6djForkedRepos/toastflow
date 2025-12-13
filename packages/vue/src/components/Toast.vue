@@ -6,6 +6,7 @@ import type {
   ToastContext,
   ToastId,
   ToastInstance,
+  ToastStandaloneInstance,
   ToastStore,
   ToastType,
 } from "toastflow-core";
@@ -20,7 +21,7 @@ import ArrowPath from "./icons/ArrowPath.vue";
 import XMark from "./icons/XMark.vue";
 
 const props = defineProps<{
-  toast: ToastInstance;
+  toast: ToastStandaloneInstance | ToastInstance;
   progressResetKey?: number;
   duplicateKey?: number;
   updateKey?: number;
@@ -30,7 +31,7 @@ const props = defineProps<{
 }>();
 
 const {
-  toast,
+  toast: toastProp,
   progressResetKey,
   duplicateKey,
   updateKey,
@@ -45,6 +46,24 @@ const emit = defineEmits<{
 
 const injectedStore = inject<ToastStore | null>(toastStoreKey, null);
 const store: ToastStore = injectedStore ?? getToastStore();
+
+const toast = computed<ToastInstance>(function () {
+  const createdAt = Number.isFinite(toastProp.value.createdAt)
+    ? toastProp.value.createdAt
+    : Date.now();
+  const baseConfig = store.getConfig();
+
+  return {
+    ...baseConfig,
+    ...toastProp.value,
+    createdAt,
+    id: toastProp.value.id ?? `toast-${createdAt}`,
+    type: toastProp.value.type ?? "default",
+    title: toastProp.value.title,
+    description: toastProp.value.description,
+    progressBar: toastProp.value.progressBar ?? false,
+  } as ToastInstance;
+});
 
 const typeMeta: Record<
   ToastType,
