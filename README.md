@@ -1,7 +1,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/adrianjanocko/toastflow)
 
 <p align="center">
-  <img src="images/banner.png" alt="Toastflow banner" width="900" />
+  <img src="images/playground.png" alt="Toastflow banner" width="900" />
 </p>
 
 <h1 align="center">Toastflow</h1>
@@ -48,7 +48,6 @@
     <li><a href="#configuration">Configuration</a></li>
     <li><a href="#theming">Theming</a></li>
     <li><a href="#events-and-store-access">Events and store access</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
   </ol>
 </details>
@@ -239,16 +238,6 @@ Pass any [types.ts](packages/core/src/types.ts) fields to `createToastflow`; per
 - `toast.subscribeEvents(listener)` gets `duplicate`, `timer-reset`, and `update` events.
 - `toast.getState()` returns the current snapshot; helper
   methods: `toast.show`, `toast.success`, `toast.error`, `toast.warning`, `toast.info`, `toast.loading`, `toast.update`, `toast.dismiss`, `toast.dismissAll`, `toast.pause`, `toast.resume`, `toast.getConfig`.
-
-## Contributing
-
-Contributions are welcome! Fork the repo, create a branch, and open a PR. For bigger changes, open an issue first.
-
-1. Fork the project
-2. Create your branch
-3. Commit your changes
-4. Push to the branch
-5. Open a Pull Request
 
 ## License
 
