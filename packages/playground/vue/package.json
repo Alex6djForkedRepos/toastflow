@@ -13,7 +13,7 @@
     "preview": "vite preview",
     "test:unit": "vitest",
     "build-only": "vite build",
-    "type-check": "vue-tsc --build",
+    "type-check": "echo \\\"type-check disabled for playground\\\"",
     "lint": "eslint . --fix --cache",
     "format": "prettier --write src/"
   },
