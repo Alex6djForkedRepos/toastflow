@@ -1,16 +1,22 @@
 <script setup lang="ts">
-import type {ToastType} from "toastflow-core";
+import type { ToastProgressAlignment, ToastType } from "toastflow-core";
 
-const {type} = defineProps<{
-  type: ToastType;
-}>();
+const props = withDefaults(
+  defineProps<{
+    type: ToastType;
+    progressAlignment?: ToastProgressAlignment;
+  }>(),
+  {
+    progressAlignment: "right-to-left",
+  },
+);
 </script>
 
 <template>
-  <div class="tf-toast-progress">
+  <div class="tf-toast-progress" :data-align="props.progressAlignment">
     <div
-        class="tf-toast-progress-bar"
-        :class="`tf-toast-progress-bar--${type}`"
+      class="tf-toast-progress-bar"
+      :class="`tf-toast-progress-bar--${props.type}`"
     />
   </div>
 </template>
@@ -25,10 +31,15 @@ const {type} = defineProps<{
 
 .tf-toast-progress-bar {
   height: 100%;
-  animation-name: tf-toast-progress;
+  animation-name: tf-toast-progress-rtl;
   animation-duration: var(--tf-toast-progress-duration, 5000ms);
   animation-timing-function: linear;
   animation-fill-mode: forwards;
+}
+
+.tf-toast-progress[data-align="left-to-right"] .tf-toast-progress-bar {
+  width: 0;
+  animation-name: tf-toast-progress-ltr;
 }
 
 .tf-toast-progress-bar--default {
@@ -51,12 +62,21 @@ const {type} = defineProps<{
   background: var(--tf-toast-accent-info);
 }
 
-@keyframes tf-toast-progress {
+@keyframes tf-toast-progress-rtl {
   from {
     width: 100%;
   }
   to {
     width: 0;
+  }
+}
+
+@keyframes tf-toast-progress-ltr {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
   }
 }
 </style>

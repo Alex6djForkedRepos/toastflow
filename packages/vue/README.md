@@ -173,6 +173,32 @@ toast.info({
 });
 ```
 
+### Buttons
+
+```ts
+toast.info({
+  title: "Changes saved",
+  description: "Undo this action?",
+  buttons: {
+    alignment: "bottom-right",
+    buttons: [
+      {
+        label: "Undo",
+        onClick: (ctx) => {
+          console.log("Clicked in toast", ctx.id, ctx.type, ctx.position);
+        },
+      },
+      {
+        html: "<strong>Details</strong>",
+        onClick: (ctx) => {
+          window.location.href = `/activity/${ctx.id}`;
+        },
+      },
+    ],
+  },
+});
+```
+
 ### Headless rendering
 
 ```vue
@@ -221,6 +247,7 @@ to `createToastflow`; per-toast options override them:
 - `progressBar`, `pauseOnHover`, `pauseStrategy` ("resume" | "reset")
 - `animation`: class names for enter/leave/move (`name`), bump, clearAll, update (defaults use `Toastflow__*`)
 - `closeButton` (`true`), `closeOnClick` (`false`)
+- `buttons`: optional in-toast action buttons (alignment + optional `gap`/`contentGap` + per-button `onClick(ctx)`)
 - `offset` (`16px`), `gap` (`8px`), `width` (`350px`), `zIndex` (`9999`)
 - `supportHtml`: `false` (opt-in)
 - `showCreatedAt` and `createdAtFormatter` for timestamps

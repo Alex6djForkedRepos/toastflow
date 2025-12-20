@@ -48,6 +48,8 @@ const defaults: ToastConfig = {
   duration: 5000,
   maxVisible: 5,
   position: "top-right",
+  alignment: "left",
+  progressAlignment: "right-to-left",
   preventDuplicates: false,
   order: "newest",
   progressBar: true,

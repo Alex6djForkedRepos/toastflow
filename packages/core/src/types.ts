@@ -14,6 +14,14 @@ export type ToastPosition =
   | "bottom-center"
   | "bottom-right";
 /**
+ * Supported toast data alignments.
+ */
+export type ToastAlignment = "left" | "right";
+/**
+ * Supported toast progress alignments.
+ */
+export type ToastProgressAlignment = "left-to-right" | "right-to-left";
+/**
  * Order to display and evict toasts in a stack.
  */
 export type ToastOrder = "newest" | "oldest";
@@ -85,91 +93,170 @@ export interface ToastContext {
 }
 
 /**
+ * Supported alignments for in-toast button groups.
+ */
+export type ToastButtonsAlignment =
+  | "top-left"
+  | "top-right"
+  | "center-left"
+  | "center-right"
+  | "bottom-left"
+  | "bottom-right";
+
+/**
+ * Single action button rendered inside a toast.
+ * Use `label` for plain text or `html`.
+ */
+export type ToastButton = ToastButtonText | ToastButtonHtml;
+
+interface ToastButtonBase {
+  /**
+   * Optional identifier you can use as a stable key in renderers.
+   */
+  id?: string;
+  /**
+   * Accessible label for icon-only buttons or custom HTML.
+   */
+  ariaLabel?: string;
+  /**
+   * Optional CSS class.
+   */
+  className?: string;
+
+  /**
+   * Called when the button is clicked.
+   */
+  onClick?(ctx: ToastContext, event: MouseEvent): void;
+}
+
+export interface ToastButtonText extends ToastButtonBase {
+  label: string;
+  html?: never;
+}
+
+export interface ToastButtonHtml extends ToastButtonBase {
+  html: string;
+  label?: never;
+}
+
+/**
+ * Button group configuration for a toast.
+ */
+export interface ToastButtonsConfig {
+  alignment: ToastButtonsAlignment;
+  buttons: ToastButton[];
+  /**
+   * Gap between individual buttons. (Default: "calc(var(--tf-toast-gap) / 2)")
+   */
+  gap?: string;
+  /**
+   * Spacing between the button group and the toast content. (Default: "calc(var(--tf-toast-gap) / 2)")
+   */
+  contentGap?: string;
+}
+
+/**
  * Global configuration that shapes how toasts look and behave.
  */
 export interface ToastConfig {
   /**
-   * Distance from the viewport edge where toasts start.
+   * Distance from the viewport edge where toasts start. (Default: "16px")
    */
   offset: string;
   /**
-   * Gap between toasts stacked at the same position.
+   * Gap between toasts stacked at the same position. (Default: "8px")
    */
   gap: string;
   /**
-   * z-index applied to the toast container.
+   * z-index applied to the toast container. (Default: 9999)
    */
   zIndex: number;
   /**
-   * Fixed width applied to each toast.
+   * Fixed width applied to each toast. (Default: "350px")
    */
   width: string;
   /**
-   * Beta: enable scrolling when a stack overflows; currently only works for top-* positions.
+   * Beta: enable scrolling when a stack overflows; currently only works for top-* positions. (Default: false)
    */
   overflowScroll: boolean;
 
   /**
    * Time in milliseconds before a toast auto-dismisses.
    * Use Infinity or 0 to keep it visible until manually dismissed.
+   * (Default: 5000)
    */
   duration: number;
   /**
-   * Maximum number of visible toasts per position; extra items are evicted.
+   * Maximum number of visible toasts per position; extra items are evicted. (Default: 5)
    */
   maxVisible: number;
   /**
-   * Default stack position used when none is provided.
+   * Default stack position used when none is provided. (Default: "top-right")
    */
   position: ToastPosition;
+  /**
+   * Alignment of data in the toast. (Default: "left")
+   */
+  alignment: ToastAlignment;
+  /**
+   * Alignment of toast progress. (Default: "right-to-left")
+   */
+  progressAlignment: ToastProgressAlignment;
 
   /**
-   * When true, skip showing identical toasts that are still visible.
+   * When true, skip showing identical toasts that are still visible. (Default: false)
    */
   preventDuplicates: boolean;
   /**
-   * Controls whether new toasts appear before or after older ones.
+   * Controls whether new toasts appear before or after older ones. (Default: "newest")
    */
   order: ToastOrder;
 
   /**
-   * When enabled, render a progress bar for finite durations.
+   * When enabled, render a progress bar for finite durations. (Default: true)
    */
   progressBar: boolean;
   /**
-   * Pause the timer while the toast is hovered.
+   * Pause the timer while the toast is hovered. (Default: true)
    */
   pauseOnHover: boolean;
   /**
-   * Whether resuming should continue the remaining time or restart it.
+   * Whether resuming should continue the remaining time or restart it. (Default: "resume")
    */
   pauseStrategy: PauseStrategy;
 
   /**
    * CSS animation class overrides for various toast transitions.
+   * (Default: { name: "Toastflow__animation", bump: "Toastflow__animation-bump", clearAll: "Toastflow__animation-clearAll", update: "Toastflow__animation-update" })
    */
   animation: Partial<ToastAnimation>;
 
   /**
-   * Show a close button inside each toast.
+   * Show a close button inside each toast. (Default: true)
    */
   closeButton: boolean;
   /**
-   * Allow closing a toast by clicking anywhere on it.
+   * Allow closing a toast by clicking anywhere on it. (Default: false)
    */
   closeOnClick: boolean;
 
   /**
-   * When true, title/description may contain HTML.
+   * Optional action buttons rendered inside a toast.
+   */
+  buttons?: ToastButtonsConfig;
+
+  /**
+   * When true, title/description may contain HTML. (Default: false)
    */
   supportHtml: boolean;
 
   /**
-   * Show the createdAt timestamp in the rendered toast.
+   * Show the createdAt timestamp in the rendered toast. (Default: false)
    */
   showCreatedAt: boolean;
   /**
    * Format the createdAt timestamp when displayed.
+   * (Default: locale time formatter with ISO fallback)
    */
   createdAtFormatter: (createdAt: number) => string;
 
@@ -248,6 +335,9 @@ export interface ToastInstance extends ToastOptions {
   phase?: ToastPhase;
 }
 
+/**
+ * Standalone shape matching ToastContext but with optional id/type/createdAt and the remaining ToastInstance fields available.
+ */
 export type ToastStandaloneInstance = {
   id?: ToastId;
   title: string;

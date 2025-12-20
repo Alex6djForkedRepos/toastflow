@@ -43,6 +43,8 @@
 
     /* layout inside toast */
     --tf-toast-gap: 0.8rem;
+    --tf-toast-buttons-gap: calc(var(--tf-toast-gap) / 2);
+    --tf-toast-buttons-content-gap: calc(var(--tf-toast-gap) / 2);
 
     /* stack padding (used for scrollable stack) */
     --tf-toast-stack-padding-top: 8px;

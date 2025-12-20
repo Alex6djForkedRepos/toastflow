@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { ToastContainer } from 'vue-toastflow';
-import Playground from '@/components/Playground.vue';
+import Playground from '@/views/Playground.vue';
 </script>
 
 <template>
   <div class="min-h-screen bg-gradient-to-b from-sky-100 to-sky-200 text-slate-900">
-    <div class="mx-auto flex min-h-screen max-w-6xl flex-col px-4 py-8">
-      <header class="mb-8 flex items-center justify-between">
-        <div class="flex items-baseline gap-2">
+    <div class="mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-4 py-8">
+      <header class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
           <h1 class="text-lg font-semibold tracking-tight text-slate-900">Toastflow</h1>
           <span
-            class="rounded-full border border-sky-100 bg-sky-50 px-3 py-0.5 text-[0.65rem] font-medium uppercase tracking-[0.18em] text-sky-600"
+            class="rounded-full border border-sky-100 bg-sky-50 px-3 py-0.5 text-[0.65rem] font-bold uppercase tracking-[0.18em] text-sky-600"
           >
             Playground
           </span>
@@ -24,11 +24,9 @@ import Playground from '@/components/Playground.vue';
         >
       </header>
 
-      <main class="flex flex-1 flex-col items-center justify-center">
-        <section class="mb-6 max-w-2xl text-center text-sm text-slate-600">
-          <h2 class="mb-2 text-2xl font-semibold text-slate-900">
-            Vue toast notifications playground
-          </h2>
+      <main class="flex flex-1 gap-6 flex-col items-center justify-center">
+        <section class="max-w-2xl text-center text-sm text-slate-600 grid gap-2">
+          <h2 class="text-2xl font-semibold text-slate-900">Vue toast notifications playground</h2>
           <p>
             Explore Toastflow, a Vue toast library for fast, accessible notifications. Adjust
             placement, timing, and behaviors to see how Vue toasts feel before shipping them to

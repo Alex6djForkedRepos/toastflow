@@ -3,6 +3,7 @@ import type { Ref } from "vue";
 import { computed, type CSSProperties, inject, ref, toRefs, watch } from "vue";
 import ToastProgress from "./ToastProgress.vue";
 import type {
+  ToastButton,
   ToastContext,
   ToastId,
   ToastInstance,
@@ -49,7 +50,7 @@ const injectedStore = inject<ToastStore | null>(toastStoreKey, null);
 const store: ToastStore = injectedStore ?? getToastStore();
 
 const toast = computed<ToastInstance>(function () {
-  const createdAt = Number.isFinite(toastProp.value.createdAt)
+  const createdAt = isNumberFinite(toastProp.value.createdAt)
     ? toastProp.value.createdAt
     : Date.now();
   const baseConfig = store.getConfig();
@@ -63,6 +64,7 @@ const toast = computed<ToastInstance>(function () {
     title: toastProp.value.title,
     description: toastProp.value.description,
     progressBar: toastProp.value.progressBar ?? false,
+    duration: toastProp.value.duration ?? Infinity,
   } as ToastInstance;
 });
 
@@ -140,8 +142,32 @@ const {
   handleMouseLeave,
   handlePointerDown,
   handlePointerUp,
-} = useHoverPause(toast, store);
+} = useHoverPause(toast, store, duration);
 const { handleClick, handleCloseClick } = useClickHandlers(toast, emit);
+const {
+  hasButtons,
+  buttons,
+  buttonsSide,
+  buttonsClasses,
+  buttonsVarsStyle,
+  handleButtonClick,
+} = useButtons(toast);
+
+const showMetaLeft = computed(function () {
+  return hasButtons.value && buttonsSide.value === "left";
+});
+
+const showMetaRight = computed(function () {
+  return hasButtons.value && buttonsSide.value === "right";
+});
+
+const showInlineCreatedAt = computed(function () {
+  return hasCreatedAt.value && !hasButtons.value;
+});
+
+const showFloatingCreatedAt = computed(function () {
+  return hasCreatedAt.value && hasButtons.value;
+});
 
 function useTypeMeta(toast: Ref<ToastInstance>) {
   const accentClass = computed(function () {
@@ -179,7 +205,7 @@ function useAria(toast: Ref<ToastInstance>) {
 
   const hasCreatedAt = computed(function () {
     return Boolean(
-      toast.value.showCreatedAt && Number.isFinite(toast.value.createdAt),
+      toast.value.showCreatedAt && isNumberFinite(toast.value.createdAt),
     );
   });
 
@@ -196,6 +222,8 @@ function useAria(toast: Ref<ToastInstance>) {
         error,
       );
     }
+
+    return "";
   });
 
   const createdAtAriaLabel = computed(function () {
@@ -349,7 +377,11 @@ function useAnimations(
   };
 }
 
-function useHoverPause(toast: Ref<ToastInstance>, store: ToastStore) {
+function useHoverPause(
+  toast: Ref<ToastInstance>,
+  store: ToastStore,
+  duration: Ref<number | undefined>,
+) {
   const isHovered = ref(false);
 
   function handleMouseEnter() {
@@ -380,7 +412,7 @@ function useHoverPause(toast: Ref<ToastInstance>, store: ToastStore) {
     resume();
   }
 
-  /* HELPERS */
+  // -> Helpers
   function canPause(event?: PointerEvent, requireTouch = false) {
     if (!duration.value) {
       return false;
@@ -418,26 +450,15 @@ function useClickHandlers(
   toast: Ref<ToastInstance>,
   emit: (e: "dismiss", id: ToastId) => void,
 ) {
-  function createContext(): ToastContext {
-    return {
-      id: toast.value.id,
-      position: toast.value.position,
-      type: toast.value.type,
-      title: toast.value.title,
-      description: toast.value.description,
-      createdAt: toast.value.createdAt,
-    };
-  }
-
   function handleClick(event: MouseEvent) {
-    const context = createContext();
+    const context = toToastContext(toast.value);
 
     if (toast.value.onClick) {
       toast.value.onClick(context, event);
     }
 
     if (toast.value.closeOnClick) {
-      emit("dismiss", toast.value.id);
+      handleCloseClick();
     }
   }
 
@@ -451,7 +472,118 @@ function useClickHandlers(
   };
 }
 
+function useButtons(toast: Ref<ToastInstance>) {
+  const buttons = computed<ToastButton[]>(function () {
+    return toast.value.buttons?.buttons ?? [];
+  });
+
+  const buttonsAlignment = computed<string>(function () {
+    const alignment = toast.value.buttons?.alignment ?? "bottom-right";
+
+    if (toast.value.alignment !== "right") {
+      return alignment;
+    }
+
+    if (alignment.endsWith("-left")) {
+      return alignment.replace(/-left$/, "-right");
+    }
+
+    if (alignment.endsWith("-right")) {
+      return alignment.replace(/-right$/, "-left");
+    }
+
+    return alignment;
+  });
+
+  const hasButtons = computed(function () {
+    return buttons.value.length > 0;
+  });
+
+  type ButtonsSide = "left" | "right";
+  type ButtonsVertical = "top" | "center" | "bottom";
+
+  const buttonsSide = computed<ButtonsSide>(function () {
+    const alignment = buttonsAlignment.value;
+    if (alignment.endsWith("-left")) {
+      return "left";
+    }
+    return "right";
+  });
+
+  const buttonsVertical = computed<ButtonsVertical>(function () {
+    const alignment = buttonsAlignment.value;
+    if (alignment.startsWith("top-")) {
+      return "top";
+    }
+    if (alignment.startsWith("bottom-")) {
+      return "bottom";
+    }
+    return "center";
+  });
+
+  const buttonsJustifyClass = computed(function () {
+    if (buttonsSide.value === "left") {
+      return "tf-toast-actions--start";
+    }
+    return "tf-toast-actions--end";
+  });
+
+  const buttonsVarsStyle = computed<CSSProperties>(function () {
+    return {
+      "--tf-toast-buttons-gap": toast.value.buttons?.gap,
+      "--tf-toast-buttons-content-gap": toast.value.buttons?.contentGap,
+    } as CSSProperties;
+  });
+
+  const buttonsVerticalClass = computed(function () {
+    const vertical = buttonsVertical.value;
+    if (vertical === "bottom") {
+      return "tf-toast-buttons--bottom";
+    }
+    if (vertical === "center") {
+      return "tf-toast-buttons--center";
+    }
+    return undefined;
+  });
+
+  const buttonsClasses = computed(function () {
+    return [
+      "tf-toast-actions",
+      buttonsJustifyClass.value,
+      buttonsVerticalClass.value,
+    ];
+  });
+
+  function handleButtonClick(button: ToastButton, event: MouseEvent) {
+    const context = toToastContext(toast.value);
+
+    if (button.onClick) {
+      button.onClick(context, event);
+    }
+  }
+
+  return {
+    hasButtons,
+    buttons,
+    buttonsSide,
+    buttonsClasses,
+    buttonsVarsStyle,
+    handleButtonClick,
+  };
+}
+
 // -> Helpers
+
+function toToastContext(toast: ToastInstance): ToastContext {
+  return {
+    id: toast.id,
+    position: toast.position,
+    type: toast.type,
+    title: toast.title,
+    description: toast.description,
+    createdAt: toast.createdAt,
+  };
+}
 
 function normalizeWhitespace(value: string): string {
   return value.replace(/\s+/g, " ").trim();
@@ -496,6 +628,8 @@ function stripHtmlToText(value: string): string {
         toast.phase === 'clear-all' && clearAllAnimationClass,
         isHovered && 'tf-toast--paused',
       ]"
+      :data-align="toast.alignment"
+      :style="buttonsVarsStyle"
       @click="handleClick"
       @mouseenter="handleMouseEnter"
       @mouseleave="handleMouseLeave"
@@ -506,65 +640,111 @@ function stripHtmlToText(value: string): string {
       <div class="tf-toast-surface">
         <!-- main row -->
         <div class="tf-toast-main">
-          <!-- icon (slot + lucide defaults) -->
-          <div
-            class="tf-toast-icon"
-            :class="iconWrapperClass"
-            aria-hidden="true"
-          >
-            <slot name="icon" :toast="toast">
-              <component
-                :is="defaultIconComponent"
-                class="tf-toast-icon-svg"
-                :class="[toast.type === 'loading' && 'tf-toast-icon-spin']"
-                aria-hidden="true"
-              />
-            </slot>
+          <div v-if="showMetaLeft" class="tf-toast-meta tf-toast-meta--left">
+            <div :class="buttonsClasses">
+              <button
+                v-for="(button, index) in buttons"
+                :key="button.id ?? index"
+                type="button"
+                class="tf-toast-button"
+                :class="button.className"
+                :aria-label="button.ariaLabel || undefined"
+                @click.stop="handleButtonClick(button, $event)"
+                @pointerdown.stop
+                @pointerup.stop
+                @pointercancel.stop
+              >
+                <span v-if="button.label">{{ button.label }}</span>
+                <span v-else-if="button.html" v-html="button.html"></span>
+              </button>
+            </div>
           </div>
 
-          <!-- content -->
-          <div
-            class="tf-toast-body"
-            :class="[hasCreatedAt && 'tf-toast-body--has-created-at']"
-          >
-            <div class="tf-toast-text">
-              <p
-                v-if="toast.title && !toast.supportHtml"
-                :aria-label="titleAriaLabel || undefined"
-                class="tf-toast-title"
-              >
-                {{ toast.title }}
-              </p>
-              <p
-                v-else-if="toast.title && toast.supportHtml"
-                class="tf-toast-title"
-                :aria-label="titleAriaLabel || undefined"
-                v-html="toast.title"
-              ></p>
-
-              <p
-                v-if="toast.description && !toast.supportHtml"
-                :aria-label="descriptionAriaLabel || undefined"
-                class="tf-toast-description"
-              >
-                {{ toast.description }}
-              </p>
-              <p
-                v-else-if="toast.description && toast.supportHtml"
-                class="tf-toast-description"
-                :aria-label="descriptionAriaLabel || undefined"
-                v-html="toast.description"
-              ></p>
+          <div class="tf-toast-main-content">
+            <!-- icon (slot + lucide defaults) -->
+            <div
+              class="tf-toast-icon"
+              :class="iconWrapperClass"
+              aria-hidden="true"
+            >
+              <slot name="icon" :toast="toast">
+                <component
+                  :is="defaultIconComponent"
+                  class="tf-toast-icon-svg"
+                  :class="[toast.type === 'loading' && 'tf-toast-icon-spin']"
+                  aria-hidden="true"
+                />
+              </slot>
             </div>
 
-            <slot :toast="toast" />
+            <!-- content -->
+            <div
+              class="tf-toast-body"
+              :class="[showInlineCreatedAt && 'tf-toast-body--has-created-at']"
+            >
+              <div class="tf-toast-text">
+                <p
+                  v-if="toast.title && !toast.supportHtml"
+                  :aria-label="titleAriaLabel || undefined"
+                  class="tf-toast-title"
+                >
+                  {{ toast.title }}
+                </p>
+                <p
+                  v-else-if="toast.title && toast.supportHtml"
+                  class="tf-toast-title"
+                  :aria-label="titleAriaLabel || undefined"
+                  v-html="toast.title"
+                ></p>
 
-            <div v-if="hasCreatedAt" class="tf-toast-created-at">
-              <slot name="created-at" :toast="toast" :formatted="createdAtText">
-                <span :aria-label="createdAtAriaLabel || undefined">
-                  {{ createdAtText }}
-                </span>
-              </slot>
+                <p
+                  v-if="toast.description && !toast.supportHtml"
+                  :aria-label="descriptionAriaLabel || undefined"
+                  class="tf-toast-description"
+                >
+                  {{ toast.description }}
+                </p>
+                <p
+                  v-else-if="toast.description && toast.supportHtml"
+                  class="tf-toast-description"
+                  :aria-label="descriptionAriaLabel || undefined"
+                  v-html="toast.description"
+                ></p>
+              </div>
+
+              <slot :toast="toast" />
+
+              <div v-if="showInlineCreatedAt" class="tf-toast-created-at">
+                <slot
+                  name="created-at"
+                  :toast="toast"
+                  :formatted="createdAtText"
+                >
+                  <span :aria-label="createdAtAriaLabel || undefined">
+                    {{ createdAtText }}
+                  </span>
+                </slot>
+              </div>
+            </div>
+          </div>
+
+          <div v-if="showMetaRight" class="tf-toast-meta tf-toast-meta--right">
+            <div :class="buttonsClasses">
+              <button
+                v-for="(button, index) in buttons"
+                :key="button.id ?? index"
+                type="button"
+                class="tf-toast-button"
+                :class="button.className"
+                :aria-label="button.ariaLabel || undefined"
+                @click.stop="handleButtonClick(button, $event)"
+                @pointerdown.stop
+                @pointerup.stop
+                @pointercancel.stop
+              >
+                <span v-if="button.label">{{ button.label }}</span>
+                <span v-else-if="button.html" v-html="button.html"></span>
+              </button>
             </div>
           </div>
         </div>
@@ -576,9 +756,21 @@ function stripHtmlToText(value: string): string {
           :style="progressStyle"
         >
           <slot name="progress" :toast="toast">
-            <ToastProgress :key="progressKeyLocal" :type="toast.type" />
+            <ToastProgress
+              :key="progressKeyLocal"
+              :type="toast.type"
+              :progress-alignment="toast.progressAlignment"
+            />
           </slot>
         </div>
+      </div>
+
+      <div v-if="showFloatingCreatedAt" class="tf-toast-created-at-float">
+        <slot name="created-at" :toast="toast" :formatted="createdAtText">
+          <span :aria-label="createdAtAriaLabel || undefined">
+            {{ createdAtText }}
+          </span>
+        </slot>
       </div>
 
       <!-- close button floating top-right -->
@@ -613,6 +805,42 @@ function stripHtmlToText(value: string): string {
   --tf-toast-close-border-color: var(--tf-toast-border-color);
 }
 
+.tf-toast-actions {
+  display: flex;
+  gap: var(--tf-toast-buttons-gap);
+  flex-wrap: wrap;
+}
+
+.tf-toast-buttons--center {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.tf-toast-buttons--bottom {
+  margin-top: auto;
+}
+
+.tf-toast-actions--start {
+  justify-content: flex-start;
+}
+
+.tf-toast-actions--end {
+  justify-content: flex-end;
+}
+
+.tf-toast-button {
+  appearance: none;
+  border: 1px solid var(--tf-toast-border-color);
+  background: transparent;
+  color: var(--tf-toast-color);
+  border-radius: 10px;
+  font-size: 0.75rem;
+  line-height: 1;
+  padding: 0.45rem 0.6rem;
+  cursor: pointer;
+  user-select: none;
+}
+
 .tf-toast-accent--loading {
   --tf-toast-bg: var(--loading-bg);
   --tf-toast-border-color: var(--loading-border);
@@ -623,6 +851,14 @@ function stripHtmlToText(value: string): string {
     var(--loading-text) 20%,
     transparent
   );
+}
+
+.tf-toast[data-align="right"] .tf-toast-main-content {
+  flex-direction: row-reverse;
+}
+
+.tf-toast[data-align="right"] .tf-toast-text {
+  text-align: right;
 }
 
 .tf-toast-accent--default {
@@ -698,8 +934,32 @@ function stripHtmlToText(value: string): string {
 
 .tf-toast-main {
   display: flex;
+  align-items: stretch;
+  gap: var(--tf-toast-buttons-content-gap);
+  width: 100%;
+}
+
+.tf-toast-main-content {
+  display: flex;
   align-items: center;
   gap: var(--tf-toast-gap);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.tf-toast-meta {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--tf-toast-gap) / 2);
+  min-width: 0;
+}
+
+.tf-toast-meta--left {
+  align-items: flex-start;
+}
+
+.tf-toast-meta--right {
+  align-items: flex-end;
 }
 
 /* icon */
@@ -787,6 +1047,50 @@ function stripHtmlToText(value: string): string {
   justify-self: end;
   grid-column: 2;
   grid-row: 1;
+}
+
+.tf-toast[data-align="right"] .tf-toast-created-at {
+  text-align: right;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tf-toast[data-align="right"] .tf-toast-body--has-created-at {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.tf-toast[data-align="right"]
+  .tf-toast-body--has-created-at
+  > .tf-toast-created-at {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.tf-toast[data-align="right"]
+  .tf-toast-body--has-created-at
+  > :not(.tf-toast-created-at) {
+  grid-column: 2;
+}
+
+.tf-toast-created-at-float {
+  position: absolute;
+  top: 0;
+  right: calc(var(--tf-toast-close-size) + 10px);
+  transform: translate(40%, -40%);
+  height: var(--tf-toast-close-size);
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 999px;
+  border: 1px solid var(--tf-toast-close-border-color);
+  background: var(--tf-toast-close-bg);
+  color: var(--tf-toast-description-color);
+  font-size: var(--tf-toast-created-at-font-size);
+  font-style: italic;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 2;
 }
 
 .tf-toast-title {
