@@ -15,10 +15,17 @@ const props = withDefaults(
       | 'pill'
       | 'ghost';
     isNew?: boolean;
+    tooltip?: string;
+    iconOnly?: boolean;
+    ariaLabel?: string;
+    href?: string;
+    target?: string;
+    rel?: string;
   }>(),
   {
     variant: 'outline',
     isNew: false,
+    iconOnly: false,
   },
 );
 
@@ -32,6 +39,9 @@ const isActive = computed(function () {
 });
 
 const sizeClass = computed(function () {
+  if (props.iconOnly) {
+    return 'size-8 justify-center p-0 text-[0.75rem]';
+  }
   return 'px-3 py-1 text-[0.8rem]';
 });
 
@@ -69,7 +79,7 @@ const variantClass = computed(function () {
 });
 
 const baseClass = computed(function () {
-  return 'inline-flex items-center gap-2 font-medium transition-all duration-200 cursor-pointer';
+  return 'inline-flex items-center gap-2 font-medium transition-all duration-200 cursor-pointer shrink-0';
 });
 
 const newBadgeClass = computed(function () {
@@ -80,20 +90,46 @@ const newBadgeClass = computed(function () {
 });
 
 function onClick(event: MouseEvent) {
-  if (props.modelValue !== undefined) {
+  if (!props.href && props.modelValue !== undefined) {
     emit('update:modelValue', !props.modelValue);
   }
   emit('click', event);
 }
+
+const ariaLabelAttr = computed(function () {
+  if (props.ariaLabel) {
+    return props.ariaLabel;
+  }
+  if (props.iconOnly && props.tooltip) {
+    return props.tooltip;
+  }
+  return undefined;
+});
+
+const relAttr = computed(function () {
+  if (props.rel) {
+    return props.rel;
+  }
+  if (props.target === '_blank') {
+    return 'noreferrer noopener';
+  }
+  return undefined;
+});
 </script>
 
 <template>
-  <button
-    type="button"
+  <component
+    :is="props.href ? 'a' : 'button'"
+    :type="props.href ? undefined : 'button'"
+    :href="props.href"
+    :target="props.target"
+    :rel="relAttr"
     :class="[baseClass, sizeClass, shapeClass, variantClass, newBadgeClass]"
+    :title="props.tooltip || undefined"
+    :aria-label="ariaLabelAttr"
     @click="onClick"
   >
     <slot />
     <NewBadge v-if="isNew" />
-  </button>
+  </component>
 </template>

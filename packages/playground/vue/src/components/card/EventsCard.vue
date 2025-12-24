@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { Terminal } from 'lucide-vue-next';
 import Button from '../Button.vue';
 import InputField from '../InputField.vue';
 import Card from '@/components/card/Card.vue';
@@ -25,17 +26,25 @@ const emit = defineEmits<{
   'update:description': [string];
   'update:fallbackTitle': [boolean];
   'update:fallbackDescription': [boolean];
+  'open-log': [];
 }>();
 </script>
 
 <template>
   <Card>
     <div>
-      <SectionHeading text="Events (console.log)" />
+      <div class="flex items-center justify-between gap-2">
+        <SectionHeading text="Events (console.log)">
+          <Button variant="ghost" icon-only tooltip="Open log" @click="emit('open-log')">
+            <Terminal class="size-4" />
+          </Button>
+        </SectionHeading>
+      </div>
       <CardLayout wrap>
         <Button
           variant="pill"
           :model-value="useOnMount"
+          tooltip="Enable onMount handler"
           @update:model-value="emit('update:useOnMount', $event)"
         >
           onMount
@@ -44,6 +53,7 @@ const emit = defineEmits<{
         <Button
           variant="pill"
           :model-value="useOnUnmount"
+          tooltip="Enable onUnmount handler"
           @update:model-value="emit('update:useOnUnmount', $event)"
         >
           onUnmount
@@ -52,6 +62,7 @@ const emit = defineEmits<{
         <Button
           variant="pill"
           :model-value="useOnClick"
+          tooltip="Enable onClick handler"
           @update:model-value="emit('update:useOnClick', $event)"
         >
           onClick
@@ -60,6 +71,7 @@ const emit = defineEmits<{
         <Button
           variant="pill"
           :model-value="useOnClose"
+          tooltip="Enable onClose handler"
           @update:model-value="emit('update:useOnClose', $event)"
         >
           onClose
@@ -89,6 +101,7 @@ const emit = defineEmits<{
         <Button
           variant="pill"
           :model-value="fallbackTitle"
+          tooltip="Auto-fill default title when empty"
           @update:model-value="emit('update:fallbackTitle', $event)"
         >
           Fallback title
@@ -97,6 +110,7 @@ const emit = defineEmits<{
         <Button
           variant="pill"
           :model-value="fallbackDescription"
+          tooltip="Auto-fill default description when empty"
           @update:model-value="emit('update:fallbackDescription', $event)"
         >
           Fallback description

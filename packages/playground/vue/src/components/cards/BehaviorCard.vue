@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
+import { Settings } from 'lucide-vue-next';
 import type { PauseStrategy, ToastButtonsAlignment, ToastOrder } from 'toastflow-core';
 
 import Button from '../Button.vue';
@@ -87,6 +88,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
         <Button
           variant="toggle"
           :model-value="preventDuplicates"
+          tooltip="No duplicates"
           @update:model-value="emit('update:preventDuplicates', $event)"
         >
           <span>No duplicates</span>
@@ -95,6 +97,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
         <Button
           variant="toggle"
           :model-value="progressBar"
+          tooltip="Progress bar"
           @update:model-value="emit('update:progressBar', $event)"
         >
           <span>Progress bar</span>
@@ -103,6 +106,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
         <Button
           variant="toggle"
           :model-value="pauseOnHover"
+          tooltip="Pause on hover"
           @update:model-value="emit('update:pauseOnHover', $event)"
         >
           <span>Pause on hover</span>
@@ -111,6 +115,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
         <Button
           variant="toggle"
           :model-value="closeButton"
+          tooltip="Close button"
           @update:model-value="emit('update:closeButton', $event)"
         >
           <span>Close button</span>
@@ -119,6 +124,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
         <Button
           variant="toggle"
           :model-value="closeOnClick"
+          tooltip="Close on click"
           @update:model-value="emit('update:closeOnClick', $event)"
         >
           <span>Close on click</span>
@@ -127,6 +133,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
         <Button
           variant="toggle"
           :model-value="supportHtml"
+          tooltip="Support HTML"
           @update:model-value="emit('update:supportHtml', $event)"
         >
           <span>Support HTML</span>
@@ -135,22 +142,36 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
         <Button
           variant="toggle"
           :model-value="showCreatedAt"
+          tooltip="Created at"
           @update:model-value="emit('update:showCreatedAt', $event)"
         >
           <span>Created at</span>
         </Button>
 
-        <Button
-          variant="toggle"
-          :model-value="enableButtons"
-          is-new
-          @update:model-value="emit('update:enableButtons', $event)"
+        <div
+          :class="
+            enableButtons
+              ? 'grid w-full grid-cols-[1fr_auto] items-center gap-2'
+              : 'flex w-full items-center gap-2'
+          "
         >
-          Buttons
-        </Button>
-        <div v-if="enableButtons" class="flex justify-end">
-          <Button variant="ghost" class="text-[0.75rem]" @click="isButtonsModalOpen = true">
-            Configure buttons
+          <Button
+            variant="toggle"
+            :model-value="enableButtons"
+            is-new
+            tooltip="Enable toast action buttons"
+            @update:model-value="emit('update:enableButtons', $event)"
+          >
+            Buttons
+          </Button>
+          <Button
+            v-if="enableButtons"
+            variant="ghost"
+            icon-only
+            tooltip="Configure buttons"
+            @click="isButtonsModalOpen = true"
+          >
+            <Settings class="size-4" />
           </Button>
         </div>
 
@@ -159,6 +180,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
           :model-value="overflowScroll"
           @update:model-value="emit('update:overflowScroll', $event)"
           is-new
+          tooltip="Overflow scroll"
         >
           Overflow scroll
         </Button>
@@ -174,6 +196,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
           variant="pill"
           :model-value="order === o.value"
           @click="emit('update:order', o.value)"
+          :tooltip="o.label"
         >
           {{ o.label }}
         </Button>
@@ -184,6 +207,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
           variant="pill"
           :model-value="pauseStrategy === ps.value"
           @click="emit('update:pauseStrategy', ps.value)"
+          :tooltip="`Pause: ${ps.label}`"
         >
           Pause: {{ ps.label }}
         </Button>
@@ -217,7 +241,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
         <CardLayout>
           <div class="flex items-center justify-between">
             <SectionHeading text="Buttons list" class="!mb-0" />
-            <Button variant="pill" @click="emit('add-button')">Add</Button>
+            <Button variant="pill" tooltip="Add button" @click="emit('add-button')">Add</Button>
           </div>
 
           <CardLayout>
@@ -244,6 +268,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
                   <Button
                     variant="toggle"
                     :model-value="button.dismissOnClick"
+                    tooltip="Toggle dismiss on click"
                     @update:model-value="emitButtonUpdate(button.id, { dismissOnClick: $event })"
                     class="!px-2 !py-0.5"
                   >
@@ -252,6 +277,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
 
                   <Button
                     variant="danger"
+                    tooltip="Remove button"
                     @click="emit('remove-button', button.id)"
                     class="!px-2 !py-0.5"
                   >

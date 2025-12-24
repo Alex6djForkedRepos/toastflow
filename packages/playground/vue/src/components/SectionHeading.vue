@@ -13,5 +13,6 @@ const props = defineProps<{
   >
     {{ text }}
     <NewBadge v-if="isNew" />
+    <slot></slot>
   </h2>
 </template>

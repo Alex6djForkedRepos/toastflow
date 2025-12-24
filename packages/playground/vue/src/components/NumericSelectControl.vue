@@ -53,7 +53,7 @@ function increment() {
   <div class="flex flex-col gap-1">
     <span class="text-[0.7rem] text-slate-500">{{ label }}</span>
     <div class="flex items-center gap-2">
-      <Button variant="subtle" @click="decrement">-</Button>
+      <Button variant="subtle" tooltip="Decrease" @click="decrement">-</Button>
       <select
         :value="value"
         class="w-full rounded-lg border border-slate-200 bg-white p-1.5 text-xs text-slate-700 outline-none transition focus:border-slate-400 focus:bg-white"
@@ -63,7 +63,7 @@ function increment() {
           {{ option.label }}
         </option>
       </select>
-      <Button variant="subtle" @click="increment">+</Button>
+      <Button variant="subtle" tooltip="Increase" @click="increment">+</Button>
     </div>
   </div>
 </template>

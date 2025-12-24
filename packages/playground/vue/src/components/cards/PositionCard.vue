@@ -109,6 +109,7 @@ const typeOptions: { value: ToastType; label: string }[] = [
           :model-value="type === t.value"
           @click="emit('update:type', t.value)"
           class="gap-2"
+          :tooltip="t.label"
         >
           <span
             class="h-1.5 w-1.5 rounded-full"

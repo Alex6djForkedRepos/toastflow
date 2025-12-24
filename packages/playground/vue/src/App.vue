@@ -4,6 +4,8 @@ import Playground from '@/views/Playground.vue';
 import { onBeforeUnmount, onMounted } from 'vue';
 // @ts-ignore
 import { useSnowfall } from 'vue-snowfall';
+import { BookOpen, Github } from 'lucide-vue-next';
+import Button from './components/Button.vue';
 
 const SEASONAL_MODE = (import.meta.env.VITE_SEASONAL_MODE ?? 'holiday').toLowerCase();
 const isHolidayMode = SEASONAL_MODE === 'holiday';
@@ -63,12 +65,27 @@ if (isHolidayMode) {
           </span>
         </div>
 
-        <a
-          href="https://github.com/adrianjanocko/toastflow"
-          target="_blank"
-          class="text-xs text-slate-500 hover:text-slate-900"
-          >GitHub</a
-        >
+        <div class="flex items-center gap-2">
+          <Button
+            variant="outline"
+            href="https://deepwiki.com/adrianjanocko/toastflow"
+            target="_blank"
+            tooltip="Open AI Docs"
+          >
+            <BookOpen class="size-4" />
+            AI Docs
+          </Button>
+
+          <Button
+            variant="outline"
+            href="https://github.com/adrianjanocko/toastflow"
+            target="_blank"
+            tooltip="View on GitHub"
+          >
+            <Github class="size-4" />
+            GitHub
+          </Button>
+        </div>
       </header>
 
       <main class="flex flex-1 gap-6 flex-col items-center justify-center">
@@ -82,11 +99,24 @@ if (isHolidayMode) {
         </section>
         <Playground />
       </main>
+
+      <footer class="w-full flex justify-center text-[11px]">
+        <div class="flex items-center gap-2">
+          <span class="font-medium text-slate-800">Built by</span>
+          <Button
+            variant="ghost"
+            href="https://www.linkedin.com/in/adrianjanocko"
+            target="_blank"
+            tooltip="Open LinkedIn profile"
+            class="!p-0 !text-slate-600 hover:!text-slate-900 hover:bg-transparent"
+          >
+            @adrianjanocko
+          </Button>
+        </div>
+      </footer>
     </div>
 
-    <div class="relative z-10">
-      <ToastContainer />
-    </div>
+    <ToastContainer />
   </div>
 </template>
 

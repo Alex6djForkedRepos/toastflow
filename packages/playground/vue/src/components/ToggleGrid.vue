@@ -45,6 +45,7 @@ const gridClass = computed(function () {
       variant="toggle"
       :model-value="activeValue === option.value"
       class="group flex flex-col items-center justify-center rounded-2xl px-2 py-2 text-[0.7rem] font-medium transition-all"
+      :tooltip="option.label"
       @update:model-value="emit('update:value', option.value)"
     >
       <component v-if="option.icon" :is="option.icon" class="h-4 w-4 group-hover:scale-105" />

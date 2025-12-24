@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import Button from '@/components/Button.vue';
+import { X } from 'lucide-vue-next';
 
 const props = withDefaults(
   defineProps<{
@@ -54,11 +55,18 @@ function onPointerUp() {
   dragging.value = false;
 }
 
+function onKeyDown(event: KeyboardEvent) {
+  if (event.key === 'Escape' && props.modelValue) {
+    close();
+  }
+}
+
 onMounted(function () {
   offsetX.value = 0;
   offsetY.value = 0;
   window.addEventListener('pointermove', onPointerMove);
   window.addEventListener('pointerup', onPointerUp);
+  window.addEventListener('keydown', onKeyDown);
 });
 
 watch(
@@ -76,6 +84,7 @@ watch(
 onBeforeUnmount(function () {
   window.removeEventListener('pointermove', onPointerMove);
   window.removeEventListener('pointerup', onPointerUp);
+  window.removeEventListener('keydown', onKeyDown);
 });
 </script>
 
@@ -96,10 +105,12 @@ onBeforeUnmount(function () {
           <h3 class="text-sm font-semibold text-slate-800">
             {{ title }}
           </h3>
-          <Button variant="subtle" @click="close"> Close</Button>
+          <Button variant="ghost" icon-only tooltip="Close" @click="close">
+            <X class="size-4" />
+          </Button>
         </header>
 
-        <div class="max-h-[50vh] overflow-auto pr-1">
+        <div class="max-h-[50vh] overflow-auto">
           <slot />
         </div>
       </div>
