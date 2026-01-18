@@ -1,4 +1,4 @@
-<script setup lang="ts">
+﻿<script setup lang="ts">
 import type { Ref } from "vue";
 import { computed, type CSSProperties, inject, ref, toRefs, watch } from "vue";
 import ToastProgress from "./ToastProgress.vue";
@@ -796,6 +796,7 @@ function stripHtmlToText(value: string): string {
 </template>
 
 <style scoped>
+/* wrappers */
 .tf-toast-wrapper {
   pointer-events: auto;
   width: 100%;
@@ -805,45 +806,17 @@ function stripHtmlToText(value: string): string {
   cursor: pointer;
   position: relative;
   width: 100%;
-  --tf-toast-close-bg: var(--tf-toast-bg);
+  --tf-toast-button-color: var(--tf-toast-color);
+  --tf-toast-button-border-color: var(--tf-toast-border-color);
+  --tf-toast-button-border-width: var(--tf-toast-border-width);
+  --tf-toast-button-bg: var(--tf-toast-bg);
   --tf-toast-close-color: var(--tf-toast-color);
   --tf-toast-close-border-color: var(--tf-toast-border-color);
-}
-
-.tf-toast-actions {
-  display: flex;
-  gap: var(--tf-toast-buttons-gap);
-  flex-wrap: wrap;
-}
-
-.tf-toast-buttons--center {
-  margin-top: auto;
-  margin-bottom: auto;
-}
-
-.tf-toast-buttons--bottom {
-  margin-top: auto;
-}
-
-.tf-toast-actions--start {
-  justify-content: flex-start;
-}
-
-.tf-toast-actions--end {
-  justify-content: flex-end;
-}
-
-.tf-toast-button {
-  appearance: none;
-  border: 1px solid var(--tf-toast-border-color);
-  background: transparent;
-  color: var(--tf-toast-color);
-  border-radius: 10px;
-  font-size: 0.75rem;
-  line-height: 1;
-  padding: 0.45rem 0.6rem;
-  cursor: pointer;
-  user-select: none;
+  --tf-toast-close-bg: var(--tf-toast-bg);
+  --tf-toast-close-ring-color: var(--tf-toast-close-border-color);
+  --tf-toast-created-at-color: var(--tf-toast-description-color);
+  --tf-toast-created-at-border-color: var(--tf-toast-border-color);
+  --tf-toast-created-at-bg: var(--tf-toast-bg);
 }
 
 .tf-toast[data-align="right"] .tf-toast-main-content {
@@ -854,90 +827,80 @@ function stripHtmlToText(value: string): string {
   text-align: right;
 }
 
+/* accent themes */
 .tf-toast-accent--default {
   --tf-toast-bg: var(--tf-toast-normal-bg-default);
   --tf-toast-border-color: var(--tf-toast-normal-border-default);
-  --tf-toast-color: var(--tf-toast-normal-text-default);
-  --tf-toast-description-color: var(--tf-toast-normal-text-default);
-  --tf-toast-progress-bg: color-mix(
-    in srgb,
-    var(--tf-toast-normal-text-default) 20%,
-    transparent
+  --tf-toast-color: var(--tf-toast-normal-title-color-default);
+  --tf-toast-description-color: var(
+    --tf-toast-normal-description-color-default
   );
+  --tf-toast-progress-bg: var(--tf-toast-normal-progress-bg-default);
+  --tf-toast-progress-bar-bg: var(--tf-toast-normal-progress-bar-bg-default);
 }
 
 .tf-toast-accent--loading {
   --tf-toast-bg: var(--tf-toast-loading-bg-default);
   --tf-toast-border-color: var(--tf-toast-loading-border-default);
-  --tf-toast-color: var(--tf-toast-loading-text-default);
-  --tf-toast-description-color: var(--tf-toast-loading-text-default);
-  --tf-toast-progress-bg: color-mix(
-    in srgb,
-    var(--tf-toast-loading-text-default) 20%,
-    transparent
+  --tf-toast-color: var(--tf-toast-loading-title-color-default);
+  --tf-toast-description-color: var(
+    --tf-toast-loading-description-color-default
   );
+  --tf-toast-progress-bg: var(--tf-toast-loading-progress-bg-default);
+  --tf-toast-progress-bar-bg: var(--tf-toast-loading-progress-bar-bg-default);
 }
 
 .tf-toast-accent--success {
   --tf-toast-bg: var(--tf-toast-success-bg-default);
   --tf-toast-border-color: var(--tf-toast-success-border-default);
-  --tf-toast-color: var(--tf-toast-success-text-default);
-  --tf-toast-description-color: var(--tf-toast-success-text-default);
-  --tf-toast-progress-bg: color-mix(
-    in srgb,
-    var(--tf-toast-success-text-default) 20%,
-    transparent
+  --tf-toast-color: var(--tf-toast-success-title-color-default);
+  --tf-toast-description-color: var(
+    --tf-toast-success-description-color-default
   );
+  --tf-toast-progress-bg: var(--tf-toast-success-progress-bg-default);
+  --tf-toast-progress-bar-bg: var(--tf-toast-success-progress-bar-bg-default);
 }
 
 .tf-toast-accent--error {
   --tf-toast-bg: var(--tf-toast-error-bg-default);
   --tf-toast-border-color: var(--tf-toast-error-border-default);
-  --tf-toast-color: var(--tf-toast-error-text-default);
-  --tf-toast-description-color: var(--tf-toast-error-text-default);
-  --tf-toast-progress-bg: color-mix(
-    in srgb,
-    var(--tf-toast-error-text-default) 20%,
-    transparent
-  );
+  --tf-toast-color: var(--tf-toast-error-title-color-default);
+  --tf-toast-description-color: var(--tf-toast-error-description-color-default);
+  --tf-toast-progress-bg: var(--tf-toast-error-progress-bg-default);
+  --tf-toast-progress-bar-bg: var(--tf-toast-error-progress-bar-bg-default);
 }
 
 .tf-toast-accent--warning {
   --tf-toast-bg: var(--tf-toast-warning-bg-default);
   --tf-toast-border-color: var(--tf-toast-warning-border-default);
-  --tf-toast-color: var(--tf-toast-warning-text-default);
-  --tf-toast-description-color: var(--tf-toast-warning-text-default);
-  --tf-toast-progress-bg: color-mix(
-    in srgb,
-    var(--tf-toast-warning-text-default) 20%,
-    transparent
+  --tf-toast-color: var(--tf-toast-warning-title-color-default);
+  --tf-toast-description-color: var(
+    --tf-toast-warning-description-color-default
   );
+  --tf-toast-progress-bg: var(--tf-toast-warning-progress-bg-default);
+  --tf-toast-progress-bar-bg: var(--tf-toast-warning-progress-bar-bg-default);
 }
 
 .tf-toast-accent--info {
   --tf-toast-bg: var(--tf-toast-info-bg-default);
   --tf-toast-border-color: var(--tf-toast-info-border-default);
-  --tf-toast-color: var(--tf-toast-info-text-default);
-  --tf-toast-description-color: var(--tf-toast-info-text-default);
-  --tf-toast-progress-bg: color-mix(
-    in srgb,
-    var(--tf-toast-info-text-default) 20%,
-    transparent
-  );
+  --tf-toast-color: var(--tf-toast-info-title-color-default);
+  --tf-toast-description-color: var(--tf-toast-info-description-color-default);
+  --tf-toast-progress-bg: var(--tf-toast-info-progress-bg-default);
+  --tf-toast-progress-bar-bg: var(--tf-toast-info-progress-bar-bg-default);
 }
 
-/* card */
-
+/* layout + card */
 .tf-toast-surface {
   position: relative;
   display: block;
   min-width: 0;
   padding: var(--tf-toast-padding);
-  border-radius: var(--tf-toast-radius);
+  border-radius: var(--tf-toast-border-radius);
   background-color: var(--tf-toast-bg);
   color: var(--tf-toast-color);
-  border: 1px solid var(--tf-toast-border-color);
-  font-family: var(--tf-toast-font-family);
+  border: var(--tf-toast-border-width) solid var(--tf-toast-border-color);
+  font-family: var(--tf-toast-font-family), sans-serif;
   overflow: hidden;
 }
 
@@ -971,8 +934,46 @@ function stripHtmlToText(value: string): string {
   align-items: flex-end;
 }
 
-/* icon */
+/* actions */
+.tf-toast-actions {
+  display: flex;
+  gap: var(--tf-toast-buttons-gap);
+  flex-wrap: wrap;
+}
 
+.tf-toast-buttons--center {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.tf-toast-buttons--bottom {
+  margin-top: auto;
+}
+
+.tf-toast-actions--start {
+  justify-content: flex-start;
+}
+
+.tf-toast-actions--end {
+  justify-content: flex-end;
+}
+
+.tf-toast-button {
+  appearance: none;
+  border: var(--tf-toast-button-border-width) solid
+    var(--tf-toast-button-border-color);
+  background: var(--tf-toast-button-bg);
+  color: var(--tf-toast-button-color);
+  border-radius: var(--tf-toast-button-border-radius);
+  font-size: var(--tf-toast-button-font-size);
+  line-height: var(--tf-toast-button-line-height);
+  padding: var(--tf-toast-button-padding-y) var(--tf-toast-button-padding-x);
+  cursor: pointer;
+  user-select: none;
+  font-family: inherit;
+}
+
+/* icon */
 .tf-toast-icon-spin {
   display: inline-block;
   animation: tf-toast-spin 0.8s linear infinite;
@@ -994,7 +995,6 @@ function stripHtmlToText(value: string): string {
 }
 
 /* per-type icon color */
-
 .tf-toast-icon--loading .tf-toast-icon-svg {
   color: var(--tf-toast-icon-loading);
 }
@@ -1020,7 +1020,6 @@ function stripHtmlToText(value: string): string {
 }
 
 /* body */
-
 .tf-toast-body {
   position: relative;
   z-index: 1;
@@ -1046,7 +1045,7 @@ function stripHtmlToText(value: string): string {
 }
 
 .tf-toast-created-at {
-  color: var(--tf-toast-description-color);
+  color: var(--tf-toast-created-at-color);
   font-size: var(--tf-toast-created-at-font-size);
   font-style: italic;
   white-space: nowrap;
@@ -1085,16 +1084,17 @@ function stripHtmlToText(value: string): string {
 .tf-toast-created-at-float {
   position: absolute;
   top: 0;
-  right: calc(var(--tf-toast-close-size) + 10px);
+  right: calc(var(--tf-toast-close-size) + var(--tf-toast-created-at-offset));
   transform: translate(40%, -40%);
   height: var(--tf-toast-close-size);
   display: inline-flex;
   align-items: center;
-  padding: 0 8px;
-  border-radius: 999px;
-  border: 1px solid var(--tf-toast-close-border-color);
-  background: var(--tf-toast-close-bg);
-  color: var(--tf-toast-description-color);
+  padding: 0 var(--tf-toast-created-at-padding-x);
+  border-radius: var(--tf-toast-created-at-border-radius);
+  border: var(--tf-toast-close-border-width) solid
+    var(--tf-toast-created-at-border-color);
+  background: var(--tf-toast-created-at-bg);
+  color: var(--tf-toast-created-at-color);
   font-size: var(--tf-toast-created-at-font-size);
   font-style: italic;
   white-space: nowrap;
@@ -1106,7 +1106,7 @@ function stripHtmlToText(value: string): string {
   margin: 0;
   font-size: var(--tf-toast-title-font-size);
   font-weight: var(--tf-toast-title-font-weight);
-  line-height: 1.25;
+  line-height: var(--tf-toast-title-line-height);
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
@@ -1115,23 +1115,27 @@ function stripHtmlToText(value: string): string {
 .tf-toast-description {
   margin: 0;
   font-size: var(--tf-toast-description-font-size);
+  line-height: var(--tf-toast-description-line-height);
   color: var(--tf-toast-description-color);
 }
 
 /* floating close button */
-
 .tf-toast-close {
   position: absolute;
   top: 0;
   right: 0;
-  transform: translate(40%, -40%);
+  transform: translate(
+    var(--tf-toast-close-offset),
+    calc(var(--tf-toast-close-offset) * -1)
+  );
   height: var(--tf-toast-close-size);
   width: var(--tf-toast-close-size);
-  border-radius: 999px;
-  border: 1px solid var(--tf-toast-close-border-color);
+  border-radius: var(--tf-toast-close-border-radius);
+  border: var(--tf-toast-close-border-width) solid
+    var(--tf-toast-close-border-color);
   background: var(--tf-toast-close-bg);
   color: var(--tf-toast-close-color);
-  font-size: 11px;
+  font-size: var(--tf-toast-close-font-size);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1141,8 +1145,8 @@ function stripHtmlToText(value: string): string {
 }
 
 .tf-toast-close-icon {
-  width: 12px;
-  height: 12px;
+  width: var(--tf-toast-close-icon-size);
+  height: var(--tf-toast-close-icon-size);
 }
 
 .tf-toast-close:focus-visible {
@@ -1151,7 +1155,6 @@ function stripHtmlToText(value: string): string {
 }
 
 /* bottom progress wrapper */
-
 .tf-toast-progress-wrapper {
   position: absolute;
   left: 0;

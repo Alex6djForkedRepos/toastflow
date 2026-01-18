@@ -257,9 +257,9 @@ to `createToastflow`; per-toast options override them:
 
 - CSS variables live in [styles.css](https://github.com/adrianjanocko/toastflow/blob/main/packages/vue/src/styles.css)
   and are auto-imported with the Vue package.
-- Key
-  variables: `--tf-toast-bg`, `--tf-toast-color`, `--tf-toast-border-color`, `--tf-toast-radius`, `--tf-toast-padding`, `--tf-toast-icon-size`, `--tf-toast-progress-height`,
-  plus per-type colors like `--success-bg` and `--error-text`.
+- Key variables: `--tf-toast-bg`, `--tf-toast-color`, `--tf-toast-border-color`, `--tf-toast-border-radius`,
+  `--tf-toast-border-width`, `--tf-toast-padding`, `--tf-toast-icon-size`, `--tf-toast-progress-height`,
+  and per-surface tokens such as `--tf-toast-button-*` and `--tf-toast-close-*`.
 - Animations are pure CSS class names; override them via the `animation` config or by redefining the `Toastflow__*`
   keyframes. **Animations are implemented using [TransitionGroup](https://vuejs.org/guide/built-ins/transition-group).**
 

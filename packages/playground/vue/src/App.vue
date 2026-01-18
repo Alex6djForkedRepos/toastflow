@@ -129,8 +129,8 @@ if (isHolidayMode) {
   --tf-toast-color: #fff7f2;
   --tf-toast-description-color: #fdeae2;
   --tf-toast-progress-bg: color-mix(in srgb, #f7ede2 20%, transparent);
+  --tf-toast-progress-bar-bg: #f7ede2;
 
-  --tf-toast-accent-info: white;
   --tf-toast-icon-info: #fff;
 }
 
@@ -140,8 +140,8 @@ if (isHolidayMode) {
   --tf-toast-color: #fff8f3;
   --tf-toast-description-color: #f2e6d9;
   --tf-toast-progress-bg: color-mix(in srgb, #f7ede2 22%, transparent);
+  --tf-toast-progress-bar-bg: #f1c46b;
 
-  --tf-toast-accent-success: #f1c46b;
   --tf-toast-icon-success: #f1c46b;
 }
 </style>
