@@ -414,9 +414,9 @@ export interface ToastStore {
   resume(id: ToastId): void;
 
   /**
-   * Drop all queued toasts while leaving currently visible ones intact.
+   * Pause queue processing so queued toasts remain pending until resumed.
    */
-  stopQueue(): void;
+  pauseQueue(): void;
 
   /**
    * Resume queue processing so queued toasts can appear again.

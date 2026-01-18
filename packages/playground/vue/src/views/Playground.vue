@@ -515,8 +515,8 @@ function resetToDefaults() {
   fallbackDescription.value = true;
 }
 
-function stopQueueProcessing() {
-  toast.stopQueue();
+function pauseQueueProcessing() {
+  toast.pauseQueue();
   queuePaused.value = true;
 }
 
@@ -1059,7 +1059,7 @@ watch(queue, function (enabled) {
         @push="push()"
         @push-burst="pushBurst"
         @update-last="updateLast"
-        @stop-queue="stopQueueProcessing"
+        @pause-queue="pauseQueueProcessing"
         @resume-queue="resumeQueueProcessing"
         @dismiss-all="toast.dismissAll"
         @reset="resetToDefaults"

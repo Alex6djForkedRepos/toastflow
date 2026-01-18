@@ -42,6 +42,9 @@ export const toast = {
   getState(): ToastState {
     return getToastStore().getState();
   },
+  subscribe(listener: (state: ToastState) => void): () => void {
+    return getToastStore().subscribe(listener);
+  },
   subscribeEvents(listener: (event: ToastEvent) => void): () => void {
     return getToastStore().subscribeEvents(listener);
   },
@@ -69,8 +72,8 @@ export const toast = {
   resume(id: ToastId): void {
     return getToastStore().resume(id);
   },
-  stopQueue(): void {
-    return getToastStore().stopQueue();
+  pauseQueue(): void {
+    return getToastStore().pauseQueue();
   },
   resumeQueue(): void {
     return getToastStore().resumeQueue();

@@ -668,7 +668,7 @@ export function createToastStore(
   }
 
   // Pause queue processing; queued toasts stay stored until resumed.
-  function stopQueue(): void {
+  function pauseQueue(): void {
     queuePaused = true;
   }
 
@@ -807,7 +807,7 @@ export function createToastStore(
     update,
     dismiss,
     dismissAll,
-    stopQueue,
+    pauseQueue,
     resumeQueue,
     pause,
     resume,

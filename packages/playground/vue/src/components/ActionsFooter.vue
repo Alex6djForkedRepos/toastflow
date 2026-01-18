@@ -17,7 +17,7 @@ const emit = defineEmits<{
   'push-burst': [];
   'update-last': [];
   'dismiss-all': [];
-  'stop-queue': [];
+  'pause-queue': [];
   'resume-queue': [];
   reset: [];
 }>();
@@ -26,7 +26,7 @@ function toggleQueue() {
   if (queuePaused.value) {
     emit('resume-queue');
   } else {
-    emit('stop-queue');
+    emit('pause-queue');
   }
 }
 </script>
@@ -56,7 +56,7 @@ function toggleQueue() {
         "
         @click="toggleQueue"
       >
-        {{ queuePaused ? 'Resume queue' : 'Stop queue' }}
+        {{ queuePaused ? 'Resume queue' : 'Pause queue' }}
       </Button>
 
       <Button variant="danger" tooltip="Dismiss all toasts" @click="emit('dismiss-all')">
