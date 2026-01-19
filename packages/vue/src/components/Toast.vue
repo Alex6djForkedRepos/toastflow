@@ -770,27 +770,32 @@ function stripHtmlToText(value: string): string {
         </div>
       </div>
 
-      <div v-if="showFloatingCreatedAt" class="tf-toast-created-at-float">
-        <slot name="created-at" :toast="toast" :formatted="createdAtText">
-          <span :aria-label="createdAtAriaLabel || undefined">
-            {{ createdAtText }}
-          </span>
-        </slot>
-      </div>
-
-      <!-- close button floating top-right -->
-      <button
-        v-if="toast.closeButton"
-        type="button"
-        class="tf-toast-close"
-        :class="closeWrapperClass"
-        aria-label="Close notification"
-        @click.stop="handleCloseClick"
+      <div
+        v-if="showFloatingCreatedAt || toast.closeButton"
+        class="tf-toast-floating-bar"
       >
-        <slot name="close-icon" :toast="toast">
-          <XMark class="tf-toast-close-icon" aria-hidden="true" />
-        </slot>
-      </button>
+        <div v-if="showFloatingCreatedAt" class="tf-toast-created-at-float">
+          <slot name="created-at" :toast="toast" :formatted="createdAtText">
+            <span :aria-label="createdAtAriaLabel || undefined">
+              {{ createdAtText }}
+            </span>
+          </slot>
+        </div>
+
+        <!-- close button floating top-right -->
+        <button
+          v-if="toast.closeButton"
+          type="button"
+          class="tf-toast-close"
+          :class="closeWrapperClass"
+          aria-label="Close notification"
+          @click.stop="handleCloseClick"
+        >
+          <slot name="close-icon" :toast="toast">
+            <XMark class="tf-toast-close-icon" aria-hidden="true" />
+          </slot>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -829,9 +834,10 @@ function stripHtmlToText(value: string): string {
 
 /* accent themes */
 .tf-toast-accent--default {
+  --tf-toast-color: var(--tf-toast-normal-color-default);
   --tf-toast-bg: var(--tf-toast-normal-bg-default);
   --tf-toast-border-color: var(--tf-toast-normal-border-default);
-  --tf-toast-color: var(--tf-toast-normal-title-color-default);
+  --tf-toast-title-color: var(--tf-toast-normal-title-color-default);
   --tf-toast-description-color: var(
     --tf-toast-normal-description-color-default
   );
@@ -840,9 +846,10 @@ function stripHtmlToText(value: string): string {
 }
 
 .tf-toast-accent--loading {
+  --tf-toast-color: var(--tf-toast-loading-color-default);
   --tf-toast-bg: var(--tf-toast-loading-bg-default);
   --tf-toast-border-color: var(--tf-toast-loading-border-default);
-  --tf-toast-color: var(--tf-toast-loading-title-color-default);
+  --tf-toast-title-color: var(--tf-toast-loading-title-color-default);
   --tf-toast-description-color: var(
     --tf-toast-loading-description-color-default
   );
@@ -851,9 +858,10 @@ function stripHtmlToText(value: string): string {
 }
 
 .tf-toast-accent--success {
+  --tf-toast-color: var(--tf-toast-success-color-default);
   --tf-toast-bg: var(--tf-toast-success-bg-default);
   --tf-toast-border-color: var(--tf-toast-success-border-default);
-  --tf-toast-color: var(--tf-toast-success-title-color-default);
+  --tf-toast-title-color: var(--tf-toast-success-title-color-default);
   --tf-toast-description-color: var(
     --tf-toast-success-description-color-default
   );
@@ -862,18 +870,20 @@ function stripHtmlToText(value: string): string {
 }
 
 .tf-toast-accent--error {
+  --tf-toast-color: var(--tf-toast-error-color-default);
   --tf-toast-bg: var(--tf-toast-error-bg-default);
   --tf-toast-border-color: var(--tf-toast-error-border-default);
-  --tf-toast-color: var(--tf-toast-error-title-color-default);
+  --tf-toast-title-color: var(--tf-toast-error-title-color-default);
   --tf-toast-description-color: var(--tf-toast-error-description-color-default);
   --tf-toast-progress-bg: var(--tf-toast-error-progress-bg-default);
   --tf-toast-progress-bar-bg: var(--tf-toast-error-progress-bar-bg-default);
 }
 
 .tf-toast-accent--warning {
+  --tf-toast-color: var(--tf-toast-warning-color-default);
   --tf-toast-bg: var(--tf-toast-warning-bg-default);
   --tf-toast-border-color: var(--tf-toast-warning-border-default);
-  --tf-toast-color: var(--tf-toast-warning-title-color-default);
+  --tf-toast-title-color: var(--tf-toast-warning-title-color-default);
   --tf-toast-description-color: var(
     --tf-toast-warning-description-color-default
   );
@@ -882,9 +892,10 @@ function stripHtmlToText(value: string): string {
 }
 
 .tf-toast-accent--info {
+  --tf-toast-color: var(--tf-toast-info-color-default);
   --tf-toast-bg: var(--tf-toast-info-bg-default);
   --tf-toast-border-color: var(--tf-toast-info-border-default);
-  --tf-toast-color: var(--tf-toast-info-title-color-default);
+  --tf-toast-title-color: var(--tf-toast-info-title-color-default);
   --tf-toast-description-color: var(--tf-toast-info-description-color-default);
   --tf-toast-progress-bg: var(--tf-toast-info-progress-bg-default);
   --tf-toast-progress-bar-bg: var(--tf-toast-info-progress-bar-bg-default);
@@ -924,6 +935,7 @@ function stripHtmlToText(value: string): string {
   flex-direction: column;
   gap: calc(var(--tf-toast-gap) / 2);
   min-width: 0;
+  flex-shrink: 0;
 }
 
 .tf-toast-meta--left {
@@ -1081,14 +1093,26 @@ function stripHtmlToText(value: string): string {
   grid-column: 2;
 }
 
-.tf-toast-created-at-float {
+.tf-toast-floating-bar {
   position: absolute;
   top: 0;
-  right: calc(var(--tf-toast-close-size) + var(--tf-toast-created-at-offset));
-  transform: translate(40%, -40%);
-  height: var(--tf-toast-close-size);
+  right: 0;
+  transform: translate(
+    calc(var(--tf-toast-close-size) * var(--tf-toast-float-x)),
+    calc(var(--tf-toast-close-size) * var(--tf-toast-float-y))
+  );
   display: inline-flex;
   align-items: center;
+  gap: var(--tf-toast-created-at-offset);
+  height: var(--tf-toast-close-size);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.tf-toast-created-at-float {
+  display: inline-flex;
+  align-items: center;
+  height: var(--tf-toast-close-size);
   padding: 0 var(--tf-toast-created-at-padding-x);
   border-radius: var(--tf-toast-created-at-border-radius);
   border: var(--tf-toast-close-border-width) solid
@@ -1099,7 +1123,6 @@ function stripHtmlToText(value: string): string {
   font-style: italic;
   white-space: nowrap;
   pointer-events: none;
-  z-index: 2;
 }
 
 .tf-toast-title {
@@ -1107,9 +1130,8 @@ function stripHtmlToText(value: string): string {
   font-size: var(--tf-toast-title-font-size);
   font-weight: var(--tf-toast-title-font-weight);
   line-height: var(--tf-toast-title-line-height);
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  color: var(--tf-toast-title-color);
+  word-wrap: break-word;
 }
 
 .tf-toast-description {
@@ -1117,17 +1139,12 @@ function stripHtmlToText(value: string): string {
   font-size: var(--tf-toast-description-font-size);
   line-height: var(--tf-toast-description-line-height);
   color: var(--tf-toast-description-color);
+  word-wrap: break-word;
 }
 
 /* floating close button */
 .tf-toast-close {
-  position: absolute;
-  top: 0;
-  right: 0;
-  transform: translate(
-    var(--tf-toast-close-offset),
-    calc(var(--tf-toast-close-offset) * -1)
-  );
+  position: relative;
   height: var(--tf-toast-close-size);
   width: var(--tf-toast-close-size);
   border-radius: var(--tf-toast-close-border-radius);
@@ -1141,6 +1158,8 @@ function stripHtmlToText(value: string): string {
   justify-content: center;
   padding: 0;
   cursor: pointer;
+  flex-shrink: 0;
+  pointer-events: auto;
   z-index: 2;
 }
 
