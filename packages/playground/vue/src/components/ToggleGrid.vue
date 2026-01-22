@@ -44,7 +44,7 @@ const gridClass = computed(function () {
       :key="option.value"
       variant="toggle"
       :model-value="activeValue === option.value"
-      class="group flex flex-col items-center justify-center rounded-2xl px-2 py-2 text-[0.7rem] font-medium transition-all"
+      class="group flex flex-col items-center justify-center rounded-2xl px-2 py-2 text-[0.7rem] font-medium transition-colors transition-transform duration-200"
       :tooltip="option.label"
       @update:model-value="emit('update:value', option.value)"
     >

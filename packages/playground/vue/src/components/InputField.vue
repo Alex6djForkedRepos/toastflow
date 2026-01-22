@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { computed } from 'vue';
 import CardLayout from '@/components/card/CardLayout.vue';
 
 const props = withDefaults(
@@ -10,10 +11,14 @@ const props = withDefaults(
     options?: { label: string; value: string | number }[];
     min?: number;
     step?: number;
+    name?: string;
+    autocomplete?: string;
   }>(),
   {
     type: 'text',
     placeholder: '',
+    autocomplete: 'off',
+    name: '',
   },
 );
 
@@ -43,6 +48,19 @@ function getInputId() {
 }
 
 const inputId = getInputId();
+const nameAttr = computed(function () {
+  if (props.name?.trim()) {
+    return props.name.trim();
+  }
+  if (props.label?.trim()) {
+    return props.label.trim().toLowerCase().replace(/\s+/g, '-');
+  }
+  return undefined;
+});
+
+const autocompleteAttr = computed(function () {
+  return props.autocomplete ?? 'off';
+});
 </script>
 
 <template>
@@ -51,8 +69,10 @@ const inputId = getInputId();
     <select
       v-if="options"
       :id="inputId"
+      :name="nameAttr"
+      :autocomplete="autocompleteAttr"
       :value="modelValue"
-      class="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 outline-none transition focus:border-slate-400 focus:bg-white"
+      class="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition focus:border-slate-300 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"
       @change="onSelect"
     >
       <option v-for="option in options" :key="option.value" :value="option.value">
@@ -62,12 +82,16 @@ const inputId = getInputId();
     <input
       v-else
       :id="inputId"
+      :name="nameAttr"
+      :autocomplete="autocompleteAttr"
       :value="modelValue"
       :type="type"
       :placeholder="placeholder"
       :min="min"
       :step="step"
-      class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 outline-none transition focus:border-slate-400 focus:bg-white"
+      :inputmode="type === 'number' ? 'decimal' : undefined"
+      spellcheck="false"
+      class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 transition focus:border-slate-300 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"
       @input="onInput"
     />
   </CardLayout>

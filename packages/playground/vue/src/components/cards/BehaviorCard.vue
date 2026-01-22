@@ -227,13 +227,13 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
           <InputField
             label="Buttons gap"
             :model-value="buttonsGap"
-            placeholder="e.g. 6px"
+            placeholder="e.g. 6px…"
             @update:model-value="emit('update:buttonsGap', String($event))"
           />
           <InputField
             label="Content gap"
             :model-value="buttonsContentGap"
-            placeholder="e.g. 10px"
+            placeholder="e.g. 10px…"
             @update:model-value="emit('update:buttonsContentGap', String($event))"
           />
         </div>
@@ -302,7 +302,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
                   :label="button.mode === 'html' ? 'HTML content' : 'Button label'"
                   :model-value="button.value"
                   :placeholder="
-                    button.mode === 'html' ? '<strong>Details</strong>' : 'Button label'
+                    button.mode === 'html' ? '<strong>Details</strong>…' : 'Button label…'
                   "
                   @update:model-value="emitButtonUpdate(button.id, { value: String($event) })"
                 />
@@ -312,13 +312,13 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
                 <InputField
                   label="className (optional)"
                   :model-value="button.className"
-                  placeholder="className (optional)"
+                  placeholder="e.g. btn-primary…"
                   @update:model-value="emitButtonUpdate(button.id, { className: String($event) })"
                 />
                 <InputField
                   label="ariaLabel (optional)"
                   :model-value="button.ariaLabel"
-                  placeholder="ariaLabel (optional)"
+                  placeholder="e.g. Open details…"
                   @update:model-value="emitButtonUpdate(button.id, { ariaLabel: String($event) })"
                 />
               </div>

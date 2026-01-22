@@ -58,21 +58,21 @@ const maxVisibleOptions = [0, 1, 2, 3, 5, 10];
         <InputField
           label="Offset"
           :model-value="offset"
-          placeholder="16px"
+          placeholder="e.g. 16px…"
           @update:model-value="emit('update:offset', $event as string)"
         />
 
         <InputField
           label="Gap"
           :model-value="gap"
-          placeholder="8px"
+          placeholder="e.g. 8px…"
           @update:model-value="emit('update:gap', $event as string)"
         />
 
         <InputField
           label="Width"
           :model-value="width"
-          placeholder="350px"
+          placeholder="e.g. 350px…"
           @update:model-value="emit('update:width', $event as string)"
         />
 

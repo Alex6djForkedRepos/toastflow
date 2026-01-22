@@ -9,8 +9,12 @@ import Button from './components/Button.vue';
 
 const SEASONAL_MODE = (import.meta.env.VITE_SEASONAL_MODE ?? 'holiday').toLowerCase();
 const isHolidayMode = SEASONAL_MODE === 'holiday';
+const prefersReducedMotion =
+  typeof window !== 'undefined' &&
+  window.matchMedia &&
+  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-if (isHolidayMode) {
+if (isHolidayMode && !prefersReducedMotion) {
   const snowfall = useSnowfall({
     container: '#snow-container',
   });
@@ -47,6 +51,13 @@ if (isHolidayMode) {
   <div
     class="relative min-h-screen bg-gradient-to-b from-sky-100 to-sky-200 text-slate-900 overflow-hidden"
   >
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-600"
+    >
+      Skip to main content
+    </a>
+
     <div
       v-if="isHolidayMode"
       id="snow-container"
@@ -54,7 +65,10 @@ if (isHolidayMode) {
       aria-hidden="true"
     />
 
-    <div class="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-4 py-8">
+    <div
+      id="main-content"
+      class="relative z-10 mx-auto flex min-h-screen max-w-6xl flex-col gap-8 px-4 py-8"
+    >
       <header class="flex items-center justify-between">
         <div class="flex items-center gap-2">
           <h1 class="text-lg font-semibold tracking-tight text-slate-900">Toastflow</h1>

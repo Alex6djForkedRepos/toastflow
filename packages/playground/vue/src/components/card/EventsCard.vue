@@ -85,14 +85,14 @@ const emit = defineEmits<{
         <InputField
           label="Title"
           :model-value="title"
-          placeholder="Saved"
+          placeholder="e.g. Saved…"
           @update:model-value="emit('update:title', $event as string)"
         />
 
         <InputField
           label="Description"
           :model-value="description"
-          placeholder="Your changes have been stored."
+          placeholder="e.g. Your changes have been stored…"
           @update:model-value="emit('update:description', $event as string)"
         />
       </CardLayout>

@@ -10,15 +10,21 @@ const props = withDefaults(
     options: number[];
     step?: number;
     min?: number;
+    name?: string;
+    autocomplete?: string;
   }>(),
   {
     step: 1,
+    autocomplete: 'off',
+    name: '',
   },
 );
 
 const emit = defineEmits<{
   'update:value': [number];
 }>();
+
+const selectId = `numeric-select-${Math.random().toString(36).slice(2, 9)}`;
 
 const selectOptions = computed(function () {
   const base = Array.from(new Set([0, ...props.options, props.value])).sort((a, b) => a - b);
@@ -47,16 +53,30 @@ function decrement() {
 function increment() {
   emit('update:value', clampValue(props.value + props.step));
 }
+
+const nameAttr = computed(function () {
+  if (props.name?.trim()) {
+    return props.name.trim();
+  }
+  return props.label.toLowerCase().replace(/\s+/g, '-');
+});
+
+const autocompleteAttr = computed(function () {
+  return props.autocomplete ?? 'off';
+});
 </script>
 
 <template>
   <div class="flex flex-col gap-1">
-    <span class="text-[0.7rem] text-slate-500">{{ label }}</span>
+    <label :for="selectId" class="text-[0.7rem] text-slate-500">{{ label }}</label>
     <div class="flex items-center gap-2">
       <Button variant="subtle" tooltip="Decrease" @click="decrement">-</Button>
       <select
+        :id="selectId"
+        :name="nameAttr"
+        :autocomplete="autocompleteAttr"
         :value="value"
-        class="w-full rounded-lg border border-slate-200 bg-white p-1.5 text-xs text-slate-700 outline-none transition focus:border-slate-400 focus:bg-white"
+        class="w-full rounded-lg border border-slate-200 bg-white p-1.5 text-xs text-slate-700 transition focus:border-slate-300 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"
         @change="onSelectChange"
       >
         <option v-for="option in selectOptions" :key="option.value" :value="option.value">

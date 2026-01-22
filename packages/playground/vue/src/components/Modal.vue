@@ -95,7 +95,7 @@ onBeforeUnmount(function () {
       class="fixed inset-0 z-40 flex items-center justify-center p-4 pointer-events-none"
     >
       <div
-        class="relative w-full max-w-xl rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-slate-200 pointer-events-auto"
+        class="relative w-full max-w-xl rounded-2xl bg-white p-5 shadow-2xl ring-1 ring-slate-200 pointer-events-auto overscroll-contain"
         :style="modalStyle"
       >
         <header

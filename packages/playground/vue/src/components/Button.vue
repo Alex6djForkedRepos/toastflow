@@ -79,7 +79,7 @@ const variantClass = computed(function () {
 });
 
 const baseClass = computed(function () {
-  return 'inline-flex items-center gap-2 font-medium transition-all duration-200 cursor-pointer shrink-0';
+  return 'inline-flex items-center gap-2 font-medium transition-colors duration-200 cursor-pointer shrink-0';
 });
 
 const newBadgeClass = computed(function () {

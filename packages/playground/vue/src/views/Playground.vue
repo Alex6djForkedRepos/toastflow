@@ -1064,7 +1064,11 @@ onBeforeUnmount(function () {
         </Button>
       </div>
 
-      <div v-if="eventLog.length" class="max-h-[360px] space-y-3 overflow-auto">
+      <div
+        v-if="eventLog.length"
+        class="max-h-[360px] space-y-3 overflow-auto"
+        style="content-visibility: auto; contain-intrinsic-size: 1px 600px;"
+      >
         <div v-for="entry in eventLog" :key="entry.id" class="space-y-2">
           <div class="flex items-center justify-between text-[0.75rem] text-slate-500">
             <span class="font-semibold text-slate-700">{{ entry.label }}</span>
