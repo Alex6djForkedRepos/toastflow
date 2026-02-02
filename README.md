@@ -98,18 +98,18 @@ pnpm add vue-toastflow
 
 ```ts
 // main.ts
-import {createApp} from "vue";
+import { createApp } from "vue";
 import App from "./App.vue";
-import {createToastflow, ToastContainer} from "vue-toastflow";
+import { createToastflow, ToastContainer } from "vue-toastflow";
 
 const app = createApp(App);
 
 app.use(
-    createToastflow({
-        // optional global defaults
-        position: "top-right",
-        duration: 5000,
-    }),
+  createToastflow({
+    // optional global defaults
+    position: "top-right",
+    duration: 5000,
+  }),
 );
 
 // register globally or import locally where you render it
@@ -124,39 +124,36 @@ Render a container and fire toasts anywhere:
 ```vue
 <!-- App.vue -->
 <template>
-  <ToastContainer/>
-  <RouterView/>
+  <ToastContainer />
+  <RouterView />
 </template>
 ```
 
 ```ts
-import {toast} from "vue-toastflow";
+import { toast } from "vue-toastflow";
 
-toast.success({title: "Saved", description: "Your changes are live."});
-toast.warning({description: "Low balance"});
+toast.success({ title: "Saved", description: "Your changes are live." });
+toast.warning({ description: "Low balance" });
 
-const id = toast.error({title: "Oops", description: "Check console."});
-toast.update(id, {description: "Fixed. All good now."});
+const id = toast.error({ title: "Oops", description: "Check console." });
+toast.update(id, { description: "Fixed. All good now." });
 toast.dismiss(id);
 ```
 
 ### Async flows
 
 ```ts
-const run = toast.loading(
-    () => fetch("/api/save").then((r) => r.json()),
-    {
-        loading: {title: "Saving", description: "Hang tight."},
-        success: (data) => ({
-            title: "Saved",
-            description: `Stored item ${data.id}.`,
-        }),
-        error: (err) => ({
-            title: "Error",
-            description: err instanceof Error ? err.message : "Please try again.",
-        }),
-    },
-);
+const run = toast.loading(() => fetch("/api/save").then((r) => r.json()), {
+  loading: { title: "Saving", description: "Hang tight." },
+  success: (data) => ({
+    title: "Saved",
+    description: `Stored item ${data.id}.`,
+  }),
+  error: (err) => ({
+    title: "Error",
+    description: err instanceof Error ? err.message : "Please try again.",
+  }),
+});
 
 await run;
 console.log(run.toastId);
@@ -166,9 +163,9 @@ console.log(run.toastId);
 
 ```ts
 toast.info({
-    title: "<strong>New version</strong>",
-    description: "Release notes are <a href='/changelog'>here</a>.",
-    supportHtml: true,
+  title: "<strong>New version</strong>",
+  description: "Release notes are <a href='/changelog'>here</a>.",
+  supportHtml: true,
 });
 ```
 
@@ -176,34 +173,33 @@ toast.info({
 
 ```ts
 toast.info({
-    title: "Changes saved",
-    description: "Undo this action?",
-    buttons: {
-        alignment: "bottom-right",
-        buttons: [
-            {
-                label: "Undo",
-                onClick: (ctx) => {
-                    console.log("Clicked in toast", ctx.id, ctx.type, ctx.position);
-                },
-            },
-            {
-                html: "<strong>Details</strong>",
-                onClick: (ctx) => {
-                    window.location.href = `/activity/${ctx.id}`;
-                },
-            },
-        ],
-    },
+  title: "Changes saved",
+  description: "Undo this action?",
+  buttons: {
+    alignment: "bottom-right",
+    buttons: [
+      {
+        label: "Undo",
+        onClick: (ctx) => {
+          console.log("Clicked in toast", ctx.id, ctx.type, ctx.position);
+        },
+      },
+      {
+        html: "<strong>Details</strong>",
+        onClick: (ctx) => {
+          window.location.href = `/activity/${ctx.id}`;
+        },
+      },
+    ],
+  },
 });
 ```
 
 ### Headless rendering
 
 ```vue
-
 <ToastContainer
-    v-slot="{
+  v-slot="{
     toast,
     dismiss,
     bumpAnimationClass,
@@ -237,7 +233,7 @@ toast.info({
 
 Pass any [types.ts](packages/core/src/types.ts) fields to `createToastflow`; per-toast options override them:
 
-- `position`: "top-right" (default), "top-left", "top-center", "bottom-*"
+- `position`: "top-right" (default), "top-left", "top-center", "bottom-\*"
 - `duration`: `5000` ms by default; `Infinity` or `0` disables auto-dismiss (progress bar auto-hides when disabled)
 - `maxVisible`: `5` per stack; eviction respects `order`
 - `queue`: `false`; when enabled, overflowed toasts wait in a queue and appear once space frees up per `maxVisible`

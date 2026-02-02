@@ -11,8 +11,10 @@ import type {
   ToastOrder,
   ToastPosition,
   ToastShowInput,
+  ToastShowOptions,
   ToastState,
   ToastStore,
+  ToastTextInput,
   ToastType,
   ToastUpdateInput,
 } from "./types";
@@ -324,7 +326,17 @@ export function createToastStore(
   }
 
   // Show a toast, handling duplicates and auto-dismiss scheduling.
-  function show(options: ToastShowInput): ToastId {
+  function show(options: ToastShowInput): ToastId;
+  function show(
+    content: string | ToastTextInput,
+    options?: ToastShowOptions,
+  ): ToastId;
+  function show(
+    arg1: ToastShowInput | ToastTextInput | string,
+    arg2?: ToastShowOptions,
+  ): ToastId {
+    const options = normalizeShowArgs(arg1, arg2);
+
     assertShowInput(options, "show");
 
     const toast = resolveConfig(resolvedGlobalConfig, options);
@@ -816,6 +828,40 @@ export function createToastStore(
 }
 
 // ------------- helpers -------------
+
+function normalizeShowArgs(
+  arg1: ToastShowInput | ToastTextInput | string,
+  arg2?: ToastShowOptions,
+): ToastShowInput {
+  if (typeof arg1 === "string") {
+    const { type = "default", title: _, description, ...rest } = arg2 ?? {};
+    return {
+      ...rest,
+      type,
+      title: arg1,
+      description: description ?? "",
+    };
+  }
+
+  if ("type" in arg1) {
+    return arg1;
+  }
+
+  const { title: inputTitle, description: inputDescription } = arg1;
+  const {
+    type = "default",
+    title: optionsTitle,
+    description: optionsDescription,
+    ...rest
+  } = arg2 ?? {};
+
+  return {
+    ...rest,
+    type,
+    title: inputTitle ?? optionsTitle ?? "",
+    description: inputDescription ?? optionsDescription ?? "",
+  };
+}
 
 const VALID_TYPES = new Set<ToastType>([
   "loading",

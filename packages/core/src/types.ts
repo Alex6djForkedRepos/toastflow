@@ -312,6 +312,14 @@ export type ToastContentInput = ToastTextInput &
   Partial<Omit<ToastOptions, "type" | "title" | "description">>;
 
 /**
+ * Options accepted when calling the show helper with text provided separately.
+ */
+export type ToastShowOptions = Partial<
+  Omit<ToastOptions, "title" | "description">
+> &
+  Partial<ToastTextInput> & { type?: ToastType };
+
+/**
  * Payload required to create a toast.
  */
 export type ToastShowInput = { type: ToastType } & ToastContentInput;
@@ -387,6 +395,8 @@ export interface ToastStore {
    * Create and show a toast; returns its id.
    */
   show(options: ToastShowInput): ToastId;
+
+  show(content: string | ToastTextInput, options?: ToastShowOptions): ToastId;
 
   /**
    * Update an existing toast by id.
