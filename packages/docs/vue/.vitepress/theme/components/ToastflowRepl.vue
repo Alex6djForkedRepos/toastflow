@@ -2,6 +2,8 @@
 import { computed, onErrorCaptured, onMounted, ref, shallowRef } from "vue";
 
 type ReplFiles = Record<string, string>;
+const TOASTFLOW_CORE_VERSION = "1.1.8";
+const VUE_TOASTFLOW_VERSION = "1.1.5";
 
 const props = withDefaults(
   defineProps<{
@@ -75,9 +77,9 @@ onMounted(async function () {
     localStore.setImportMap(
       {
         imports: {
-          "toastflow-core": "https://esm.sh/toastflow-core@latest?bundle",
+          "toastflow-core": `https://esm.sh/toastflow-core@${TOASTFLOW_CORE_VERSION}?bundle`,
           "vue-toastflow":
-            "https://cdn.jsdelivr.net/npm/vue-toastflow@latest/dist/toastflow.es.js",
+            `https://cdn.jsdelivr.net/npm/vue-toastflow@${VUE_TOASTFLOW_VERSION}/dist/toastflow.es.js`,
         },
       },
       true,

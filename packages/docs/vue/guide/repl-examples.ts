@@ -124,7 +124,7 @@ function dismissLast() {
 </template>
 
 <style>
-@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@latest/dist/vue-toastflow.css");
+@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@1.1.5/dist/vue-toastflow.css");
 
 button {
   border: 1px solid #cbd5e1;
@@ -234,7 +234,7 @@ function pushManualInfo() {
 </template>
 
 <style>
-@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@latest/dist/vue-toastflow.css");
+@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@1.1.5/dist/vue-toastflow.css");
 
 button {
   border: 1px solid #cbd5e1;
@@ -337,7 +337,7 @@ function pushHtmlWarning() {
 </template>
 
 <style>
-@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@latest/dist/vue-toastflow.css");
+@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@1.1.5/dist/vue-toastflow.css");
 
 button {
   border: 1px solid #cbd5e1;
@@ -386,10 +386,9 @@ import {
   toast,
   ToastContainer,
   type ToastContentInput,
-  type ToastType,
 } from "vue-toastflow";
 
-type DemoType = Extract<ToastType, "success" | "error" | "info">;
+type DemoType = "success" | "error" | "info";
 
 function pushCustom(type: DemoType) {
   const payload: ToastContentInput = {
@@ -437,7 +436,7 @@ function pushCustom(type: DemoType) {
 </template>
 
 <style>
-@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@latest/dist/vue-toastflow.css");
+@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@1.1.5/dist/vue-toastflow.css");
 
 button {
   border: 1px solid #cbd5e1;
@@ -512,37 +511,12 @@ createApp(App)
 `,
   "App.vue": `<script setup lang="ts">
 import { onMounted, onUnmounted, ref } from "vue";
-import * as VueToastflow from "vue-toastflow";
 import {
   toast,
   ToastContainer,
   type ToastEvent,
-  type ToastStore,
+  type ToastState,
 } from "vue-toastflow";
-
-type SubscribableStore = Pick<ToastStore, "getState"> &
-  Partial<Pick<ToastStore, "subscribe" | "subscribeEvents">>;
-
-type VueToastflowWithGetter = typeof VueToastflow & {
-  getToastStore?: () => ToastStore;
-};
-
-const toastApi = toast as unknown as SubscribableStore;
-const getToastStore = (VueToastflow as VueToastflowWithGetter).getToastStore;
-
-let store: SubscribableStore = toastApi;
-
-if (
-  (typeof toastApi.subscribe !== "function" ||
-    typeof toastApi.subscribeEvents !== "function") &&
-  typeof getToastStore === "function"
-) {
-  try {
-    store = getToastStore();
-  } catch {
-    store = toastApi;
-  }
-}
 
 const visibleCount = ref(0);
 const queuedCount = ref(0);
@@ -550,11 +524,6 @@ const eventLog = ref<string[]>([]);
 
 let offState: (() => void) | null = null;
 let offEvents: (() => void) | null = null;
-let poller: ReturnType<typeof setInterval> | null = null;
-
-function asLength(input: unknown): number {
-  return Array.isArray(input) ? input.length : 0;
-}
 
 function formatTimestamp(): string {
   const now = new Date();
@@ -564,16 +533,9 @@ function formatTimestamp(): string {
   return hours + ":" + minutes + ":" + seconds;
 }
 
-function applyState(state: unknown) {
-  if (!state || typeof state !== "object") {
-    visibleCount.value = 0;
-    queuedCount.value = 0;
-    return;
-  }
-
-  const snapshot = state as { toasts?: unknown; queue?: unknown };
-  visibleCount.value = asLength(snapshot.toasts);
-  queuedCount.value = asLength(snapshot.queue);
+function applyState(state: ToastState) {
+  visibleCount.value = state.toasts.length;
+  queuedCount.value = state.queue.length;
 }
 
 function addLog(line: string) {
@@ -581,41 +543,21 @@ function addLog(line: string) {
   eventLog.value = [outputLine, ...eventLog.value].slice(0, 10);
 }
 
-function syncStateSnapshot() {
-  try {
-    applyState(store.getState());
-  } catch {
-    visibleCount.value = 0;
-    queuedCount.value = 0;
-  }
-}
-
 onMounted(() => {
-  syncStateSnapshot();
+  applyState(toast.getState());
 
-  if (typeof store.subscribe === "function") {
-    offState = store.subscribe((state) => {
-      applyState(state);
-    });
-  } else {
-    poller = setInterval(syncStateSnapshot, 250);
-  }
+  offState = toast.subscribe((state) => {
+    applyState(state);
+  });
 
-  if (typeof store.subscribeEvents === "function") {
-    offEvents = store.subscribeEvents((event: ToastEvent) => {
-      addLog(event.kind + " -> " + event.id);
-    });
-  } else {
-    addLog("Event stream unavailable in this package version.");
-  }
+  offEvents = toast.subscribeEvents((event: ToastEvent) => {
+    addLog(event.kind + " -> " + event.id);
+  });
 });
 
 onUnmounted(() => {
   offState?.();
   offEvents?.();
-  if (poller) {
-    clearInterval(poller);
-  }
 });
 
 function pushDuplicate() {
@@ -644,7 +586,7 @@ function pushUpdateTarget() {
 <template>
   <main style="padding: 24px; font-family: Inter, system-ui, sans-serif; display: grid; gap: 12px;">
     <h3 style="margin: 0;">State + events subscriptions</h3>
-    <p style="margin: 0; color: #64748b;">Works both in Vue integration and core-store setup.</p>
+    <p style="margin: 0; color: #64748b;">Recommended Vue usage with toast.getState(), subscribe(), and subscribeEvents().</p>
 
     <div style="display: grid; gap: 8px; max-width: 150px;">
       <button @click="pushDuplicate">push duplicate candidate</button>
@@ -664,7 +606,7 @@ function pushUpdateTarget() {
 </template>
 
 <style>
-@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@latest/dist/vue-toastflow.css");
+@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@1.1.5/dist/vue-toastflow.css");
 
 button {
   border: 1px solid #cbd5e1;
@@ -707,13 +649,9 @@ import {
   type ToastId,
   type ToastShowInput,
   type ToastStandaloneInstance,
-  type ToastType,
 } from "vue-toastflow";
 
-type FeedType = Extract<
-  ToastType,
-  "default" | "success" | "error" | "info" | "warning"
->;
+type FeedType = "default" | "success" | "error" | "info" | "warning";
 
 type RandomToastTemplate = {
   type: FeedType;
@@ -821,7 +759,136 @@ function clearSaved() {
 </template>
 
 <style>
-@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@latest/dist/vue-toastflow.css");
+@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@1.1.5/dist/vue-toastflow.css");
+
+button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+button:hover {
+  background: #f8fafc;
+}
+</style>
+`,
+};
+
+export const queueFiles: Record<string, string> = {
+  "main.ts": `import { createApp } from "vue";
+import App from "./App.vue";
+import { createToastflow } from "vue-toastflow";
+
+createApp(App)
+  .use(
+    createToastflow({
+      position: "top-right",
+      duration: 5200,
+      maxVisible: 2,
+      queue: true,
+      order: "newest",
+    }),
+  )
+  .mount("#app");
+`,
+  "App.vue": `<script setup lang="ts">
+import { onMounted, onUnmounted, ref } from "vue";
+import {
+  toast,
+  ToastContainer,
+  type ToastShowInput,
+  type ToastState,
+} from "vue-toastflow";
+
+const state = ref<ToastState>(toast.getState());
+const seq = ref(1);
+let off: (() => void) | null = null;
+
+const templates: ToastShowInput[] = [
+  { type: "success", title: "Saved", description: "Project settings updated." },
+  { type: "info", title: "Build queued", description: "Runner will start soon." },
+  { type: "warning", title: "Low credits", description: "Usage is near plan limit." },
+  { type: "error", title: "Webhook failed", description: "Delivery endpoint timed out." },
+  { type: "default", title: "New message", description: "You have unread notifications." },
+];
+
+function sync(next: ToastState) {
+  state.value = next;
+}
+
+onMounted(() => {
+  off = toast.subscribe(sync);
+});
+
+onUnmounted(() => {
+  off?.();
+});
+
+function randomTemplate(): ToastShowInput {
+  const index = Math.floor(Math.random() * templates.length);
+  return templates[index];
+}
+
+function pushOne() {
+  const base = randomTemplate();
+  toast.show({
+    ...base,
+    title: "#" + String(seq.value++) + " " + base.title,
+  });
+}
+
+function pushBatch() {
+  for (let i = 0; i < 6; i += 1) {
+    pushOne();
+  }
+}
+
+function dismissFirstVisible() {
+  const first = state.value.toasts[0];
+  if (first) {
+    toast.dismiss(first.id);
+  }
+}
+
+function pauseQueueFlow() {
+  toast.pauseQueue();
+}
+
+function resumeQueueFlow() {
+  toast.resumeQueue();
+}
+</script>
+
+<template>
+  <main style="padding: 24px; font-family: Inter, system-ui, sans-serif; display: grid; gap: 12px;">
+    <h3 style="margin: 0;">Queue mode and backpressure</h3>
+    <p style="margin: 0; color: #64748b;">Keep max 2 visible while overflow stays in queue.</p>
+
+    <div style="display: grid; gap: 8px; max-width: 150px;">
+      <button @click="pushOne">push one</button>
+      <button @click="pushBatch">push batch (6)</button>
+      <button @click="dismissFirstVisible">dismiss first visible</button>
+      <button @click="pauseQueueFlow">pause queue</button>
+      <button @click="resumeQueueFlow">resume queue</button>
+      <button @click="toast.dismissAll()">dismiss all</button>
+    </div>
+
+    <p style="margin: 0; color: #334155; font-size: 13px;">
+      Visible: <strong>{{ state.toasts.length }}</strong> |
+      Queued: <strong>{{ state.queue.length }}</strong>
+    </p>
+
+    <pre style="margin: 0; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px; background: #f8fafc; color: #0f172a; font-size: 12px; overflow-x: auto; white-space: pre-wrap; word-break: break-word;">{{ JSON.stringify(state, null, 2) }}</pre>
+  </main>
+
+  <ToastContainer />
+</template>
+
+<style>
+@import url("https://cdn.jsdelivr.net/npm/vue-toastflow@1.1.5/dist/vue-toastflow.css");
 
 button {
   border: 1px solid #cbd5e1;
@@ -875,7 +942,7 @@ onUnmounted(() => {
   stop?.();
 });
 
-const visibleCount = computed(() => state.value?.toasts?.length ?? 0);
+const visibleCount = computed(() => state.value.toasts.length);
 
 function pushCore() {
   lastId.value = store.show({

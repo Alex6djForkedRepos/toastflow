@@ -10,6 +10,7 @@ import {
   headlessFiles,
   helperFiles,
   loadingFiles,
+  queueFiles,
   randomFeedFiles,
   themeFiles,
 } from "./repl-examples";
@@ -25,7 +26,7 @@ import {
   layout="vertical"
   title="show() overloads + typed helpers"
   description="Use object, string + options, text + options, then patch the last toast by id."
-  :height="920"
+  :height="1020"
 />
 
 ## ⏳ Loading Workflow
@@ -36,7 +37,7 @@ import {
   layout="vertical"
   title="Promise lifecycle with toast.loading"
   description="Single toast id transitions through loading, success, and error states."
-  :height="920"
+  :height="1020"
 />
 
 ## 🎨 Theming and HTML
@@ -47,7 +48,7 @@ import {
   layout="vertical"
   title="Custom theme, HTML content, and action buttons"
   description="Use supportHtml, created-at badges, and per-toast accent classes."
-  :height="920"
+  :height="1020"
 />
 
 ## 🧩 Headless Rendering
@@ -58,7 +59,7 @@ import {
   layout="vertical"
   title="Render custom cards via ToastContainer slot"
   description="Keep Toastflow runtime logic while replacing the default toast markup."
-  :height="960"
+  :height="1060"
 />
 
 ## 📡 State and Events
@@ -69,7 +70,7 @@ import {
   layout="vertical"
   title="subscribe() and subscribeEvents()"
   description="Observe live state snapshots and emitted events in Vue integration."
-  :height="920"
+  :height="1020"
 />
 
 ## 🎲 Random Feed with `<Toast />`
@@ -80,7 +81,18 @@ import {
   layout="vertical"
   title="send toast -> save -> render via Toast component"
   description="Each click sends a random runtime toast and stores a copy rendered below buttons."
-  :height="980"
+  :height="1080"
+/>
+
+## 📥 Queue and Backpressure
+
+<ToastflowRepl
+  :files="queueFiles"
+  main-file="main.ts"
+  layout="vertical"
+  title="queue: true + maxVisible + queue controls"
+  description="Push batches, inspect visible/queued counts, and control queue processing."
+  :height="1080"
 />
 
 ## ⚙️ Core Store Only
@@ -91,5 +103,5 @@ import {
   layout="vertical"
   title="createToastStore without Vue plugin"
   description="Direct core API usage: show, update, pause, resume, and dismiss."
-  :height="860"
+  :height="960"
 />
