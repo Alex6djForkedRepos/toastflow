@@ -68,22 +68,22 @@ if (isHolidayMode) {
         <div class="flex items-center gap-2">
           <Button
             variant="outline"
-            href="https://deepwiki.com/adrianjanocko/toastflow"
-            target="_blank"
-            tooltip="Open AI Docs"
-          >
-            <BookOpen class="size-4" />
-            AI Docs
-          </Button>
-
-          <Button
-            variant="outline"
             href="https://github.com/adrianjanocko/toastflow"
             target="_blank"
             tooltip="View on GitHub"
           >
             <Github class="size-4" />
             GitHub
+          </Button>
+
+          <Button
+            variant="primary"
+            href="https://docs.toastflow.top/"
+            target="_blank"
+            tooltip="Open documentation"
+          >
+            <BookOpen class="size-4" />
+            Documentation
           </Button>
         </div>
       </header>
@@ -145,3 +145,4 @@ if (isHolidayMode) {
   --tf-toast-icon-success: #f1c46b;
 }
 </style>
+
