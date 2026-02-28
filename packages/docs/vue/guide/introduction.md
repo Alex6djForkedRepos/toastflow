@@ -5,7 +5,8 @@ outline: deep
 
 # Introduction
 
-Toastflow is a toast notification system with a typed core (`toastflow-core`) and a Vue 3 renderer (`vue-toastflow`).
+Toastflow is a toast notification system with a typed core (`toastflow-core`), a Vue 3 renderer (`vue-toastflow`), and a
+Nuxt module wrapper (`nuxt-toastflow`).
 
 ## ⚡ Key Features
 
@@ -30,10 +31,32 @@ Toastflow is a toast notification system with a typed core (`toastflow-core`) an
 
 ## 📦 Package Overview
 
-| Package          | What it gives you                                                                                                       |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `toastflow-core` | `createToastStore`, all core types, loading helper, state subscriptions, event subscriptions                            |
-| `vue-toastflow`  | `createToastflow`, `toast` helper, `<ToastContainer />`, `<Toast />`, `<ToastProgress />`, icon components, default CSS |
+<table>
+  <colgroup>
+    <col style="width: 150px;" />
+    <col />
+  </colgroup>
+  <thead>
+    <tr>
+      <th>Package</th>
+      <th>What it gives you</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><code>toastflow-core</code></td>
+      <td><code>createToastStore</code>, all core types, loading helper, state subscriptions, event subscriptions</td>
+    </tr>
+    <tr>
+      <td><code>vue-toastflow</code></td>
+      <td><code>createToastflow</code>, <code>toast</code> helper, <code>&lt;ToastContainer /&gt;</code>, <code>&lt;Toast /&gt;</code>, <code>&lt;ToastProgress /&gt;</code>, icon components, default CSS</td>
+    </tr>
+    <tr>
+      <td><code>nuxt-toastflow</code></td>
+      <td>Nuxt module wrapper for <code>vue-toastflow</code>, auto-registered <code>ToastContainer</code>, auto-imported <code>toast</code> and optional <code>useToast</code></td>
+    </tr>
+  </tbody>
+</table>
 
 ## 🔍 Runtime Model
 

@@ -177,9 +177,9 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
           "
         >
           <Button
+            class="w-full"
             variant="toggle"
             :model-value="enableButtons"
-            is-new
             tooltip="Enable toast action buttons"
             @update:model-value="emit('update:enableButtons', $event)"
           >
@@ -200,7 +200,6 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
           variant="toggle"
           :model-value="overflowScroll"
           @update:model-value="emit('update:overflowScroll', $event)"
-          is-new
           tooltip="Overflow scroll"
         >
           Overflow scroll
@@ -278,7 +277,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
 
         <CardLayout>
           <div class="flex items-center justify-between">
-            <SectionHeading text="Buttons list" class="!mb-0" />
+            <SectionHeading text="Buttons list" class="mb-0!" />
             <Button variant="pill" tooltip="Add button" @click="emit('add-button')">Add</Button>
           </div>
 
@@ -308,7 +307,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
                     :model-value="button.dismissOnClick"
                     tooltip="Toggle dismiss on click"
                     @update:model-value="emitButtonUpdate(button.id, { dismissOnClick: $event })"
-                    class="!px-2 !py-0.5"
+                    class="px-2! py-0.5!"
                   >
                     Dismiss on click
                   </Button>
@@ -317,7 +316,7 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
                     variant="danger"
                     tooltip="Remove button"
                     @click="emit('remove-button', button.id)"
-                    class="!px-2 !py-0.5"
+                    class="px-2! py-0.5!"
                   >
                     Remove
                   </Button>

@@ -2,12 +2,14 @@
 
 # @vue-toastflow
 
-Vue 3 package for Toastflow
+Vue 3 package for Toastflow.
+If you are using Nuxt, install [`nuxt-toastflow`](https://www.npmjs.com/package/nuxt-toastflow) (wrapper around
+`vue-toastflow`).
 
 ## 📚 Documentation
 
 - Docs: https://docs.toastflow.top/
-- Comparisons (Vue toasts): https://docs.toastflow.top/comparisons/overview
+- Comparisons (Vue ecosystem toasts): https://docs.toastflow.top/comparisons/overview
 - Playground: https://toastflow.top/
 - npm: https://www.npmjs.com/package/vue-toastflow
 
@@ -33,14 +35,15 @@ createApp(App).use(createToastflow()).mount("#app");
 ```
 
 ```vue
+
 <template>
   <ToastContainer />
 </template>
 
 <script setup lang="ts">
-import { ToastContainer, toast } from "vue-toastflow";
+  import { ToastContainer, toast } from "vue-toastflow";
 
-toast.success({ title: "Saved", description: "Your changes are live." });
+  toast.success({ title: "Saved", description: "Your changes are live." });
 </script>
 ```
 

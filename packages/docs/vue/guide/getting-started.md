@@ -14,6 +14,42 @@ pnpm add vue-toastflow
 # bun add vue-toastflow
 ```
 
+## Nuxt Install (Module Wrapper)
+
+If you are using Nuxt, install the module wrapper instead of wiring the Vue plugin manually:
+
+```bash
+pnpm add nuxt-toastflow
+# npm i nuxt-toastflow
+# yarn add nuxt-toastflow
+# bun add nuxt-toastflow
+```
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ["nuxt-toastflow"],
+  toastflow: {
+    config: {
+      position: "top-right",
+      duration: 5000,
+      maxVisible: 5,
+      queue: true,
+    },
+    css: true,
+    componentName: "ToastContainer",
+  },
+});
+```
+
+```vue
+<!-- app.vue -->
+<template>
+  <ToastContainer />
+  <NuxtPage />
+</template>
+```
+
 ## 1. Install The Plugin
 
 ```ts

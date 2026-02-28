@@ -70,7 +70,7 @@ function resolveCanonicalUrl(page: string): string {
 export default defineConfig({
   title: "Toastflow",
   description:
-    "Framework-agnostic toast engine with a Vue 3 renderer. Typed core, smooth stack animations, CSS-first theming, and full control over layout and behavior.",
+    "Framework-agnostic toast engine with Vue 3 renderer and Nuxt module support. Typed core, smooth stack animations, CSS-first theming, and full control over layout and behavior.",
   cleanUrls: true,
   lastUpdated: true,
   sitemap: {

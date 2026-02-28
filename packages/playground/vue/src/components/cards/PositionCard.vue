@@ -20,7 +20,7 @@ import Button from '../Button.vue';
 import Card from '@/components/card/Card.vue';
 import CardLayout from '@/components/card/CardLayout.vue';
 
-const props = defineProps<{
+defineProps<{
   position: ToastPosition;
   alignment: ToastAlignment;
   progressAlignment: ToastProgressAlignment;
@@ -80,7 +80,7 @@ const typeOptions: { value: ToastType; label: string }[] = [
     </div>
 
     <div>
-      <SectionHeading text="Data Alignment" is-new />
+      <SectionHeading text="Data Alignment" />
       <ToggleGrid
         :options="alignmentOptions"
         :active-value="alignment"
@@ -90,7 +90,7 @@ const typeOptions: { value: ToastType; label: string }[] = [
     </div>
 
     <div>
-      <SectionHeading text="Progress Alignment" is-new />
+      <SectionHeading text="Progress Alignment" />
       <ToggleGrid
         :options="progressAlignmentOptions"
         :active-value="progressAlignment"

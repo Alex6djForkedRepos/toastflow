@@ -1,0 +1,44 @@
+{
+  "name": "nuxt-toastflow",
+  "author": "adrianjanocko",
+  "description": "Nuxt wrapper module for vue-toastflow.",
+  "keywords": [
+    "nuxt",
+    "toast",
+    "toastflow",
+    "notification",
+    "vue"
+  ],
+  "license": "MIT",
+  "homepage": "https://toastflow.top/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adrianjanocko/toastflow.git",
+    "directory": "packages/nuxt"
+  },
+  "version": "1.0.0",
+  "main": "src/module.ts",
+  "module": "src/module.ts",
+  "types": "src/module.ts",
+  "scripts": {
+    "build": "tsup src/module.ts --format cjs,esm --dts",
+    "prepack": "pnpm run build"
+  },
+  "files": [
+    "README.md",
+    "package.json",
+    "tsconfig.json",
+    "src"
+  ],
+  "peerDependencies": {
+    "nuxt": "^3.0.0 || ^4.0.0"
+  },
+  "dependencies": {
+    "@nuxt/kit": "^3.17.5",
+    "vue-toastflow": "workspace:^"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

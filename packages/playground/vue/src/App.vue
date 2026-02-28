@@ -123,21 +123,28 @@ function openMore(targetId = 'more-info', offsetPx = 20) {
       <main
         class="flex flex-1 flex-col gap-12 items-center justify-start pb-24 lg:pb-0 lg:justify-center"
       >
-        <section class="max-w-2xl text-center text-sm text-slate-600 grid gap-3">
-          <h2 class="text-2xl font-semibold text-slate-900">Vue toast notifications playground</h2>
+        <section class="max-w-xl text-center text-sm text-slate-600 grid gap-3">
+          <h2 class="text-2xl font-semibold text-slate-900">Toast notifications playground</h2>
           <p>
-            Explore Toastflow, a Vue toast library for fast, accessible notifications. Adjust
-            placement, timing, and behaviors to see how Vue toasts feel before shipping them to
-            production.
+            Explore Toastflow for Vue and Nuxt. Adjust placement, timing, and behaviors to see how
+            toasts feel before shipping them to production.
           </p>
           <div class="flex flex-wrap items-center justify-center gap-2 text-xs">
             <Button
               variant="primary"
               href="https://www.npmjs.com/package/vue-toastflow"
               target="_blank"
-              tooltip="View npm package"
+              tooltip="View Toastflow npm package for Vue"
             >
-              npm install vue-toastflow
+              Install for Vue
+            </Button>
+            <Button
+              variant="primary"
+              href="https://www.npmjs.com/package/nuxt-toastflow"
+              target="_blank"
+              tooltip="View Toastflow npm package for Nuxt"
+            >
+              Install for Nuxt
             </Button>
             <Button
               variant="outline"
@@ -169,11 +176,12 @@ function openMore(targetId = 'more-info', offsetPx = 20) {
               class="grid gap-5 rounded-3xl border border-slate-200 bg-white/90 p-6 text-sm text-slate-700 shadow-lg backdrop-blur-md w-full"
             >
               <div class="grid gap-2 text-left">
-                <h2 class="text-xl font-semibold text-slate-900">Why Toastflow for Vue</h2>
+                <h2 class="text-xl font-semibold text-slate-900">Why Toastflow for Vue and Nuxt</h2>
                 <p class="text-slate-600">
                   Toastflow ships sensible defaults for accessibility, queue management, and
-                  keyboard shortcuts. It is a typed core with a Vue renderer, CSS-first theming, and
-                  headless hooks so you can render the same store logic with your own UI.
+                  keyboard shortcuts. It is a typed core with a Vue renderer, Nuxt wrapper,
+                  CSS-first theming, and headless hooks so you can render the same store logic with
+                  your own UI.
                 </p>
               </div>
 
@@ -208,9 +216,11 @@ function openMore(targetId = 'more-info', offsetPx = 20) {
             >
               <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
-                  <h2 class="text-xl font-semibold text-slate-900">Install Toastflow for Vue</h2>
+                  <h2 class="text-xl font-semibold text-slate-900">
+                    Install Toastflow for Vue and Nuxt
+                  </h2>
                   <p class="text-slate-600">
-                    Works with Vue 3.5+. Use the shared core to keep React/Vue codebases aligned.
+                    Works with Vue 3.5+ and Nuxt 3/4. Use the shared core to keep codebases aligned.
                   </p>
                 </div>
                 <div class="flex gap-2">
@@ -226,9 +236,17 @@ function openMore(targetId = 'more-info', offsetPx = 20) {
                     variant="outline"
                     href="https://www.npmjs.com/package/vue-toastflow"
                     target="_blank"
-                    tooltip="Open npm package"
+                    tooltip="Open Vue npm package"
                   >
-                    npm
+                    vue npm
+                  </Button>
+                  <Button
+                    variant="outline"
+                    href="https://www.npmjs.com/package/nuxt-toastflow"
+                    target="_blank"
+                    tooltip="Open Nuxt npm package"
+                  >
+                    nuxt npm
                   </Button>
                 </div>
               </div>
@@ -237,7 +255,7 @@ function openMore(targetId = 'more-info', offsetPx = 20) {
                 <p class="text-[0.9rem] font-semibold text-slate-900 mb-2">Install</p>
                 <pre
                   class="code-block bg-slate-900 text-slate-100 p-3"
-                ><code>npm install vue-toastflow</code></pre>
+                ><code>npm install vue-toastflow<br/>npm install nuxt-toastflow</code></pre>
               </div>
 
               <div class="grid gap-3">
@@ -277,8 +295,9 @@ function openMore(targetId = 'more-info', offsetPx = 20) {
                   <h3 class="font-semibold text-slate-900">Can I use it outside Vue components?</h3>
                   <p class="text-slate-600">
                     Yes. Install the plugin once, then call <code>toast.*</code> from stores or
-                    services. For non-Vue apps, use the headless <code>toastflow-core</code> store
-                    and render your own UI.
+                    services. In Nuxt, use <code>nuxt-toastflow</code> and call auto-imported
+                    <code>toast</code> (or <code>useToast()</code>). For non-Vue apps, use the
+                    headless <code>toastflow-core</code> store and render your own UI.
                   </p>
                 </div>
                 <div class="rounded-xl border border-slate-200 bg-slate-50/60 p-3">
