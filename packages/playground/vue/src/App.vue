@@ -146,15 +146,6 @@ function openMore(targetId = 'more-info', offsetPx = 20) {
             >
               Install for Nuxt
             </Button>
-            <Button
-              variant="outline"
-              tooltip="Jump to install instructions"
-              :aria-expanded="showMore"
-              aria-controls="more-info"
-              @click="openMore()"
-            >
-              Installation guide
-            </Button>
           </div>
         </section>
         <Playground />
