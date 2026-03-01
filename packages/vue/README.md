@@ -1,10 +1,10 @@
 ![Toastflow showcase](../../images/banner.png)
 
-# @vue-toastflow
+# vue-toastflow
 
-Vue 3 package for Toastflow.
-If you are using Nuxt, install [`nuxt-toastflow`](https://www.npmjs.com/package/nuxt-toastflow) (wrapper around
-`vue-toastflow`).
+Vue 3 package for Toastflow - if you are using Nuxt, install [
+`nuxt-toastflow`](https://www.npmjs.com/package/nuxt-toastflow) (wrapper around
+`vue-toastflow`)
 
 ## 📚 Documentation
 
@@ -27,6 +27,7 @@ pnpm add vue-toastflow
 ```
 
 ```ts
+// main.ts
 import { createApp } from "vue";
 import App from "./App.vue";
 import { createToastflow } from "vue-toastflow";
@@ -35,16 +36,16 @@ createApp(App).use(createToastflow()).mount("#app");
 ```
 
 ```vue
-
-<template>
-  <ToastContainer />
-</template>
-
+<!-- App.vue -->
 <script setup lang="ts">
   import { ToastContainer, toast } from "vue-toastflow";
 
   toast.success({ title: "Saved", description: "Your changes are live." });
 </script>
+
+<template>
+  <ToastContainer />
+</template>
 ```
 
 ## 📄 License

@@ -2,15 +2,20 @@
 
 # nuxt-toastflow
 
-Nuxt module wrapper for `vue-toastflow` so Toastflow works out of the box in Nuxt.
+Nuxt module wrapper for `vue-toastflow` so Toastflow works out of the box in Nuxt
 
-## Install
+## 📚 Documentation
+
+- Docs: https://docs.toastflow.top/
+- Comparisons (Vue ecosystem toasts): https://docs.toastflow.top/comparisons/overview
+- Playground: https://toastflow.top/
+- npm: https://www.npmjs.com/package/nuxt-toastflow
+
+## 🚀 Quick Start
 
 ```bash
 pnpm add nuxt-toastflow
 ```
-
-## Usage
 
 ```ts
 // nuxt.config.ts
@@ -27,14 +32,6 @@ export default defineNuxtConfig({
 
 ```vue
 <!-- app.vue -->
-<template>
-  <ToastContainer />
-  <NuxtPage />
-</template>
-```
-
-```vue
-
 <script setup lang="ts">
   // Optional:
   // const toast = useToast();
@@ -44,6 +41,11 @@ export default defineNuxtConfig({
     description: "Your changes are live.",
   });
 </script>
+
+<template>
+  <ToastContainer />
+  <NuxtPage />
+</template>
 ```
 
 ## Options

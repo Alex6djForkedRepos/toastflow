@@ -1,6 +1,6 @@
 ![Toastflow showcase](images/banner.png)
 
-# Toastflow
+# 🔔 Toastflow
 
 Framework-agnostic toast engine with Vue 3 renderer and Nuxt module support
 
@@ -22,4 +22,4 @@ Framework-agnostic toast engine with Vue 3 renderer and Nuxt module support
 
 ## 📄 License
 
-MIT - see [LICENSE](LICENSE)
+[MIT](LICENSE)

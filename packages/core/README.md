@@ -1,4 +1,4 @@
-# @toastflow-core
+# toastflow-core
 
 Framework-agnostic core engine for Toastflow
 
