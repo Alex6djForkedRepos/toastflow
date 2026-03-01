@@ -1,8 +1,171 @@
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap');
 @import 'tailwindcss';
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
+  :root {
+    color-scheme: light;
+
+    /* App-level design tokens */
+    --tf-ui-canvas-top: #c6e4f5;
+    --tf-ui-canvas-bottom: #9ecfe9;
+    --tf-ui-text-primary: #0f172a;
+    --tf-ui-text-muted: #64748b;
+
+    --tf-ui-panel-bg: rgb(255 255 255 / 0.9);
+    --tf-ui-panel-muted-bg: rgb(248 250 252 / 0.82);
+    --tf-ui-panel-border: #dbe4ef;
+    --tf-ui-card-bg: #ffffff;
+    --tf-ui-card-border: #e4ebf3;
+
+    --tf-ui-brand-pill-bg: rgb(255 255 255 / 0.72);
+    --tf-ui-brand-pill-border: #cfd9e5;
+    --tf-ui-brand-pill-fg: #475569;
+    --tf-ui-brand-pill-icon: #64748b;
+
+    --tf-ui-focus-ring: rgb(71 85 105 / 0.45);
+    --tf-ui-tour-ring: rgb(14 116 144 / 0.6);
+    --tf-ui-tour-shadow: rgb(15 23 42 / 0.32);
+
+    --tf-ui-field-bg: #f8fafc;
+    --tf-ui-field-border: #d7deea;
+    --tf-ui-field-fg: #334155;
+    --tf-ui-field-placeholder: #94a3b8;
+    --tf-ui-field-border-focus: #94a3b8;
+
+    --tf-ui-btn-primary-bg: #0f172a;
+    --tf-ui-btn-primary-border: #0f172a;
+    --tf-ui-btn-primary-fg: #ffffff;
+    --tf-ui-btn-primary-bg-hover: #334155;
+    --tf-ui-btn-primary-border-hover: #334155;
+
+    --tf-ui-btn-primary-muted-bg: #1e293b;
+    --tf-ui-btn-primary-muted-border: #1e293b;
+    --tf-ui-btn-primary-muted-fg: #ffffff;
+    --tf-ui-btn-primary-muted-bg-hover: #020617;
+    --tf-ui-btn-primary-muted-border-hover: #020617;
+
+    --tf-ui-btn-outline-bg: #ffffff;
+    --tf-ui-btn-outline-border: #cbd5e1;
+    --tf-ui-btn-outline-fg: #334155;
+    --tf-ui-btn-outline-bg-hover: #f1f5f9;
+    --tf-ui-btn-outline-border-hover: #64748b;
+
+    --tf-ui-btn-subtle-bg: #f8fafc;
+    --tf-ui-btn-subtle-border: #e2e8f0;
+    --tf-ui-btn-subtle-fg: #475569;
+    --tf-ui-btn-subtle-bg-hover: #e2e8f0;
+    --tf-ui-btn-subtle-border-hover: #94a3b8;
+
+    --tf-ui-btn-toggle-active-bg: #0f172a;
+    --tf-ui-btn-toggle-active-border: #0f172a;
+    --tf-ui-btn-toggle-active-fg: #ffffff;
+    --tf-ui-btn-toggle-active-bg-hover: #334155;
+    --tf-ui-btn-toggle-active-border-hover: #334155;
+
+    --tf-ui-btn-toggle-inactive-bg: #f8fafc;
+    --tf-ui-btn-toggle-inactive-border: #e2e8f0;
+    --tf-ui-btn-toggle-inactive-fg: #475569;
+    --tf-ui-btn-toggle-inactive-bg-hover: #e2e8f0;
+    --tf-ui-btn-toggle-inactive-border-hover: #94a3b8;
+
+    --tf-ui-btn-ghost-fg: #334155;
+    --tf-ui-btn-ghost-bg-hover: #e2e8f0;
+
+    --tf-ui-btn-danger-bg: #fff1f2;
+    --tf-ui-btn-danger-border: #fecdd3;
+    --tf-ui-btn-danger-fg: #be123c;
+    --tf-ui-btn-danger-bg-hover: #ffe4e6;
+    --tf-ui-btn-danger-border-hover: #fb7185;
+  }
+
+  :root.dark {
+    color-scheme: dark;
+
+    --tf-ui-canvas-top: #1e293b;
+    --tf-ui-canvas-bottom: #101827;
+    --tf-ui-text-primary: #e2e8f0;
+    --tf-ui-text-muted: #94a3b8;
+
+    --tf-ui-panel-bg: rgb(15 23 42 / 0.75);
+    --tf-ui-panel-muted-bg: rgb(30 41 59 / 0.6);
+    --tf-ui-panel-border: rgb(71 85 105 / 0.8);
+    --tf-ui-card-bg: rgb(15 23 42 / 0.8);
+    --tf-ui-card-border: rgb(71 85 105 / 0.8);
+
+    --tf-ui-brand-pill-bg: rgb(30 41 59 / 0.86);
+    --tf-ui-brand-pill-border: #475569;
+    --tf-ui-brand-pill-fg: #e2e8f0;
+    --tf-ui-brand-pill-icon: #cbd5e1;
+
+    --tf-ui-focus-ring: rgb(203 213 225 / 0.5);
+    --tf-ui-tour-ring: rgb(125 211 252 / 0.72);
+    --tf-ui-tour-shadow: rgb(2 6 23 / 0.58);
+
+    --tf-ui-field-bg: rgb(30 41 59 / 0.78);
+    --tf-ui-field-border: #475569;
+    --tf-ui-field-fg: #e2e8f0;
+    --tf-ui-field-placeholder: #94a3b8;
+    --tf-ui-field-border-focus: #94a3b8;
+
+    --tf-ui-btn-primary-bg: #cbd5e1;
+    --tf-ui-btn-primary-border: #cbd5e1;
+    --tf-ui-btn-primary-fg: #0f172a;
+    --tf-ui-btn-primary-bg-hover: #f1f5f9;
+    --tf-ui-btn-primary-border-hover: #f1f5f9;
+
+    --tf-ui-btn-primary-muted-bg: #94a3b8;
+    --tf-ui-btn-primary-muted-border: #94a3b8;
+    --tf-ui-btn-primary-muted-fg: #0f172a;
+    --tf-ui-btn-primary-muted-bg-hover: #cbd5e1;
+    --tf-ui-btn-primary-muted-border-hover: #cbd5e1;
+
+    --tf-ui-btn-outline-bg: rgb(30 41 59 / 0.55);
+    --tf-ui-btn-outline-border: #475569;
+    --tf-ui-btn-outline-fg: #e2e8f0;
+    --tf-ui-btn-outline-bg-hover: rgb(51 65 85 / 0.9);
+    --tf-ui-btn-outline-border-hover: #94a3b8;
+
+    --tf-ui-btn-subtle-bg: rgb(30 41 59 / 0.65);
+    --tf-ui-btn-subtle-border: #475569;
+    --tf-ui-btn-subtle-fg: #e2e8f0;
+    --tf-ui-btn-subtle-bg-hover: rgb(51 65 85 / 0.9);
+    --tf-ui-btn-subtle-border-hover: #94a3b8;
+
+    --tf-ui-btn-toggle-active-bg: #cbd5e1;
+    --tf-ui-btn-toggle-active-border: #cbd5e1;
+    --tf-ui-btn-toggle-active-fg: #0f172a;
+    --tf-ui-btn-toggle-active-bg-hover: #f1f5f9;
+    --tf-ui-btn-toggle-active-border-hover: #f1f5f9;
+
+    --tf-ui-btn-toggle-inactive-bg: rgb(30 41 59 / 0.72);
+    --tf-ui-btn-toggle-inactive-border: #475569;
+    --tf-ui-btn-toggle-inactive-fg: #e2e8f0;
+    --tf-ui-btn-toggle-inactive-bg-hover: rgb(51 65 85 / 0.95);
+    --tf-ui-btn-toggle-inactive-border-hover: #94a3b8;
+
+    --tf-ui-btn-ghost-fg: #e2e8f0;
+    --tf-ui-btn-ghost-bg-hover: rgb(51 65 85 / 0.8);
+
+    --tf-ui-btn-danger-bg: rgb(127 29 29 / 0.35);
+    --tf-ui-btn-danger-border: #7f1d1d;
+    --tf-ui-btn-danger-fg: #fda4af;
+    --tf-ui-btn-danger-bg-hover: rgb(127 29 29 / 0.55);
+    --tf-ui-btn-danger-border-hover: #be123c;
+  }
+
   body {
-    font-family: 'Inter', system-ui, sans-serif;
+    font-family: 'Manrope', 'Segoe UI', sans-serif;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-family: 'Fraunces', Georgia, serif;
+    letter-spacing: -0.01em;
   }
 
   .code-block {
@@ -12,4 +175,168 @@
     overflow-wrap: anywhere;
     max-width: 100%;
   }
+}
+
+@layer components {
+  .ui-canvas {
+    background-image: linear-gradient(to bottom, var(--tf-ui-canvas-top), var(--tf-ui-canvas-bottom));
+    color: var(--tf-ui-text-primary);
+  }
+
+  .ui-panel {
+    background-color: var(--tf-ui-panel-bg);
+    border: 1px solid var(--tf-ui-panel-border);
+  }
+
+  .ui-panel-muted {
+    background-color: var(--tf-ui-panel-muted-bg);
+    border: 1px solid var(--tf-ui-panel-border);
+  }
+
+  .ui-card-surface {
+    background-color: var(--tf-ui-card-bg);
+    box-shadow: inset 0 0 0 1px var(--tf-ui-card-border);
+  }
+
+  .ui-brand-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    border-radius: 999px;
+    border: 1px solid var(--tf-ui-brand-pill-border);
+    background-color: var(--tf-ui-brand-pill-bg);
+    padding: 0.25rem 0.625rem;
+    color: var(--tf-ui-brand-pill-fg);
+    font-size: 0.62rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+  }
+
+  .ui-brand-pill-icon {
+    color: var(--tf-ui-brand-pill-icon);
+  }
+
+  .ui-field {
+    width: 100%;
+    border-radius: 0.5rem;
+    border: 1px solid var(--tf-ui-field-border);
+    background-color: var(--tf-ui-field-bg);
+    color: var(--tf-ui-field-fg);
+    font-size: 0.75rem;
+    line-height: 1rem;
+    padding: 0.25rem 0.5rem;
+    transition: border-color 160ms ease,
+    background-color 160ms ease,
+    box-shadow 160ms ease,
+    color 160ms ease;
+  }
+
+  .ui-field::placeholder {
+    color: var(--tf-ui-field-placeholder);
+  }
+
+  .ui-field:focus,
+  .ui-field:focus-visible {
+    outline: none;
+    border-color: var(--tf-ui-field-border-focus);
+    box-shadow: 0 0 0 2px var(--tf-ui-focus-ring);
+  }
+
+  .tour-target-active {
+    border-radius: 1rem;
+  }
+
+  .last-toast-value-highlight {
+    background-image: linear-gradient(
+      110deg,
+      transparent 0%,
+      color-mix(in srgb, var(--tf-ui-tour-ring) 36%, transparent) 44%,
+      transparent 72%
+    );
+    background-repeat: no-repeat;
+    background-size: 230% 100%;
+    animation: tf-last-toast-value-sweep 800ms cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  }
+
+  .open-log-attention {
+    outline: none;
+  }
+}
+
+#events-open-log-button .events-log-icon-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  padding: 0;
+  background-color: transparent;
+  color: inherit;
+  transition: padding 180ms ease, background-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+#events-open-log-button.open-log-attention .events-log-icon-badge {
+  padding: 0.2rem;
+  background-color: var(--tf-ui-btn-ghost-bg-hover);
+  color: inherit;
+  background-image: linear-gradient(
+    110deg,
+    transparent 0%,
+    color-mix(in srgb, var(--tf-ui-tour-ring) 36%, transparent) 44%,
+    transparent 72%
+  );
+  background-repeat: no-repeat;
+  background-size: 230% 100%;
+  animation: tf-last-toast-value-sweep 800ms cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+@keyframes tf-last-toast-value-sweep {
+  0% {
+    background-position: 130% 0;
+    color: inherit;
+  }
+  35% {
+    color: color-mix(in srgb, currentColor 82%, var(--tf-ui-tour-ring));
+  }
+  100% {
+    background-position: -40% 0;
+    color: inherit;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tour-target-active,
+  .last-toast-value-highlight,
+  .open-log-attention {
+    transition: none;
+    animation: none;
+  }
+}
+
+:root.dark,
+html.dark {
+  --tf-toast-normal-bg-default: hsl(222 33% 14%);
+  --tf-toast-normal-border-default: hsl(218 27% 28%);
+  --tf-toast-normal-text-default: hsl(212 34% 92%);
+
+  --tf-toast-loading-bg-default: hsl(39 44% 17%);
+  --tf-toast-loading-border-default: hsl(37 48% 29%);
+  --tf-toast-loading-text-default: hsl(48 98% 73%);
+
+  --tf-toast-success-bg-default: hsl(149 43% 16%);
+  --tf-toast-success-border-default: hsl(149 53% 28%);
+  --tf-toast-success-text-default: hsl(142 66% 69%);
+
+  --tf-toast-info-bg-default: hsl(212 56% 18%);
+  --tf-toast-info-border-default: hsl(210 56% 31%);
+  --tf-toast-info-text-default: hsl(197 91% 74%);
+
+  --tf-toast-warning-bg-default: hsl(35 48% 17%);
+  --tf-toast-warning-border-default: hsl(34 61% 31%);
+  --tf-toast-warning-text-default: hsl(43 96% 71%);
+
+  --tf-toast-error-bg-default: hsl(356 43% 16%);
+  --tf-toast-error-border-default: hsl(356 48% 28%);
+  --tf-toast-error-text-default: hsl(350 89% 77%);
 }

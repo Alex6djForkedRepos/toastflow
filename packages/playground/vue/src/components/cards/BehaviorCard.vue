@@ -285,18 +285,20 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
             <div
               v-for="(button, index) in playgroundButtons"
               :key="button.id"
-              class="space-y-3 rounded-2xl border border-slate-200 bg-white p-3"
+              class="space-y-3 rounded-2xl border border-slate-200 bg-white/70 p-3 dark:border-slate-700 dark:bg-slate-800/70"
             >
               <div
-                class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2"
+                class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-2 dark:border-slate-800"
               >
                 <div class="flex items-center gap-2">
                   <span
-                    class="rounded-lg bg-slate-100 px-2 py-1 text-[0.7rem] font-semibold text-slate-700"
+                    class="rounded-lg bg-slate-100 px-2 py-1 text-[0.7rem] font-semibold text-slate-700 dark:bg-slate-800/90 dark:text-slate-100"
                   >
                     Button {{ index + 1 }}
                   </span>
-                  <span class="rounded-lg bg-slate-50 px-2 py-1 text-[0.7rem] text-slate-600">
+                  <span
+                    class="rounded-lg bg-slate-50 px-2 py-1 text-[0.7rem] text-slate-600 dark:bg-slate-800/70 dark:text-slate-200"
+                  >
                     {{ button.mode === 'html' ? 'HTML' : 'Text' }}
                   </span>
                 </div>

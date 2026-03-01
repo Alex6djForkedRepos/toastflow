@@ -1,12 +1,7 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue';
 import { Copy, MessageCircle, Share2, Terminal } from 'lucide-vue-next';
-import {
-  toast,
-  type ToastAlignment,
-  type ToastContext,
-  type ToastProgressAlignment,
-} from 'vue-toastflow';
+import { toast, type ToastAlignment, type ToastContext, type ToastProgressAlignment, } from 'vue-toastflow';
 import Giscus from '@giscus/vue';
 import type {
   PauseStrategy,
@@ -28,6 +23,15 @@ import Button from '../components/Button.vue';
 import Modal from '../components/Modal.vue';
 import type { PlaygroundButton } from '../types/playgroundTypes.ts';
 
+const props = withDefaults(
+  defineProps<{
+    themeMode?: 'light' | 'dark';
+  }>(),
+  {
+    themeMode: 'light',
+  },
+);
+
 type EventLogEntry = {
   id: string;
   label: string;
@@ -39,6 +43,25 @@ type EventLogEntry = {
 const config = toast.getConfig();
 const hasWindow = typeof window !== 'undefined';
 const MAX_LOG_ENTRIES = 80;
+const ONBOARDING_STORAGE_KEY = 'toastflow-playground-onboarding-v1';
+const LAST_TOAST_ID_SWEEP_MS = 2400;
+const OPEN_LOG_SWEEP_MS = 2400;
+const ONBOARDING_SPOTLIGHT_PADDING = 8;
+const ONBOARDING_SPOTLIGHT_RADIUS = 16;
+
+type OnboardingStepId = 'cards' | 'actions' | 'log' | 'feedback';
+type OnboardingStep = {
+  id: OnboardingStepId;
+  title: string;
+  description: string;
+};
+type OnboardingSpotlightRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  radius: number;
+};
 
 const giscusConfig = {
   repo: import.meta.env.VITE_GISCUS_REPO,
@@ -54,6 +77,12 @@ const hasGiscusConfig = computed(function () {
   return Boolean(
     giscusConfig.repo && giscusConfig.repoId && giscusConfig.category && giscusConfig.categoryId,
   );
+});
+
+const giscusTheme = computed(function () {
+  const lightTheme = import.meta.env.VITE_GISCUS_THEME_LIGHT ?? giscusConfig.theme ?? 'light';
+  const darkTheme = import.meta.env.VITE_GISCUS_THEME_DARK ?? 'dark_dimmed';
+  return props.themeMode === 'dark' ? darkTheme : lightTheme;
 });
 
 /* ----- reactive state ----- */
@@ -100,13 +129,25 @@ const eventLog = ref<EventLogEntry[]>([]);
 const isFeedbackModalOpen = ref(false);
 const copyCodeLabel = ref('Copy code');
 const copyShareLabel = ref('Copy share link');
+const cardsRegionRef = ref<HTMLElement | null>(null);
+const actionsDesktopRef = ref<HTMLElement | null>(null);
+const actionsMobileRef = ref<HTMLElement | null>(null);
+const isOnboardingOpen = ref(false);
+const onboardingStepIndex = ref(0);
+const isDesktopLayout = ref(false);
+const onboardingViewport = ref({ width: 0, height: 0 });
+const onboardingSpotlightRect = ref<OnboardingSpotlightRect | null>(null);
+const lastIdSweepActive = ref(false);
+const openLogSweepActive = ref(false);
 const shortcutKeys = [
   { key: 'T', label: 'Push' },
   { key: 'D', label: 'Dismiss all' },
   { key: 'R', label: 'Reset' },
 ];
 const keycapClass =
-  'inline-flex h-6 items-center justify-center rounded-md border border-slate-300 bg-slate-50 px-2 text-[0.7rem] font-semibold text-slate-800';
+  'inline-flex h-6 items-center justify-center rounded-md border border-slate-300 bg-slate-50 px-2 text-[0.7rem] font-semibold text-slate-800 dark:border-slate-600 dark:bg-slate-800/80 dark:text-slate-100';
+let lastIdSweepTimer: ReturnType<typeof setTimeout> | undefined;
+let openLogSweepTimer: ReturnType<typeof setTimeout> | undefined;
 
 let buttonCounter = 0;
 
@@ -143,6 +184,129 @@ const fallbackTitle = ref(true);
 const fallbackDescription = ref(true);
 
 const lastId = ref<ToastId | null>(null);
+
+const onboardingSteps = computed<OnboardingStep[]>(function () {
+  const steps: OnboardingStep[] = [
+    {
+      id: 'cards',
+      title: 'Configure options',
+      description:
+        'Use these cards to tune position, behavior, timing, and content for each toast.',
+    },
+    {
+      id: 'actions',
+      title: 'Trigger actions',
+      description:
+        'Push toasts, update the latest toast, pause queue processing, or reset everything.',
+    },
+    {
+      id: 'log',
+      title: 'Inspect events',
+      description:
+        'Open the log panel to inspect lifecycle hooks and debug callbacks in real time.',
+    },
+  ];
+
+  if (hasGiscusConfig.value) {
+    steps.push({
+      id: 'feedback',
+      title: 'Send feedback',
+      description:
+        'We would appreciate it if you could share your feedback with us, it would be very helpful. Thank you! :)',
+    });
+  }
+
+  return steps;
+});
+
+const activeOnboardingStep = computed<OnboardingStep | null>(function () {
+  return onboardingSteps.value[onboardingStepIndex.value] ?? null;
+});
+
+const onboardingProgressLabel = computed(function () {
+  if (!activeOnboardingStep.value || !onboardingSteps.value.length) {
+    return '';
+  }
+
+  return `${onboardingStepIndex.value + 1} / ${onboardingSteps.value.length}`;
+});
+
+const isFirstOnboardingStep = computed(function () {
+  return onboardingStepIndex.value === 0;
+});
+
+const isLastOnboardingStep = computed(function () {
+  return onboardingStepIndex.value >= onboardingSteps.value.length - 1;
+});
+
+function isOnboardingStep(stepId: OnboardingStepId) {
+  return isOnboardingOpen.value && activeOnboardingStep.value?.id === stepId;
+}
+
+const cardsTourClass = computed(function () {
+  return isOnboardingStep('cards') ? 'tour-target-active' : '';
+});
+
+const actionsTourClass = computed(function () {
+  return isOnboardingStep('actions') ? 'tour-target-active' : '';
+});
+
+const openLogButtonTourClass = computed(function () {
+  const classes: string[] = [];
+
+  if (isOnboardingStep('log')) {
+    classes.push('tour-target-active');
+  }
+
+  if (openLogSweepActive.value) {
+    classes.push('open-log-attention');
+  }
+
+  return classes.join(' ');
+});
+
+const feedbackButtonTourClass = computed(function () {
+  return isOnboardingStep('feedback') ? 'tour-target-active' : '';
+});
+
+type OverlayRect = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
+
+function px(value: number) {
+  return `${Math.max(0, Math.round(value))}px`;
+}
+
+function toOverlayStyle(rect: OverlayRect) {
+  return {
+    left: px(rect.x),
+    top: px(rect.y),
+    width: px(rect.width),
+    height: px(rect.height),
+  };
+}
+
+const onboardingSpotlightMaskStyle = computed(function () {
+  const spotlight = onboardingSpotlightRect.value;
+
+  if (!spotlight || !isOnboardingOpen.value) {
+    return { display: 'none' };
+  }
+
+  return {
+    ...toOverlayStyle({
+      x: spotlight.x,
+      y: spotlight.y,
+      width: spotlight.width,
+      height: spotlight.height,
+    }),
+    borderRadius: px(spotlight.radius),
+    boxShadow: '0 0 0 200vmax rgb(15 23 42 / 0.58)',
+  };
+});
 
 /* ----- helpers ----- */
 
@@ -258,10 +422,241 @@ function recordEvent(label: string, detail: unknown) {
     detail: formatLogDetail(detail),
   };
   eventLog.value = [entry, ...eventLog.value].slice(0, MAX_LOG_ENTRIES);
+
+  if (!isLogModalOpen.value) {
+    void restartOpenLogAttention();
+  }
 }
 
 function clearEventLog() {
   eventLog.value = [];
+}
+
+async function restartLastToastIdHighlight() {
+  if (lastIdSweepTimer) {
+    clearTimeout(lastIdSweepTimer);
+  }
+
+  // Toggle off first so the same class can restart even on rapid consecutive updates.
+  lastIdSweepActive.value = false;
+  await nextTick();
+
+  lastIdSweepActive.value = true;
+  lastIdSweepTimer = setTimeout(function () {
+    lastIdSweepActive.value = false;
+  }, LAST_TOAST_ID_SWEEP_MS);
+}
+
+async function restartOpenLogAttention() {
+  if (openLogSweepTimer) {
+    clearTimeout(openLogSweepTimer);
+  }
+
+  // Toggle off first so the same class can restart even on rapid consecutive events.
+  openLogSweepActive.value = false;
+  await nextTick();
+
+  openLogSweepActive.value = true;
+  openLogSweepTimer = setTimeout(function () {
+    openLogSweepActive.value = false;
+  }, OPEN_LOG_SWEEP_MS);
+}
+
+function updateDesktopLayoutFlag() {
+  if (!hasWindow || !window.matchMedia) {
+    isDesktopLayout.value = false;
+    return;
+  }
+
+  isDesktopLayout.value = window.matchMedia('(min-width: 1024px)').matches;
+}
+
+function getActiveOnboardingTargetElement() {
+  if (!activeOnboardingStep.value) {
+    return null;
+  }
+
+  if (activeOnboardingStep.value.id === 'cards') {
+    return cardsRegionRef.value;
+  }
+
+  if (activeOnboardingStep.value.id === 'actions') {
+    return isDesktopLayout.value ? actionsDesktopRef.value : actionsMobileRef.value;
+  }
+
+  if (activeOnboardingStep.value.id === 'log') {
+    return document.getElementById('events-open-log-button');
+  }
+
+  if (activeOnboardingStep.value.id === 'feedback') {
+    return document.getElementById('feedback-trigger-button');
+  }
+
+  return null;
+}
+
+function getVisibleActionsFooterElement() {
+  if (!hasWindow) {
+    return null;
+  }
+
+  const isVisible = function (element: HTMLElement | null) {
+    if (!element) {
+      return false;
+    }
+
+    const rect = element.getBoundingClientRect();
+    const style = window.getComputedStyle(element);
+
+    return (
+      rect.width > 0 &&
+      rect.height > 0 &&
+      style.display !== 'none' &&
+      style.visibility !== 'hidden' &&
+      style.opacity !== '0'
+    );
+  };
+
+  if (isVisible(actionsDesktopRef.value)) {
+    return actionsDesktopRef.value;
+  }
+
+  if (isVisible(actionsMobileRef.value)) {
+    return actionsMobileRef.value;
+  }
+
+  return null;
+}
+
+function updateOnboardingSpotlight() {
+  if (!hasWindow) {
+    return;
+  }
+
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  onboardingViewport.value = { width: viewportWidth, height: viewportHeight };
+
+  if (!isOnboardingOpen.value) {
+    onboardingSpotlightRect.value = null;
+    return;
+  }
+
+  const target = getActiveOnboardingTargetElement();
+  if (!target) {
+    onboardingSpotlightRect.value = null;
+    return;
+  }
+
+  const rect = target.getBoundingClientRect();
+  const paddedLeft = Math.max(0, rect.left - ONBOARDING_SPOTLIGHT_PADDING);
+  const paddedTop = Math.max(0, rect.top - ONBOARDING_SPOTLIGHT_PADDING);
+  const paddedRight = Math.min(viewportWidth, rect.right + ONBOARDING_SPOTLIGHT_PADDING);
+  let paddedBottom = Math.min(viewportHeight, rect.bottom + ONBOARDING_SPOTLIGHT_PADDING);
+
+  if (activeOnboardingStep.value?.id === 'cards') {
+    const footerElement = getVisibleActionsFooterElement();
+    if (footerElement) {
+      const footerRect = footerElement.getBoundingClientRect();
+      paddedBottom = Math.min(
+        paddedBottom,
+        Math.max(0, footerRect.top - ONBOARDING_SPOTLIGHT_PADDING),
+      );
+    }
+  }
+
+  const width = Math.max(0, paddedRight - paddedLeft);
+  const height = Math.max(0, paddedBottom - paddedTop);
+
+  if (width <= 1 || height <= 1) {
+    onboardingSpotlightRect.value = null;
+    return;
+  }
+
+  onboardingSpotlightRect.value = {
+    x: paddedLeft,
+    y: paddedTop,
+    width,
+    height,
+    radius: ONBOARDING_SPOTLIGHT_RADIUS,
+  };
+}
+
+function scrollActiveOnboardingTargetIntoView() {
+  if (!hasWindow || !isOnboardingOpen.value) {
+    return;
+  }
+
+  const target = getActiveOnboardingTargetElement();
+  if (!target) {
+    return;
+  }
+
+  const rect = target.getBoundingClientRect();
+  const viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+  const margin = 48;
+
+  const isInsideViewport =
+    rect.top >= margin &&
+    rect.left >= margin &&
+    rect.bottom <= viewportHeight - margin &&
+    rect.right <= viewportWidth - margin;
+
+  if (!isInsideViewport) {
+    target.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+  }
+}
+
+function persistOnboardingState(value: 'done' | 'skipped') {
+  if (!hasWindow) {
+    return;
+  }
+
+  window.localStorage.setItem(ONBOARDING_STORAGE_KEY, value);
+}
+
+function closeOnboarding(markAsSeen: boolean, state: 'done' | 'skipped' = 'done') {
+  isOnboardingOpen.value = false;
+  onboardingStepIndex.value = 0;
+
+  if (markAsSeen) {
+    persistOnboardingState(state);
+  }
+}
+
+function startOnboarding(force = false) {
+  if (!hasWindow) {
+    return;
+  }
+
+  if (!force && window.localStorage.getItem(ONBOARDING_STORAGE_KEY)) {
+    return;
+  }
+
+  onboardingStepIndex.value = 0;
+  isOnboardingOpen.value = true;
+}
+
+function skipOnboarding() {
+  closeOnboarding(true, 'skipped');
+}
+
+function goToPreviousOnboardingStep() {
+  if (onboardingStepIndex.value === 0) {
+    return;
+  }
+
+  onboardingStepIndex.value -= 1;
+}
+
+function goToNextOnboardingStep() {
+  if (isLastOnboardingStep.value) {
+    closeOnboarding(true, 'done');
+    return;
+  }
+
+  onboardingStepIndex.value += 1;
 }
 
 /* ----- computed config for show() ----- */
@@ -419,6 +814,7 @@ function pushLoading() {
   });
 
   lastId.value = pending.toastId;
+  restartLastToastIdHighlight();
   recordEvent('toast.loading', { id: pending.toastId });
 }
 
@@ -437,6 +833,7 @@ function push(typeOverride?: ToastType) {
     type: toastType,
     ...content,
   });
+  restartLastToastIdHighlight();
   recordEvent('toast.show', { id: lastId.value, type: toastType });
 }
 
@@ -735,6 +1132,24 @@ function shouldIgnoreShortcut(event: KeyboardEvent) {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (isOnboardingOpen.value) {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      skipOnboarding();
+      return;
+    }
+    if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      goToPreviousOnboardingStep();
+      return;
+    }
+    if (event.key === 'ArrowRight' || event.key === 'Enter') {
+      event.preventDefault();
+      goToNextOnboardingStep();
+      return;
+    }
+  }
+
   if (event.metaKey || event.ctrlKey || event.altKey) {
     return;
   }
@@ -917,13 +1332,27 @@ toast.show(toastConfig);
 onMounted(function () {
   hydrateFromQuery();
   if (hasWindow) {
+    updateDesktopLayoutFlag();
+    updateOnboardingSpotlight();
+    startOnboarding();
     window.addEventListener('keydown', onKeydown);
+    window.addEventListener('resize', updateDesktopLayoutFlag);
   }
 });
 
 onBeforeUnmount(function () {
   if (hasWindow) {
     window.removeEventListener('keydown', onKeydown);
+    window.removeEventListener('resize', updateDesktopLayoutFlag);
+    window.removeEventListener('resize', updateOnboardingSpotlight);
+    window.removeEventListener('scroll', updateOnboardingSpotlight, true);
+  }
+
+  if (lastIdSweepTimer) {
+    clearTimeout(lastIdSweepTimer);
+  }
+  if (openLogSweepTimer) {
+    clearTimeout(openLogSweepTimer);
   }
 });
 
@@ -934,36 +1363,74 @@ watch(queue, function (enabled) {
     resumeQueueProcessing();
   }
 });
+
+watch([isOnboardingOpen, onboardingStepIndex, isDesktopLayout], function ([open]) {
+  if (!open) {
+    onboardingSpotlightRect.value = null;
+    return;
+  }
+
+  nextTick(function () {
+    scrollActiveOnboardingTargetIntoView();
+    updateOnboardingSpotlight();
+  });
+});
+
+watch(isOnboardingOpen, function (open) {
+  if (!hasWindow) {
+    return;
+  }
+
+  if (open) {
+    updateOnboardingSpotlight();
+    window.addEventListener('resize', updateOnboardingSpotlight);
+    window.addEventListener('scroll', updateOnboardingSpotlight, true);
+    return;
+  }
+
+  window.removeEventListener('resize', updateOnboardingSpotlight);
+  window.removeEventListener('scroll', updateOnboardingSpotlight, true);
+  onboardingSpotlightRect.value = null;
+});
 </script>
 
 <template>
   <div
-    class="w-full max-w-5xl rounded-3xl bg-white/90 p-6 shadow-2xl ring-1 ring-slate-200 backdrop-blur-md grid gap-6 lg:max-h-[45rem] lg:overflow-auto lg:pb-0"
+    class="ui-panel w-full max-w-5xl rounded-3xl p-6 shadow-2xl backdrop-blur-md grid gap-6 transition-colors duration-300 lg:max-h-180 lg:overflow-auto lg:pb-0"
   >
     <div class="flex flex-col gap-3">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div class="space-y-1">
-          <p class="ml-2 text-xs text-slate-500 md:inline">
+          <p class="ml-2 text-xs text-slate-600 dark:text-slate-300 md:inline">
             Configure options and push toasts to see them in action.
           </p>
         </div>
 
-        <div class="hidden lg:flex flex-wrap items-center gap-2 text-[0.8rem] text-slate-600">
+        <div
+          class="hidden lg:flex flex-wrap items-center gap-2 text-[0.8rem] text-slate-600 dark:text-slate-300"
+        >
           <div v-for="shortcut in shortcutKeys" :key="shortcut.key" class="flex items-center gap-2">
             <span :class="keycapClass">{{ shortcut.key }}</span>
-            <span class="text-[0.75rem] text-slate-600">{{ shortcut.label }}</span>
+            <span class="text-[0.75rem] text-slate-600 dark:text-slate-300">{{
+              shortcut.label
+            }}</span>
           </div>
         </div>
       </div>
 
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div
-          class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[0.8rem] text-slate-600"
+          class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[0.8rem] text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
         >
-          <span class="text-[0.65rem] uppercase tracking-[0.12em] text-slate-400"
+          <span
+            class="text-[0.65rem] uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500"
             >Last toast ID</span
           >
-          <span class="font-mono text-xs text-slate-800">
+          <span
+            class="block max-w-44 truncate rounded-md px-1 font-mono text-xs text-slate-800 dark:text-slate-100 sm:max-w-[18rem]"
+            :class="{ 'last-toast-value-highlight': lastIdSweepActive }"
+            :title="lastId ? String(lastId) : undefined"
+          >
             {{ lastId ?? '-' }}
           </span>
         </div>
@@ -981,7 +1448,9 @@ watch(queue, function (enabled) {
           <Button
             v-if="hasGiscusConfig"
             variant="outline"
+            id="feedback-trigger-button"
             class="text-[0.75rem]"
+            :class="feedbackButtonTourClass"
             tooltip="Open feedback"
             @click="isFeedbackModalOpen = true"
           >
@@ -992,7 +1461,11 @@ watch(queue, function (enabled) {
       </div>
     </div>
 
-    <div class="grid gap-5 text-xs lg:grid-cols-4 md:text-sm">
+    <div
+      ref="cardsRegionRef"
+      class="grid gap-5 text-xs lg:grid-cols-4 md:text-sm"
+      :class="cardsTourClass"
+    >
       <PositionCard
         v-model:position="position"
         v-model:alignment="alignment"
@@ -1042,13 +1515,16 @@ watch(queue, function (enabled) {
         v-model:description="description"
         v-model:fallbackTitle="fallbackTitle"
         v-model:fallbackDescription="fallbackDescription"
+        :open-log-button-class="openLogButtonTourClass"
         @open-log="isLogModalOpen = true"
       />
     </div>
 
-    <section class="rounded-2xl border border-slate-200 bg-slate-50/80 p-4 grid gap-4">
+    <section class="ui-panel-muted rounded-2xl p-4 grid gap-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <div class="flex items-center gap-2 text-sm font-semibold text-slate-800">
+        <div
+          class="flex items-center gap-2 text-sm font-semibold text-slate-800 dark:text-slate-100"
+        >
           <Terminal class="h-4 w-4" />
           Live code (mirrors current config)
         </div>
@@ -1070,7 +1546,11 @@ watch(queue, function (enabled) {
       />
     </section>
 
-    <div class="hidden lg:block sticky bottom-0 bg-white/90">
+    <div
+      ref="actionsDesktopRef"
+      class="hidden lg:block sticky bottom-0 bg-white/90 dark:bg-slate-900/85"
+      :class="actionsTourClass"
+    >
       <ActionsFooter
         :queue-enabled="queue"
         :queue-paused="queuePaused"
@@ -1086,7 +1566,11 @@ watch(queue, function (enabled) {
   </div>
 
   <Teleport to="body">
-    <div class="lg:hidden fixed inset-x-0 bottom-0 z-40 w-full bg-white/95 shadow-lg backdrop-blur">
+    <div
+      ref="actionsMobileRef"
+      class="lg:hidden fixed inset-x-0 bottom-0 z-50 w-full bg-white/95 shadow-lg backdrop-blur dark:bg-slate-900/90"
+      :class="actionsTourClass"
+    >
       <ActionsFooter
         :queue-enabled="queue"
         :queue-paused="queuePaused"
@@ -1101,9 +1585,77 @@ watch(queue, function (enabled) {
     </div>
   </Teleport>
 
+  <Teleport to="body">
+    <div v-if="isOnboardingOpen && activeOnboardingStep" class="fixed inset-0 z-85">
+      <div class="absolute inset-0 pointer-events-none">
+        <div v-if="!onboardingSpotlightRect" class="onboarding-overlay-fallback" />
+        <div class="onboarding-spotlight-mask" :style="onboardingSpotlightMaskStyle" />
+      </div>
+
+      <section
+        class="absolute inset-x-4 top-4 mx-auto w-full max-w-md rounded-2xl border border-slate-200 bg-white/95 p-4 text-slate-800 shadow-2xl dark:border-slate-700 dark:bg-slate-900/95 dark:text-slate-100 sm:inset-x-auto sm:right-6"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Playground onboarding"
+      >
+        <div class="grid gap-4">
+          <div class="flex items-center justify-between gap-3">
+            <p
+              class="text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-slate-500 dark:text-slate-400"
+            >
+              Onboarding
+            </p>
+            <span
+              class="rounded-full border border-slate-200 px-2 py-0.5 text-[0.68rem] font-semibold text-slate-500 dark:border-slate-600 dark:text-slate-300"
+            >
+              {{ onboardingProgressLabel }}
+            </span>
+          </div>
+
+          <Transition name="onboarding-step" mode="out-in">
+            <div :key="activeOnboardingStep.id" class="space-y-1">
+              <h3 class="text-base font-semibold">{{ activeOnboardingStep.title }}</h3>
+              <p class="text-sm text-slate-600 dark:text-slate-300">
+                {{ activeOnboardingStep.description }}
+              </p>
+            </div>
+          </Transition>
+
+          <div
+            class="flex items-center gap-2"
+            :class="isLastOnboardingStep ? 'justify-end' : 'justify-between'"
+          >
+            <Button
+              v-if="!isLastOnboardingStep"
+              variant="subtle"
+              tooltip="Skip onboarding"
+              @click="skipOnboarding"
+            >
+              Skip
+            </Button>
+
+            <div class="flex items-center gap-2">
+              <Button
+                v-if="!isFirstOnboardingStep"
+                variant="outline"
+                tooltip="Go to previous step"
+                @click="goToPreviousOnboardingStep"
+              >
+                Back
+              </Button>
+              <Button variant="primary" tooltip="Go to next step" @click="goToNextOnboardingStep">
+                {{ isLastOnboardingStep ? 'Finish' : 'Next' }}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </Teleport>
+
   <Modal v-model="isLogModalOpen" title="Event log">
     <div class="grid gap-4">
-      <div class="flex items-center justify-between text-xs text-slate-500">
+      <div class="flex items-center justify-between text-xs text-slate-500 dark:text-slate-400">
         <span v-if="eventLog.length">Newest first - {{ eventLog.length }} events</span>
         <span v-else>No events yet</span>
         <Button
@@ -1116,11 +1668,13 @@ watch(queue, function (enabled) {
         </Button>
       </div>
 
-      <div v-if="eventLog.length" class="max-h-[360px] space-y-3 overflow-auto">
+      <div v-if="eventLog.length" class="max-h-90 space-y-3 overflow-auto">
         <div v-for="entry in eventLog" :key="entry.id" class="space-y-2">
-          <div class="flex items-center justify-between text-[0.75rem] text-slate-500">
-            <span class="font-semibold text-slate-700">{{ entry.label }}</span>
-            <span class="text-xs text-slate-400">{{ entry.timestamp }}</span>
+          <div
+            class="flex items-center justify-between text-[0.75rem] text-slate-500 dark:text-slate-400"
+          >
+            <span class="font-semibold text-slate-700 dark:text-slate-200">{{ entry.label }}</span>
+            <span class="text-xs text-slate-400 dark:text-slate-500">{{ entry.timestamp }}</span>
           </div>
           <highlightjs
             class="code-block"
@@ -1134,22 +1688,48 @@ watch(queue, function (enabled) {
   </Modal>
 
   <Modal v-if="hasGiscusConfig" v-model="isFeedbackModalOpen" title="Feedback">
-    <div class="space-y-3 text-sm text-slate-600">
-      <div class="rounded-xl border border-slate-200 bg-slate-50 p-2">
+    <div class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
+      <div
+        class="rounded-xl border border-slate-200 bg-slate-50 p-2 dark:border-slate-700 dark:bg-slate-800/65"
+      >
         <Giscus
           :repo="giscusConfig.repo"
           :repo-id="giscusConfig.repoId"
           :category="giscusConfig.category"
           :category-id="giscusConfig.categoryId"
           :mapping="giscusConfig.mapping"
-          :theme="giscusConfig.theme"
+          :theme="giscusTheme"
           :strict="giscusConfig.strict"
           input-position="top"
           lang="en"
           loading="lazy"
-          class="min-h-[320px]"
+          class="min-h-80"
         />
       </div>
     </div>
   </Modal>
 </template>
+
+<style scoped>
+.onboarding-overlay-fallback {
+  position: absolute;
+  inset: 0;
+  background: rgb(15 23 42 / 0.58);
+  backdrop-filter: blur(1px);
+}
+
+.onboarding-spotlight-mask {
+  position: absolute;
+  pointer-events: none;
+  background: transparent;
+  will-change: left, top, width, height, border-radius;
+  transition:
+    left 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    top 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    width 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    height 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-radius 280ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+</style>
+

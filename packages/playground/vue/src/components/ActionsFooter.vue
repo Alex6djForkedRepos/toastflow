@@ -33,7 +33,7 @@ function toggleQueue() {
 
 <template>
   <div
-    class="p-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 text-xs md:text-sm"
+    class="p-5 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 text-xs md:text-sm dark:border-slate-700"
   >
     <div class="flex flex-wrap gap-2">
       <Button variant="primary" tooltip="Push a toast" @click="emit('push')"> Push toast</Button>

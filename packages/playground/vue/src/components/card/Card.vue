@@ -1,5 +1,7 @@
 <template>
-  <section class="flex flex-col gap-4 rounded-2xl bg-white p-4 ring-1 ring-slate-100">
+  <section
+    class="ui-card-surface flex flex-col gap-4 rounded-2xl p-4 transition-colors duration-300"
+  >
     <slot />
   </section>
 </template>

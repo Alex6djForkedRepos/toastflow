@@ -65,14 +65,16 @@ const autocompleteAttr = computed(function () {
 
 <template>
   <CardLayout>
-    <label v-if="label" :for="inputId" class="text-[0.7rem] text-slate-500">{{ label }}</label>
+    <label v-if="label" :for="inputId" class="text-[0.7rem] text-slate-500 dark:text-slate-400">
+      {{ label }}
+    </label>
     <select
       v-if="options"
       :id="inputId"
       :name="nameAttr"
       :autocomplete="autocompleteAttr"
       :value="modelValue"
-      class="w-full rounded-lg border border-slate-200 bg-white px-2 py-1 text-xs text-slate-700 transition focus:border-slate-300 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"
+      class="ui-field"
       @change="onSelect"
     >
       <option v-for="option in options" :key="option.value" :value="option.value">
@@ -91,7 +93,7 @@ const autocompleteAttr = computed(function () {
       :step="step"
       :inputmode="type === 'number' ? 'decimal' : undefined"
       spellcheck="false"
-      class="w-full rounded-lg border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 transition focus:border-slate-300 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"
+      class="ui-field"
       @input="onInput"
     />
   </CardLayout>

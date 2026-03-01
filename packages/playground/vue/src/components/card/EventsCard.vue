@@ -15,6 +15,7 @@ defineProps<{
   description: string;
   fallbackTitle: boolean;
   fallbackDescription: boolean;
+  openLogButtonClass?: string;
 }>();
 
 const emit = defineEmits<{
@@ -35,8 +36,17 @@ const emit = defineEmits<{
     <div>
       <div class="flex items-center justify-between gap-2">
         <SectionHeading text="Events (console.log)">
-          <Button variant="ghost" icon-only tooltip="Open log" @click="emit('open-log')">
-            <Terminal class="size-4" />
+          <Button
+            id="events-open-log-button"
+            variant="ghost"
+            icon-only
+            tooltip="Open log"
+            :class="openLogButtonClass"
+            @click="emit('open-log')"
+          >
+            <span class="events-log-icon-badge">
+              <Terminal class="size-4" />
+            </span>
           </Button>
         </SectionHeading>
       </div>
@@ -116,7 +126,7 @@ const emit = defineEmits<{
           Fallback description
         </Button>
       </CardLayout>
-      <p class="text-[0.65rem] text-slate-400">
+      <p class="text-[0.65rem] text-slate-400 dark:text-slate-500">
         At least one of title/description is required. Leave one empty if you want, but if both are
         blank we will auto-fill defaults (logging a warning).
       </p>

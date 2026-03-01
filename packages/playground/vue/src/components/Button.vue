@@ -53,23 +53,22 @@ const shapeClass = computed(function () {
 });
 
 const variantClass = computed(function () {
-  const activeBase = 'border border-slate-900 bg-slate-900 text-white';
-  const inactiveBase =
-    'border border-slate-200 bg-slate-50 text-slate-600 hover:border-slate-300 hover:bg-slate-100';
+  const activeBase = 'tf-btn-toggle-active';
+  const inactiveBase = 'tf-btn-toggle-inactive';
 
   switch (props.variant) {
     case 'primary':
-      return 'bg-slate-900 text-white transition hover:bg-slate-800';
+      return 'tf-btn-primary';
     case 'primary-muted':
-      return 'bg-slate-900/80 text-white transition hover:bg-slate-900';
+      return 'tf-btn-primary-muted';
     case 'outline':
-      return 'border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50';
+      return 'tf-btn-outline';
     case 'danger':
-      return 'border border-rose-200 bg-rose-50 text-rose-700 transition hover:border-rose-300 hover:bg-rose-100';
+      return 'tf-btn-danger';
     case 'subtle':
-      return 'border border-slate-200 bg-slate-50 text-slate-600 transition hover:border-slate-300 hover:bg-slate-100';
+      return 'tf-btn-subtle';
     case 'ghost':
-      return 'text-slate-700 transition hover:bg-slate-100';
+      return 'tf-btn-ghost';
     case 'pill':
     case 'toggle':
       return isActive.value ? activeBase : inactiveBase;
@@ -79,7 +78,7 @@ const variantClass = computed(function () {
 });
 
 const baseClass = computed(function () {
-  return 'inline-flex items-center gap-2 font-medium transition-colors duration-200 cursor-pointer shrink-0';
+  return 'tf-btn-base inline-flex items-center gap-2 font-medium transition-colors duration-300 cursor-pointer shrink-0';
 });
 
 const newBadgeClass = computed(function () {
@@ -134,3 +133,101 @@ const relAttr = computed(function () {
     <NewBadge v-if="isNew" />
   </component>
 </template>
+
+<style scoped>
+.tf-btn-base {
+  border: 1px solid transparent;
+}
+
+.tf-btn-base:focus-visible {
+  outline: 2px solid var(--tf-ui-focus-ring);
+  outline-offset: 2px;
+}
+
+.tf-btn-primary {
+  background: var(--tf-ui-btn-primary-bg);
+  border-color: var(--tf-ui-btn-primary-border);
+  color: var(--tf-ui-btn-primary-fg);
+}
+
+.tf-btn-primary:hover {
+  background: var(--tf-ui-btn-primary-bg-hover);
+  border-color: var(--tf-ui-btn-primary-border-hover);
+}
+
+.tf-btn-primary-muted {
+  background: var(--tf-ui-btn-primary-muted-bg);
+  border-color: var(--tf-ui-btn-primary-muted-border);
+  color: var(--tf-ui-btn-primary-muted-fg);
+}
+
+.tf-btn-primary-muted:hover {
+  background: var(--tf-ui-btn-primary-muted-bg-hover);
+  border-color: var(--tf-ui-btn-primary-muted-border-hover);
+}
+
+.tf-btn-outline {
+  background: var(--tf-ui-btn-outline-bg);
+  border-color: var(--tf-ui-btn-outline-border);
+  color: var(--tf-ui-btn-outline-fg);
+}
+
+.tf-btn-outline:hover {
+  background: var(--tf-ui-btn-outline-bg-hover);
+  border-color: var(--tf-ui-btn-outline-border-hover);
+}
+
+.tf-btn-subtle {
+  background: var(--tf-ui-btn-subtle-bg);
+  border-color: var(--tf-ui-btn-subtle-border);
+  color: var(--tf-ui-btn-subtle-fg);
+}
+
+.tf-btn-subtle:hover {
+  background: var(--tf-ui-btn-subtle-bg-hover);
+  border-color: var(--tf-ui-btn-subtle-border-hover);
+}
+
+.tf-btn-toggle-active {
+  background: var(--tf-ui-btn-toggle-active-bg);
+  border-color: var(--tf-ui-btn-toggle-active-border);
+  color: var(--tf-ui-btn-toggle-active-fg);
+}
+
+.tf-btn-toggle-active:hover {
+  background: var(--tf-ui-btn-toggle-active-bg-hover);
+  border-color: var(--tf-ui-btn-toggle-active-border-hover);
+}
+
+.tf-btn-toggle-inactive {
+  background: var(--tf-ui-btn-toggle-inactive-bg);
+  border-color: var(--tf-ui-btn-toggle-inactive-border);
+  color: var(--tf-ui-btn-toggle-inactive-fg);
+}
+
+.tf-btn-toggle-inactive:hover {
+  background: var(--tf-ui-btn-toggle-inactive-bg-hover);
+  border-color: var(--tf-ui-btn-toggle-inactive-border-hover);
+}
+
+.tf-btn-ghost {
+  background: transparent;
+  border-color: transparent;
+  color: var(--tf-ui-btn-ghost-fg);
+}
+
+.tf-btn-ghost:hover {
+  background: var(--tf-ui-btn-ghost-bg-hover);
+}
+
+.tf-btn-danger {
+  background: var(--tf-ui-btn-danger-bg);
+  border-color: var(--tf-ui-btn-danger-border);
+  color: var(--tf-ui-btn-danger-fg);
+}
+
+.tf-btn-danger:hover {
+  background: var(--tf-ui-btn-danger-bg-hover);
+  border-color: var(--tf-ui-btn-danger-border-hover);
+}
+</style>

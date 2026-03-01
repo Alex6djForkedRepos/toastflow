@@ -68,7 +68,9 @@ const autocompleteAttr = computed(function () {
 
 <template>
   <div class="flex flex-col gap-1">
-    <label :for="selectId" class="text-[0.7rem] text-slate-500">{{ label }}</label>
+    <label :for="selectId" class="text-[0.7rem] text-slate-500 dark:text-slate-400">
+      {{ label }}
+    </label>
     <div class="flex items-center gap-2">
       <Button variant="subtle" tooltip="Decrease" @click="decrement">-</Button>
       <select
@@ -76,7 +78,7 @@ const autocompleteAttr = computed(function () {
         :name="nameAttr"
         :autocomplete="autocompleteAttr"
         :value="value"
-        class="w-full rounded-lg border border-slate-200 bg-white p-1.5 text-xs text-slate-700 transition focus:border-slate-300 focus:bg-white focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-400 focus-visible:ring-offset-1"
+        class="ui-field p-1.5"
         @change="onSelectChange"
       >
         <option v-for="option in selectOptions" :key="option.value" :value="option.value">
