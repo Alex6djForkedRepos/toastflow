@@ -9,6 +9,7 @@
   "packageManager": "pnpm@9.12.3",
   "scripts": {
     "dev": "vite",
+    "prebuild": "pnpm --filter toastflow-core build && pnpm --filter vue-toastflow build",
     "build": "run-s generate:sitemap type-check \"build-only {@}\" --",
     "preview": "vite preview",
     "test:unit": "vitest",
