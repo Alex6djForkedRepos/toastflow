@@ -60,15 +60,9 @@ Default `animation` object:
 ```ts
 {
   name: "Toastflow__animation",
-    bump
-:
-  "Toastflow__animation-bump",
-    clearAll
-:
-  "Toastflow__animation-clearAll",
-    update
-:
-  "Toastflow__animation-update"
+  bump: "Toastflow__animation-bump",
+  clearAll: "Toastflow__animation-clearAll",
+  update: "Toastflow__animation-update"
 }
 ```
 
