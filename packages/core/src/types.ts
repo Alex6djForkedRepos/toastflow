@@ -38,7 +38,8 @@ export type ToastType =
   | "success"
   | "error"
   | "info"
-  | "warning";
+  | "warning"
+  | "custom";
 /**
  * Internal lifecycle markers used for animations and cleanup.
  */
@@ -255,6 +256,10 @@ export interface ToastConfig {
    */
   closeButton: boolean;
   /**
+   * Show the icon inside each toast. (Default: true)
+   */
+  showIcon: boolean;
+  /**
    * Allow closing a toast by clicking anywhere on it. (Default: false)
    */
   closeOnClick: boolean;
@@ -315,6 +320,15 @@ export interface ToastOptions extends ToastConfig {
    * Custom accent theme applied by the renderer (e.g. "my-theme" -> "tf-toast-accent--my-theme").
    */
   theme?: string;
+  /**
+   * Override the icon color for this toast (CSS color value).
+   */
+  iconColor?: string;
+  /**
+   * Override the accent color for this toast (CSS color value).
+   * Sets text, title, description, and progress bar colors.
+   */
+  accentColor?: string;
 }
 
 /**

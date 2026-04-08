@@ -26,7 +26,7 @@ import { toast } from "vue-toastflow";
 - `pauseQueue()`
 - `resumeQueue()`
 - `getConfig()`
-- typed wrappers: `default`, `success`, `error`, `info`, `warning`
+- typed wrappers: `default`, `success`, `error`, `info`, `warning`, `custom`
 
 ::: tip Reference
 Detailed signatures and behavior for each action method: [Actions](/api/actions).  

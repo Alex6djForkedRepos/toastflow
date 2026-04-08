@@ -76,6 +76,7 @@
   --tf-toast-icon-error: var(--tf-toast-error-text-default);
   --tf-toast-icon-warning: var(--tf-toast-warning-text-default);
   --tf-toast-icon-info: var(--tf-toast-info-text-default);
+  --tf-toast-icon-custom: var(--tf-toast-normal-text-default);
 
   /* progress bar */
   --tf-toast-progress-height: 4px;

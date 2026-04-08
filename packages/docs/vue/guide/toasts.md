@@ -15,6 +15,7 @@ This page explains the toast payload model and show/update semantics.
 - `error`
 - `info`
 - `warning`
+- `custom`
 
 ## Required Content Rule
 

@@ -30,7 +30,7 @@ show(content: string | ToastTextInput, options?: ToastShowOptions): ToastId;
 
 Validation rules:
 
-- `type` must be one of the six valid toast types.
+- `type` must be a valid toast type (`loading`, `default`, `success`, `error`, `info`, `warning`, `custom`).
 - `title` or `description` must be non-empty.
 
 ## `loading` Signature

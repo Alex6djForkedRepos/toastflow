@@ -128,4 +128,5 @@ export const toast = {
   error: createToastCaller("error"),
   info: createToastCaller("info"),
   warning: createToastCaller("warning"),
+  custom: createToastCaller("custom"),
 };

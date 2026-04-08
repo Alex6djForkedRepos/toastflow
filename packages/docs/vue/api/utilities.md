@@ -14,12 +14,14 @@ This page lists useful exports and integration utilities.
 ```ts
 export * from "./types";
 export * from "./store";
+export { isNumberFinite, generateUuid, defaultCreatedAtFormatter, VALID_TOAST_TYPES } from "./util";
 ```
 
 Main public entry points:
 
 - `createToastStore`
 - all core types (`ToastConfig`, `ToastStore`, `ToastState`, `ToastInstance`, etc.)
+- utilities: `isNumberFinite`, `generateUuid`, `defaultCreatedAtFormatter`, `VALID_TOAST_TYPES`
 
 ## `vue-toastflow`
 

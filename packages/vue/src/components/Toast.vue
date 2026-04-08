@@ -21,6 +21,11 @@ import type {
   ToastStore,
   ToastType,
 } from "toastflow-core";
+import {
+  defaultCreatedAtFormatter,
+  isNumberFinite,
+  VALID_TOAST_TYPES,
+} from "toastflow-core";
 import { toastStoreKey } from "../symbols";
 import { getToastStore } from "../toast";
 import CheckCircle from "./icons/CheckCircle.vue";
@@ -30,7 +35,6 @@ import InfoCircle from "./icons/InfoCircle.vue";
 import QuestionMarkCircle from "./icons/QuestionMarkCircle.vue";
 import ArrowPath from "./icons/ArrowPath.vue";
 import XMark from "./icons/XMark.vue";
-import { isNumberFinite } from "toastflow-core/src/util";
 
 const props = defineProps<{
   toast: ToastStandaloneInstance | ToastInstance;
@@ -59,31 +63,11 @@ const emit = defineEmits<{
 const injectedStore = inject<ToastStore | null>(toastStoreKey, null);
 const store: ToastStore = injectedStore ?? getToastStore();
 
-const VALID_TOAST_TYPES = new Set<ToastType>([
-  "loading",
-  "default",
-  "success",
-  "error",
-  "info",
-  "warning",
-]);
-
 function resolveToastType(value: unknown): ToastType {
   if (typeof value === "string" && VALID_TOAST_TYPES.has(value as ToastType)) {
     return value as ToastType;
   }
   return "default";
-}
-
-function defaultCreatedAtFormatter(createdAt: number): string {
-  try {
-    return new Date(createdAt).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return new Date(createdAt).toISOString();
-  }
 }
 
 const toast = computed<ToastInstance>(function () {
@@ -150,6 +134,12 @@ const typeMeta: Record<
     close: "tf-toast-close--loading",
     component: ArrowPath,
   },
+  custom: {
+    accent: "tf-toast-accent--custom",
+    icon: "tf-toast-icon--custom",
+    close: "tf-toast-close--custom",
+    component: QuestionMarkCircle,
+  },
 };
 
 const assertiveTypes = new Set<ToastType>(["error", "warning"]);
@@ -209,9 +199,32 @@ const {
 } = useButtons(toast);
 
 const toastStyle = computed<CSSProperties>(function () {
-  return {
+  const style: CSSProperties = {
     ...buttonsVarsStyle.value,
   };
+
+  if (toast.value.accentColor) {
+    const color = toast.value.accentColor;
+    (style as Record<string, string>)["--tf-toast-color"] = color;
+    (style as Record<string, string>)["--tf-toast-title-color"] = color;
+    (style as Record<string, string>)["--tf-toast-description-color"] = color;
+    (style as Record<string, string>)["--tf-toast-progress-bar-bg"] = color;
+  }
+
+  return style;
+});
+
+const iconStyle = computed<CSSProperties>(function () {
+  if (!toast.value.iconColor) {
+    return {};
+  }
+  return {
+    "--tf-toast-icon-color-override": toast.value.iconColor,
+  } as CSSProperties;
+});
+
+const showIconElement = computed(function () {
+  return toast.value.showIcon !== false;
 });
 
 function handlePointerDown(event: PointerEvent) {
@@ -1059,8 +1072,10 @@ function stripHtmlToText(value: string): string {
           <div class="tf-toast-main-content">
             <!-- icon (slot + lucide defaults) -->
             <div
+              v-if="showIconElement"
               class="tf-toast-icon"
               :class="iconWrapperClass"
+              :style="iconStyle"
               aria-hidden="true"
             >
               <slot name="icon" :toast="toast">
@@ -1302,6 +1317,37 @@ function stripHtmlToText(value: string): string {
   --tf-toast-progress-bar-bg: var(--tf-toast-info-progress-bar-bg-default);
 }
 
+.tf-toast-accent--custom {
+  --tf-toast-color: var(
+    --tf-toast-custom-color-default,
+    var(--tf-toast-normal-color-default)
+  );
+  --tf-toast-bg: var(
+    --tf-toast-custom-bg-default,
+    var(--tf-toast-normal-bg-default)
+  );
+  --tf-toast-border-color: var(
+    --tf-toast-custom-border-default,
+    var(--tf-toast-normal-border-default)
+  );
+  --tf-toast-title-color: var(
+    --tf-toast-custom-title-color-default,
+    var(--tf-toast-normal-title-color-default)
+  );
+  --tf-toast-description-color: var(
+    --tf-toast-custom-description-color-default,
+    var(--tf-toast-normal-description-color-default)
+  );
+  --tf-toast-progress-bg: var(
+    --tf-toast-custom-progress-bg-default,
+    var(--tf-toast-normal-progress-bg-default)
+  );
+  --tf-toast-progress-bar-bg: var(
+    --tf-toast-custom-progress-bar-bg-default,
+    var(--tf-toast-normal-progress-bar-bg-default)
+  );
+}
+
 /* layout + card */
 .tf-toast-surface {
   position: relative;
@@ -1448,27 +1494,31 @@ function stripHtmlToText(value: string): string {
 
 /* per-type icon color */
 .tf-toast-icon--loading .tf-toast-icon-svg {
-  color: var(--tf-toast-icon-loading);
+  color: var(--tf-toast-icon-color-override, var(--tf-toast-icon-loading));
 }
 
 .tf-toast-icon--default .tf-toast-icon-svg {
-  color: var(--tf-toast-icon-default);
+  color: var(--tf-toast-icon-color-override, var(--tf-toast-icon-default));
 }
 
 .tf-toast-icon--success .tf-toast-icon-svg {
-  color: var(--tf-toast-icon-success);
+  color: var(--tf-toast-icon-color-override, var(--tf-toast-icon-success));
 }
 
 .tf-toast-icon--error .tf-toast-icon-svg {
-  color: var(--tf-toast-icon-error);
+  color: var(--tf-toast-icon-color-override, var(--tf-toast-icon-error));
 }
 
 .tf-toast-icon--warning .tf-toast-icon-svg {
-  color: var(--tf-toast-icon-warning);
+  color: var(--tf-toast-icon-color-override, var(--tf-toast-icon-warning));
 }
 
 .tf-toast-icon--info .tf-toast-icon-svg {
-  color: var(--tf-toast-icon-info);
+  color: var(--tf-toast-icon-color-override, var(--tf-toast-icon-info));
+}
+
+.tf-toast-icon--custom .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-color-override, var(--tf-toast-icon-custom, var(--tf-toast-icon-default)));
 }
 
 /* body */

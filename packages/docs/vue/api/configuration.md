@@ -14,7 +14,7 @@ Toastflow resolves config in this order:
 ## Full Option Reference
 
 | Option               | Type                                 | Default               | Notes                                                                             |
-| -------------------- | ------------------------------------ | --------------------- | --------------------------------------------------------------------------------- |
+|----------------------|--------------------------------------|-----------------------|-----------------------------------------------------------------------------------|
 | `offset`             | `string`                             | `"16px"`              | Distance of stack from viewport edge.                                             |
 | `gap`                | `string`                             | `"8px"`               | Gap between toasts in the same stack.                                             |
 | `zIndex`             | `number`                             | `9999`                | Applied to root container layer.                                                  |
@@ -33,6 +33,7 @@ Toastflow resolves config in this order:
 | `pauseStrategy`      | `"resume" \| "reset"`                | `"resume"`            | Resume with remaining time or restart full duration.                              |
 | `animation`          | `Partial<ToastAnimation>`            | See below             | CSS classes for transitions and bump/update effects.                              |
 | `closeButton`        | `boolean`                            | `true`                | Show floating close button.                                                       |
+| `showIcon`           | `boolean`                            | `true`                | Show the icon inside each toast.                                                  |
 | `closeOnClick`       | `boolean`                            | `false`               | Dismiss when clicking toast body.                                                 |
 | `swipeToDismiss`     | `boolean`                            | `false`               | Allows dismissing a toast with a right swipe/drag (touch and mouse).              |
 | `buttons`            | `ToastButtonsConfig`                 | `undefined`           | Inline action buttons config (alignment, layout, spacing).                        |
@@ -44,14 +45,30 @@ Toastflow resolves config in this order:
 | `onClick`            | `(ctx, event) => void`               | `undefined`           | Called when toast body is clicked.                                                |
 | `onClose`            | `(ctx) => void`                      | `undefined`           | Called right before leaving phase starts.                                         |
 
+### Per-Toast Overrides (on `ToastOptions`)
+
+These fields are available when calling `show`, typed helpers, or `update`:
+
+| Option        | Type     | Default     | Notes                                                                    |
+|---------------|----------|-------------|--------------------------------------------------------------------------|
+| `theme`       | `string` | `undefined` | Custom accent class (e.g. `"brand"` → `tf-toast-accent--brand`).         |
+| `iconColor`   | `string` | `undefined` | CSS color override for the toast icon.                                   |
+| `accentColor` | `string` | `undefined` | CSS color override for text, title, description, and progress bar color. |
+
 Default `animation` object:
 
 ```ts
 {
   name: "Toastflow__animation",
-  bump: "Toastflow__animation-bump",
-  clearAll: "Toastflow__animation-clearAll",
-  update: "Toastflow__animation-update"
+    bump
+:
+  "Toastflow__animation-bump",
+    clearAll
+:
+  "Toastflow__animation-clearAll",
+    update
+:
+  "Toastflow__animation-update"
 }
 ```
 

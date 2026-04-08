@@ -20,23 +20,33 @@
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/vue"
   },
-  "version": "1.1.8",
-  "main": "src/index.ts",
-  "module": "src/index.ts",
-  "types": "src/index.ts",
+  "version": "1.1.9-beta.0",
+  "main": "./dist/toastflow.umd.js",
+  "module": "./dist/toastflow.es.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/toastflow.es.js"
+      },
+      "require": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/toastflow.umd.js"
+      }
+    },
+    "./styles.css": "./dist/vue-toastflow.css",
+    "./src/styles.css": "./src/styles.css"
+  },
   "scripts": {
-    "build": "vite build",
+    "build": "vite build && node -e \"require('fs').copyFileSync('src/styles.css','dist/vue-toastflow.css')\"",
     "prepack": "pnpm run build",
     "test": "vitest"
   },
   "files": [
     "dist",
     "src",
-    "styles.css",
-    "README.md",
-    "package.json",
-    "vite.config.ts",
-    "tsconfig.json"
+    "README.md"
   ],
   "peerDependencies": {
     "vue": "^3.4.0"
@@ -48,6 +58,8 @@
     "@vitejs/plugin-vue": "^6.0.2",
     "typescript": "^5.9.3",
     "vite": "^7.2.4",
+    "vite-plugin-css-injected-by-js": "^4.0.1",
+    "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.0.13",
     "vue": "^3.5.24"
   }

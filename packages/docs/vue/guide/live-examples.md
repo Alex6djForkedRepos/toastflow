@@ -6,6 +6,7 @@ outline: deep
 <script setup lang="ts">
 import {
   coreFiles,
+  customFiles,
   eventsFiles,
   headlessFiles,
   helperFiles,
@@ -48,6 +49,17 @@ import {
   layout="vertical"
   title="Custom theme, HTML content, and action buttons"
   description="Use supportHtml, created-at badges, and per-toast accent classes."
+  :height="1020"
+/>
+
+## 🧩 Custom Toast Variants
+
+<ToastflowRepl
+  :files="customFiles"
+  main-file="main.ts"
+  layout="vertical"
+  title="type: custom with theme, accentColor, iconColor, and showIcon"
+  description="Three custom toasts: CSS theme class, inline accent/icon color, and hidden icon."
   :height="1020"
 />
 

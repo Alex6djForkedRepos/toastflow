@@ -174,7 +174,7 @@ export default defineNuxtModule<NuxtToastflowOptions>({
     }
 
     if (options.css) {
-      const cssEntry = "vue-toastflow/src/styles.css";
+      const cssEntry = "vue-toastflow/styles.css";
       const hasCssEntry = nuxt.options.css.some(function (entry) {
         if (typeof entry === "string") {
           return entry === cssEntry;

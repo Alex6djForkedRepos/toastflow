@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, inject, onMounted, onUnmounted, ref, watch } from "vue";
+import { computed, inject, onBeforeUpdate, onMounted, onUnmounted, ref, watch } from "vue";
 import Toast from "./Toast.vue";
 import type {
   ToastAnimation,
@@ -211,6 +211,35 @@ function refreshTransitionDurations() {
   };
 }
 
+// Snapshot positions before Vue patches the DOM so beforeLeave can
+// place leaving elements where they were visually, not where the
+// post-patch layout puts them.
+interface CachedPosition {
+  top: number;
+  height: number;
+  parentHeight: number;
+  parentWidth: number;
+}
+
+const leavePositionCache = new WeakMap<Element, CachedPosition>();
+
+onBeforeUpdate(function () {
+  const items = document.querySelectorAll(".tf-toast-item");
+  for (let i = 0; i < items.length; i++) {
+    const el = items[i] as HTMLElement;
+    const parent = el.parentElement;
+    if (!parent) {
+      continue;
+    }
+    leavePositionCache.set(el, {
+      top: el.offsetTop,
+      height: el.offsetHeight,
+      parentHeight: parent.clientHeight,
+      parentWidth: parent.clientWidth,
+    });
+  }
+});
+
 function beforeLeave(el: Element) {
   const element = el as HTMLElement;
   const parent = element.parentElement;
@@ -218,15 +247,17 @@ function beforeLeave(el: Element) {
     return;
   }
 
+  const cached = leavePositionCache.get(element);
+
   const position = element.dataset.position ?? "";
   const isBottom =
     position.startsWith("bottom-") ||
     parent.classList.contains("tf-toast-stack-inner--bottom");
 
-  const top = element.offsetTop;
-  const height = element.offsetHeight;
-  const parentHeight = parent.clientHeight;
-  const parentWidth = parent.clientWidth;
+  const top = cached?.top ?? element.offsetTop;
+  const height = cached?.height ?? element.offsetHeight;
+  const parentHeight = cached?.parentHeight ?? parent.clientHeight;
+  const parentWidth = cached?.parentWidth ?? parent.clientWidth;
 
   if (!isBottom) {
     parent.style.minHeight = `${parentHeight}px`;

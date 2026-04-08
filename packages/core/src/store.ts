@@ -18,7 +18,7 @@ import type {
   ToastType,
   ToastUpdateInput,
 } from "./types";
-import { generateUuid, isNumberFinite } from "./util";
+import { defaultCreatedAtFormatter, generateUuid, isNumberFinite, VALID_TOAST_TYPES, } from "./util";
 
 type Listener = (state: ToastState) => void;
 type EventListener = (event: ToastEvent) => void;
@@ -30,17 +30,6 @@ interface TimerState {
   remaining: number;
   paused: boolean;
 }
-
-const defaultCreatedAtFormatter = function (createdAt: number): string {
-  try {
-    return new Date(createdAt).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch (error) {
-    return new Date(createdAt).toISOString();
-  }
-};
 
 const defaults: ToastConfig = {
   offset: "16px",
@@ -66,6 +55,7 @@ const defaults: ToastConfig = {
     update: "Toastflow__animation-update",
   },
   closeButton: true,
+  showIcon: true,
   closeOnClick: false,
   swipeToDismiss: false,
   supportHtml: false,
@@ -73,7 +63,8 @@ const defaults: ToastConfig = {
   createdAtFormatter: defaultCreatedAtFormatter,
 };
 
-const HIDE_ANIMATION_DURATION = 50;
+// delay before removing clear-all toasts from state (lets the CSS animation start)
+const CLEAR_ALL_DELAY = 50;
 
 export function createToastStore(
   globalConfig: Partial<ToastConfig> = {},
@@ -392,6 +383,7 @@ export function createToastStore(
       const toEvict = pickOverflowToast(
         getVisibleAt(toastInstance.position),
         toastInstance.order,
+        toastInstance.position,
       );
       if (toEvict) {
         dismiss(toEvict.id);
@@ -539,7 +531,7 @@ export function createToastStore(
     notify();
   }
 
-  // Hide a toast, run lifecycle callbacks, and remove it after the leave animation.
+  // Hide a toast, run lifecycle callbacks, and let the renderer handle leave animation.
   function dismiss(id: ToastId): void {
     const located = findToastById(id);
     if (!located) {
@@ -571,28 +563,36 @@ export function createToastStore(
       return;
     }
 
+    // Phase 1: mark as leaving so getVisibleAt frees the slot,
+    // but keep in the array for one render frame so TransitionGroup
+    // can capture the correct visual position.
     syncState(
       state.toasts.map(function (t) {
         if (t.id !== id) {
           return t;
         }
-        return {
-          ...t,
-          phase: "leaving",
-        };
+        return { ...t, phase: "leaving" };
       }),
     );
 
     notify();
     processQueue(toast.position);
 
+    // Phase 2: remove after the current render cycle so the leave
+    // animation starts from where the toast was actually visible.
     setTimeout(function () {
-      const still = state.toasts.find((t) => t.id === id);
+      const still = state.toasts.find(function (t) {
+        return t.id === id;
+      });
       if (!still) {
         return;
       }
 
-      syncState(state.toasts.filter((t) => t.id !== id));
+      syncState(
+        state.toasts.filter(function (t) {
+          return t.id !== id;
+        }),
+      );
 
       if (toast.onUnmount) {
         toast.onUnmount(context);
@@ -600,7 +600,7 @@ export function createToastStore(
 
       notify();
       processQueue(toast.position);
-    }, HIDE_ANIMATION_DURATION);
+    }, 0);
   }
 
   // Clear all toasts in their current positions.
@@ -677,7 +677,7 @@ export function createToastStore(
       queueByPosition.clear();
       syncState([]);
       notify();
-    }, HIDE_ANIMATION_DURATION);
+    }, CLEAR_ALL_DELAY);
   }
 
   // Pause queue processing; queued toasts stay stored until resumed.
@@ -865,17 +865,8 @@ function normalizeShowArgs(
   };
 }
 
-const VALID_TYPES = new Set<ToastType>([
-  "loading",
-  "default",
-  "success",
-  "error",
-  "info",
-  "warning",
-]);
-
 function assertToastType(type: ToastType, caller: string) {
-  if (!VALID_TYPES.has(type)) {
+  if (!VALID_TOAST_TYPES.has(type)) {
     throw new Error(`[toastflow-core] ${caller} requires a valid toast type.`);
   }
 }
@@ -978,23 +969,20 @@ function insertToast(
 function pickOverflowToast(
   samePos: ToastInstance[],
   order: ToastOrder,
+  position: ToastPosition,
 ): ToastInstance | null {
   if (!samePos.length) {
     return null;
   }
 
-  const first = samePos[0];
-  if (!first) {
-    return null;
-  }
+  const isTop = position.startsWith("top-");
 
+  // Always evict the toast that has been visible the longest (FIFO).
+  // insertToast places the newest at the start (top) or end (bottom) depending
+  // on order + position, so the oldest is always at the opposite end.
   if (order === "newest") {
-    return samePos.slice(1).reduce((oldest, toast) => {
-      return toast.createdAt < oldest.createdAt ? toast : oldest;
-    }, first);
+    return isTop ? samePos[samePos.length - 1]! : samePos[0]!;
   }
 
-  return samePos.slice(1).reduce((newest, toast) => {
-    return toast.createdAt > newest.createdAt ? toast : newest;
-  }, first);
+  return isTop ? samePos[0]! : samePos[samePos.length - 1]!;
 }

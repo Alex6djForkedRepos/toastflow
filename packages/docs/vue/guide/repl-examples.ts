@@ -33,14 +33,17 @@ import {
   type ToastUpdateInput,
 } from "vue-toastflow";
 
+// tracks the most recent toast so we can update/dismiss it
 const lastId = ref<ToastId | null>(null);
 
+// full object payload with type included
 const showObjectVariant: ToastShowInput = {
   type: "success",
   title: "Object payload",
   description: "toast.show({ type, title, description })",
 };
 
+// text-only payload, type comes from options
 const showTextVariant: ToastTextInput = {
   title: "Text payload",
   description: "toast.show(textObject, options)",
@@ -50,6 +53,8 @@ const showTextOptions: ToastShowOptions = {
   type: "success",
   duration: 6500,
 };
+
+// each push* shows a different overload of toast.show
 
 function pushShowObject() {
   lastId.value = toast.show(showObjectVariant);
@@ -66,6 +71,8 @@ function pushShowStringAndOptions() {
 function pushShowTextAndOptions() {
   lastId.value = toast.show(showTextVariant, showTextOptions);
 }
+
+// typed helpers: success / warning / error
 
 function pushSuccess() {
   lastId.value = toast.success({
@@ -88,6 +95,7 @@ function pushError() {
   });
 }
 
+// patches the last toast in-place
 function updateLast() {
   if (!lastId.value) {
     return;
@@ -176,6 +184,7 @@ import {
 
 type SaveResponse = { id: number };
 
+// fake API - resolves ~70% of the time, rejects otherwise
 const runSaveRequest = (): Promise<SaveResponse> =>
   new Promise((resolve, reject) => {
     setTimeout(() => {
@@ -187,6 +196,7 @@ const runSaveRequest = (): Promise<SaveResponse> =>
     }, 1400);
   });
 
+// loading -> success/error toast config
 const loadingConfig: ToastLoadingConfig<SaveResponse> = {
   loading: {
     title: "Saving record",
@@ -205,6 +215,7 @@ const loadingConfig: ToastLoadingConfig<SaveResponse> = {
   }),
 };
 
+// kicks off the loading flow, toast handles the rest
 async function runLoadingFlow() {
   const request: ToastLoadingResult<SaveResponse> = toast.loading(
     runSaveRequest,
@@ -218,6 +229,7 @@ async function runLoadingFlow() {
   }
 }
 
+// plain info toast to compare with loading behavior
 function pushManualInfo() {
   toast.info({
     title: "Background sync",
@@ -284,6 +296,7 @@ import {
   type ToastContentInput,
 } from "vue-toastflow";
 
+// action buttons attached to the branded toast
 const brandedButtons: ToastButtonsConfig = {
   alignment: "bottom-right",
   buttons: [
@@ -305,6 +318,7 @@ const brandedButtons: ToastButtonsConfig = {
   ],
 };
 
+// dark-themed toast with HTML content and action buttons
 const brandedToast: ToastContentInput = {
   title: "<strong>Release 1.2.0</strong>",
   description: "Open <a href='#'>changelog</a> for details.",
@@ -314,6 +328,7 @@ const brandedToast: ToastContentInput = {
   buttons: brandedButtons,
 };
 
+// simple HTML warning without extra theming
 const warningHtmlToast: ToastContentInput = {
   title: "<strong>Policy update</strong>",
   description: "Please review <em>Terms of Service</em>.",
@@ -398,6 +413,7 @@ import {
 
 type DemoType = "success" | "error" | "info";
 
+// builds the payload and fires a toast, type comes from the button
 function pushCustom(type: DemoType) {
   const payload: ToastContentInput = {
     title: "Headless " + type,
@@ -526,13 +542,16 @@ import {
   type ToastState,
 } from "vue-toastflow";
 
+// reactive counters for the UI
 const visibleCount = ref(0);
 const queuedCount = ref(0);
 const eventLog = ref<string[]>([]);
 
+// cleanup handles
 let offState: (() => void) | null = null;
 let offEvents: (() => void) | null = null;
 
+// simple HH:MM:SS for the event log
 function formatTimestamp(): string {
   const now = new Date();
   const hours = String(now.getHours()).padStart(2, "0");
@@ -546,11 +565,13 @@ function applyState(state: ToastState) {
   queuedCount.value = state.queue.length;
 }
 
+// prepend to log, keep last 10 entries
 function addLog(line: string) {
   const outputLine = "[" + formatTimestamp() + "] " + line;
   eventLog.value = [outputLine, ...eventLog.value].slice(0, 10);
 }
 
+// subscribe on mount, clean up on unmount
 onMounted(() => {
   applyState(toast.getState());
 
@@ -568,6 +589,7 @@ onUnmounted(() => {
   offEvents?.();
 });
 
+// same payload every time so preventDuplicates can kick in
 function pushDuplicate() {
   toast.info({
     title: "Sync finished",
@@ -575,6 +597,7 @@ function pushDuplicate() {
   });
 }
 
+// show a warning then patch it to success after 900ms
 function pushUpdateTarget() {
   const id = toast.warning({
     title: "Updating soon",
@@ -667,6 +690,7 @@ type RandomToastTemplate = {
   description: string;
 };
 
+// pool of random toast payloads
 const templates: RandomToastTemplate[] = [
   {
     type: "success",
@@ -695,6 +719,7 @@ const templates: RandomToastTemplate[] = [
   },
 ];
 
+// saved copies rendered below buttons via <Toast />
 const savedToasts = ref<ToastStandaloneInstance[]>([]);
 let sequence = 0;
 
@@ -703,6 +728,7 @@ function randomTemplate(): RandomToastTemplate {
   return templates[index];
 }
 
+// fire a runtime toast and save a copy for the list
 function sendToast() {
   const next = randomTemplate();
 
@@ -727,6 +753,7 @@ function sendToast() {
     showCreatedAt: true,
   };
 
+  // keep max 6 saved items
   savedToasts.value = [saved, ...savedToasts.value].slice(0, 6);
 }
 
@@ -815,6 +842,7 @@ const state = ref<ToastState>(toast.getState());
 const seq = ref(1);
 let off: (() => void) | null = null;
 
+// mix of types to make the queue more interesting
 const templates: ToastShowInput[] = [
   { type: "success", title: "Saved", description: "Project settings updated." },
   { type: "info", title: "Build queued", description: "Runner will start soon." },
@@ -840,6 +868,7 @@ function randomTemplate(): ToastShowInput {
   return templates[index];
 }
 
+// prefix title with a sequence number so each toast is unique
 function pushOne() {
   const base = randomTemplate();
   toast.show({
@@ -848,6 +877,7 @@ function pushOne() {
   });
 }
 
+// push 6 at once to demonstrate overflow into the queue
 function pushBatch() {
   for (let i = 0; i < 6; i += 1) {
     pushOne();
@@ -914,6 +944,126 @@ button:hover {
 `,
 };
 
+export const customFiles: Record<string, string> = {
+  "main.ts": `import { createApp } from "vue";
+import App from "./App.vue";
+import { createToastflow } from "vue-toastflow";
+
+createApp(App)
+  .use(
+    createToastflow({
+      position: "top-right",
+      duration: 6000,
+      progressBar: true,
+      pauseOnHover: true,
+    }),
+  )
+  .mount("#app");
+`,
+  "App.vue": `<script setup lang="ts">
+import {
+  toast,
+  ToastContainer,
+  type ToastContentInput,
+} from "vue-toastflow";
+
+// themed via a CSS accent class (see styles below)
+const spotifyToast: ToastContentInput = {
+  title: "Now Playing",
+  description: "Blinding Lights — The Weeknd",
+  theme: "spotify",
+};
+
+// inline color overrides, no custom CSS needed
+const paymentToast: ToastContentInput = {
+  title: "Payment received",
+  description: "$49.00 — Invoice #1042 has been paid.",
+  accentColor: "#7c3aed",
+  iconColor: "#7c3aed",
+};
+
+// icon hidden, uses a CSS theme for the rest
+const systemToast: ToastContentInput = {
+  title: "Maintenance scheduled",
+  description: "The system will be down on Sunday 02:00–04:00 UTC.",
+  showIcon: false,
+  theme: "system",
+};
+
+function pushSpotify() {
+  toast.show(spotifyToast, { type: "custom" });
+}
+
+function pushPayment() {
+  toast.show(paymentToast, { type: "custom" });
+}
+
+function pushSystem() {
+  toast.show(systemToast, { type: "custom" });
+}
+</script>
+
+<template>
+  <main style="padding: 24px; font-family: Inter, system-ui, sans-serif; display: grid; gap: 12px;">
+    <h3 style="margin: 0;">Custom toast variants</h3>
+    <p style="margin: 0; color: #64748b;">Theme class, inline accent/icon color, and hidden icon.</p>
+
+    <div style="display: grid; gap: 8px; max-width: 180px;">
+      <button @click="pushSpotify">🎵 Spotify theme</button>
+      <button @click="pushPayment">💜 Inline accent color</button>
+      <button @click="pushSystem">🔧 No icon / system</button>
+      <button @click="toast.dismissAll()">dismiss all</button>
+    </div>
+  </main>
+
+  <ToastContainer />
+</template>
+
+<style>
+@import url("${VUE_TOASTFLOW_CSS_URL}");
+
+button {
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #0f172a;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  cursor: pointer;
+}
+button:hover {
+  background: #f8fafc;
+}
+
+/* Spotify-inspired custom theme */
+.tf-toast-accent--spotify {
+  --tf-toast-bg: #191414;
+  --tf-toast-color: #b3b3b3;
+  --tf-toast-border-color: #282828;
+  --tf-toast-title-color: #ffffff;
+  --tf-toast-description-color: #b3b3b3;
+  --tf-toast-progress-bg: color-mix(in srgb, #1db954 20%, transparent);
+  --tf-toast-progress-bar-bg: #1db954;
+  --tf-toast-icon-custom: #1db954;
+  --tf-toast-close-bg: #282828;
+  --tf-toast-close-color: #b3b3b3;
+  --tf-toast-close-border-color: #333333;
+}
+
+/* Minimal system / maintenance theme */
+.tf-toast-accent--system {
+  --tf-toast-bg: #fefce8;
+  --tf-toast-color: #854d0e;
+  --tf-toast-border-color: #fde68a;
+  --tf-toast-title-color: #713f12;
+  --tf-toast-description-color: #a16207;
+  --tf-toast-progress-bg: color-mix(in srgb, #facc15 25%, transparent);
+  --tf-toast-progress-bar-bg: #eab308;
+}
+</style>
+`,
+};
+
 export const coreFiles: Record<string, string> = {
   "main.ts": `import { createApp } from "vue";
 import App from "./App.vue";
@@ -929,6 +1079,7 @@ import {
   type ToastUpdateInput,
 } from "toastflow-core";
 
+// standalone store, no Vue plugin needed
 const store = createToastStore({
   duration: 5000,
   maxVisible: 3,
@@ -940,6 +1091,7 @@ const lastId = ref<ToastId | null>(null);
 
 let stop: (() => void) | null = null;
 
+// sync reactive state on every store change
 onMounted(() => {
   stop = store.subscribe((next) => {
     state.value = next;

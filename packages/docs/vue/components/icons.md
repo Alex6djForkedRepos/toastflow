@@ -27,6 +27,7 @@ outline: deep
 | `error`    | `XCircle`            |
 | `warning`  | `Bell`               |
 | `info`     | `InfoCircle`         |
+| `custom`   | `QuestionMarkCircle` |
 
 ## Replace Icons
 

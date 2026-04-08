@@ -146,7 +146,6 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
           :model-value="swipeToDismiss"
           tooltip="Swipe to dismiss"
           @update:model-value="emit('update:swipeToDismiss', $event)"
-          is-new
         >
           <span>Swipe to dismiss</span>
         </Button>
@@ -209,7 +208,6 @@ function emitButtonUpdate(id: string, updates: Partial<PlaygroundButton>) {
           variant="toggle"
           :model-value="queue"
           @update:model-value="emit('update:queue', $event)"
-          is-new
           tooltip="Queue over maxVisible"
         >
           Queue

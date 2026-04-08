@@ -5,13 +5,14 @@ outline: deep
 
 # Theming
 
-Toastflow ships with CSS variables in `vue-toastflow/src/styles.css` (auto-imported by the package).
+Toastflow ships with CSS variables (auto-imported by the `vue-toastflow` package entry).
 
 ## Theme Layers
 
 1. Global tokens (`--tf-toast-*`) control spacing, typography, borders, and motion.
-2. Type presets (`default`, `loading`, `success`, `error`, `info`, `warning`) define colors.
+2. Type presets (`default`, `loading`, `success`, `error`, `info`, `warning`, `custom`) define colors.
 3. Per-toast custom theme class via `theme` field can override token set on a single toast.
+4. Per-toast inline color overrides via `accentColor` and `iconColor`.
 
 ## Quick Global Override
 
@@ -60,6 +61,35 @@ toast.show({
 ::: tip Reference
 `theme` is a per-toast field on `show`/typed helpers. See [Toasts](/guide/toasts).
 :::
+
+## Inline Color Overrides
+
+Use `accentColor` and `iconColor` for quick per-toast color customization without defining a CSS class.
+
+```ts
+toast.custom({
+  title: "Custom accent",
+  description: "Using inline colors",
+  accentColor: "#7c3aed",
+  iconColor: "#7c3aed",
+});
+```
+
+- `accentColor` overrides `--tf-toast-color`, `--tf-toast-title-color`, `--tf-toast-description-color`, and `--tf-toast-progress-bar-bg` inline.
+- `iconColor` overrides the icon SVG color inline.
+- These work with any toast type, not just `custom`.
+- When both `theme` and `accentColor` are set, `accentColor` wins (inline style overrides class).
+
+## Hiding The Icon
+
+Use `showIcon: false` to hide the icon for a specific toast or globally.
+
+```ts
+toast.info({
+  title: "No icon",
+  showIcon: false,
+});
+```
 
 ## Animation Classes
 

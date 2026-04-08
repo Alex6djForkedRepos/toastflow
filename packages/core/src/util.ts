@@ -2,6 +2,8 @@
  * Generate a UUID v4 using `crypto.randomUUID` when available; otherwise fall back
  * to the classic template with random nibbles (uses `crypto.getRandomValues` when possible).
  */
+import type { ToastType } from "./types";
+
 type CryptoLike = {
   randomUUID?: () => string;
   getRandomValues?: (arr: Uint8Array) => Uint8Array;
@@ -39,4 +41,31 @@ export function generateUuid(): string {
  */
 export function isNumberFinite(value: unknown): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+/**
+ * Valid toast type values.
+ */
+export const VALID_TOAST_TYPES = new Set<ToastType>([
+  "loading",
+  "default",
+  "success",
+  "error",
+  "info",
+  "warning",
+  "custom",
+]);
+
+/**
+ * Default formatter for createdAt timestamps.
+ */
+export function defaultCreatedAtFormatter(createdAt: number): string {
+  try {
+    return new Date(createdAt).toLocaleTimeString([], {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return new Date(createdAt).toISOString();
+  }
 }
