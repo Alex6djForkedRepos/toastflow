@@ -17,7 +17,7 @@ const prefersReducedMotion =
   hasWindow &&
   window.matchMedia &&
   window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const showMore = ref(false);
+const showMore = ref(true);
 const themeMode = ref<ThemeMode>('light');
 const isDarkTheme = computed(function () {
   return themeMode.value === 'dark';
@@ -130,6 +130,7 @@ onMounted(function () {
         <div class="flex items-center gap-2">
           <h1 class="text-lg font-semibold tracking-tight text-slate-900 dark:text-slate-100">
             Toastflow
+            <span class="sr-only">— Toast Notifications for Vue and Nuxt</span>
           </h1>
           <Badge variant="brand">
             <template #icon>
@@ -212,7 +213,7 @@ onMounted(function () {
               aria-controls="more-info"
               @click="showMore ? (showMore = false) : openMore()"
             >
-              {{ showMore ? 'Hide information' : 'More information' }}
+              {{ showMore ? 'Hide details' : 'Show details' }}
             </Button>
           </div>
 
