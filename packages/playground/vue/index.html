@@ -141,6 +141,11 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
+    rel="preload"
+    as="style"
+    href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
+  />
+  <link
     rel="stylesheet"
     href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap"
   />
@@ -173,46 +178,54 @@
   <div style="max-width:960px;margin:0 auto;padding:2rem;font-family:sans-serif">
     <h1>Toastflow — Toast Notifications for Vue and Nuxt</h1>
     <p>
-      Toastflow is an accessible, customizable toast notification library for Vue 3 and Nuxt.
+      Toastflow is an accessible, lightweight toast notification library for Vue 3 and Nuxt.
       This interactive playground lets you configure toast positions, timing, animations, and
-      behaviors before shipping them to production.
+      behaviors, then copy the generated code straight into your project.
+    </p>
+    <p>
+      TypeScript-first · CSS-first theming · headless mode · SSR-ready · MIT licensed
     </p>
 
     <h2>Why Toastflow</h2>
     <p>
       Toastflow ships sensible defaults for accessibility, queue management, and keyboard
       shortcuts. It is a typed core with a Vue renderer, Nuxt wrapper, CSS-first theming, and
-      headless hooks so you can render the same store logic with your own UI.
+      headless hooks so you can render the same store logic with your own UI. The library weighs
+      under 5 kB gzipped, has zero runtime dependencies, and supports Vue 3.5+ with full
+      TypeScript inference.
     </p>
 
-    <h3>Accessibility-first</h3>
+    <h3>Accessible toast notifications</h3>
     <p>
-      ARIA-friendly toasts with focus management, pause-on-hover, and screen-reader cues that
-      ship ready for WCAG compliance.
+      ARIA live-region toasts with focus management, pause-on-hover, keyboard shortcuts, and a
+      prefers-reduced-motion media query — ready for WCAG out of the box.
     </p>
 
-    <h3>Flexible UI</h3>
+    <h3>Flexible and customizable UI</h3>
     <p>
-      Configure placement, alignment, width, buttons, and HTML support. Use the headless slot to
-      render a custom card while keeping the core behaviors.
+      Configure placement, alignment, width, action buttons, and HTML support. Override CSS
+      variables, swap animation classes, or use the headless slot to render a fully custom toast
+      card while keeping core behaviors.
     </p>
 
-    <h3>Performance-aware</h3>
+    <h3>Lightweight and SSR-ready</h3>
     <p>
-      Lightweight core with minimal dependencies, SSR-friendly guards, and CSS-only animations to
-      keep bundles small and predictable.
+      Minimal bundle with zero runtime dependencies, SSR-safe guards, and CSS-only animations.
+      Works with Vite, Nuxt SSR, and edge runtimes without extra configuration.
     </p>
 
     <h2>Install Toastflow</h2>
-    <p>Works with Vue 3.5+ and Nuxt 3/4. Use the shared core to keep codebases aligned.</p>
+    <p>Works with Vue 3.5+ and Nuxt 3/4. Install the Vue plugin or the Nuxt module and start
+      showing toast notifications in minutes.</p>
     <pre><code>npm install vue-toastflow
 npm install nuxt-toastflow</code></pre>
 
     <h3>Common use cases</h3>
     <ul>
       <li>Product launches that need reliable, branded toast notifications</li>
-      <li>Dashboards that queue multiple events without overlap</li>
-      <li>Marketing previews where PMs can tune timing without code changes</li>
+      <li>Dashboards and admin panels that queue multiple events without overlap</li>
+      <li>Nuxt SSR apps that require server-safe notification components</li>
+      <li>Teams looking for a typed, accessible Vue toast library with headless support</li>
     </ul>
 
     <h2>Frequently Asked Questions</h2>
