@@ -15,6 +15,7 @@ import type {
   ToastButton,
   ToastButtonsLayout,
   ToastContext,
+  ToastCssOverrides,
   ToastId,
   ToastInstance,
   ToastStandaloneInstance,
@@ -198,29 +199,79 @@ const {
   handleButtonClick,
 } = useButtons(toast);
 
+/**
+ * Maps non-shorthand ToastCssOverrides keys to their CSS custom property names.
+ * `accentColor` is a shorthand handled separately before this map is applied.
+ */
+const CSS_VAR_MAP: Readonly<Record<string, string>> = {
+  iconColor: "--tf-toast-icon-color-override",
+  bg: "--tf-toast-bg",
+  color: "--tf-toast-color",
+  borderColor: "--tf-toast-border-color",
+  borderRadius: "--tf-toast-border-radius",
+  borderWidth: "--tf-toast-border-width",
+  padding: "--tf-toast-padding",
+  fontFamily: "--tf-toast-font-family",
+  gap: "--tf-toast-gap",
+  titleColor: "--tf-toast-title-color",
+  titleFontSize: "--tf-toast-title-font-size",
+  titleFontWeight: "--tf-toast-title-font-weight",
+  titleLineHeight: "--tf-toast-title-line-height",
+  descriptionColor: "--tf-toast-description-color",
+  descriptionFontSize: "--tf-toast-description-font-size",
+  descriptionLineHeight: "--tf-toast-description-line-height",
+  iconSize: "--tf-toast-icon-size",
+  progressBarBg: "--tf-toast-progress-bar-bg",
+  progressBg: "--tf-toast-progress-bg",
+  progressHeight: "--tf-toast-progress-height",
+  closeBg: "--tf-toast-close-bg",
+  closeColor: "--tf-toast-close-color",
+  closeBorderColor: "--tf-toast-close-border-color",
+  closeSize: "--tf-toast-close-size",
+  closeIconSize: "--tf-toast-close-icon-size",
+  buttonBg: "--tf-toast-button-bg",
+  buttonColor: "--tf-toast-button-color",
+  buttonBorderColor: "--tf-toast-button-border-color",
+  createdAtColor: "--tf-toast-created-at-color",
+  createdAtBg: "--tf-toast-created-at-bg",
+  createdAtBorderColor: "--tf-toast-created-at-border-color",
+};
+
 const toastStyle = computed<CSSProperties>(function () {
-  const style: CSSProperties = {
-    ...buttonsVarsStyle.value,
-  };
+  const style: Record<string, string> = {};
 
-  if (toast.value.accentColor) {
-    const color = toast.value.accentColor;
-    (style as Record<string, string>)["--tf-toast-color"] = color;
-    (style as Record<string, string>)["--tf-toast-title-color"] = color;
-    (style as Record<string, string>)["--tf-toast-description-color"] = color;
-    (style as Record<string, string>)["--tf-toast-progress-bar-bg"] = color;
+  // Copy button layout vars
+  const bvs = buttonsVarsStyle.value as Record<string, string | undefined>;
+  for (const key of Object.keys(bvs)) {
+    const value = bvs[key];
+    if (value != null) {
+      style[key] = value;
+    }
   }
 
-  return style;
-});
-
-const iconStyle = computed<CSSProperties>(function () {
-  if (!toast.value.iconColor) {
-    return {};
+  const css = toast.value.css;
+  if (!css) {
+    return style as CSSProperties;
   }
-  return {
-    "--tf-toast-icon-color-override": toast.value.iconColor,
-  } as CSSProperties;
+
+  // Shorthand: accentColor sets multiple tokens at once
+  if (css.accentColor) {
+    const accent = css.accentColor;
+    style["--tf-toast-color"] = accent;
+    style["--tf-toast-title-color"] = accent;
+    style["--tf-toast-description-color"] = accent;
+    style["--tf-toast-progress-bar-bg"] = accent;
+  }
+
+  // Individual properties always override the shorthand
+  for (const [key, varName] of Object.entries(CSS_VAR_MAP)) {
+    const value = css[key as keyof ToastCssOverrides];
+    if (value != null) {
+      style[varName] = value;
+    }
+  }
+
+  return style as CSSProperties;
 });
 
 const showIconElement = computed(function () {
@@ -1075,7 +1126,6 @@ function stripHtmlToText(value: string): string {
               v-if="showIconElement"
               class="tf-toast-icon"
               :class="iconWrapperClass"
-              :style="iconStyle"
               aria-hidden="true"
             >
               <slot name="icon" :toast="toast">

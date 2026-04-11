@@ -4,9 +4,13 @@ import Playground from '@/views/Playground.vue';
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue';
 // @ts-ignore
 import { useSnowfall } from 'vue-snowfall';
-import { BookOpen, Github, MoonStar, Sparkles, SunMedium } from 'lucide-vue-next';
+import { BookOpen, Github, MoonStar, Sparkles, Star, SunMedium } from 'lucide-vue-next';
 import Button from './components/Button.vue';
 import Badge from './components/Badge.vue';
+import { useGitHubStars } from './composables/useGitHubStars';
+
+const { stars: githubStars } = useGitHubStars('adrianjanocko', 'toastflow');
+const libVersion: string = __LIB_VERSION__;
 
 const SEASONAL_MODE = (import.meta.env.VITE_SEASONAL_MODE ?? 'holiday').toLowerCase();
 const THEME_STORAGE_KEY = 'toastflow-playground-theme';
@@ -14,9 +18,7 @@ type ThemeMode = 'light' | 'dark';
 const hasWindow = typeof window !== 'undefined';
 const isHolidayMode = SEASONAL_MODE === 'holiday';
 const prefersReducedMotion =
-  hasWindow &&
-  window.matchMedia &&
-  window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  hasWindow && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const showMore = ref(true);
 const themeMode = ref<ThemeMode>('light');
 const isDarkTheme = computed(function () {
@@ -105,9 +107,7 @@ onMounted(function () {
 </script>
 
 <template>
-  <div
-    class="ui-canvas relative min-h-screen overflow-hidden transition-colors duration-300"
-  >
+  <div class="ui-canvas relative min-h-screen overflow-hidden transition-colors duration-300">
     <a
       href="#main-content"
       class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-md focus:bg-white focus:px-3 focus:py-2 focus:text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-600 dark:focus:bg-slate-900 dark:focus:text-slate-100 dark:focus:ring-slate-300"
@@ -159,6 +159,13 @@ onMounted(function () {
           >
             <Github class="size-4" />
             GitHub
+            <span
+              v-if="githubStars !== null"
+              class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-1.5 py-px text-[0.65rem] font-semibold tabular-nums text-slate-600 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-300"
+            >
+              <Star class="size-3 fill-amber-400 text-amber-400" />
+              {{ githubStars }}
+            </span>
           </Button>
 
           <Button
@@ -176,8 +183,12 @@ onMounted(function () {
       <main
         class="flex flex-1 flex-col gap-12 items-center justify-start pb-24 lg:pb-0 lg:justify-center"
       >
-        <section class="max-w-3xl text-center text-base text-slate-500/90 grid gap-5 dark:text-slate-400">
-          <h2 class="text-[2.5rem] leading-[1.1] font-bold tracking-tight text-slate-950 dark:text-white">
+        <section
+          class="max-w-3xl text-center text-base text-slate-500/90 grid gap-5 dark:text-slate-400"
+        >
+          <h2
+            class="text-[2.5rem] leading-[1.1] font-bold tracking-tight text-slate-950 dark:text-white"
+          >
             Toast notifications playground
           </h2>
           <p class="mx-auto max-w-2xl mb-1">
@@ -185,7 +196,9 @@ onMounted(function () {
             Nuxt. Configure positions, timing, animations, and behaviors in this interactive
             playground, then copy the generated code straight into your project.
           </p>
-          <p class="text-[0.8rem] font-medium tracking-wide text-slate-400/80 uppercase dark:text-slate-500/80">
+          <p
+            class="text-[0.8rem] font-medium tracking-wide text-slate-400/80 uppercase dark:text-slate-500/80"
+          >
             TypeScript-first · CSS-first theming · headless mode · SSR-ready · MIT licensed
           </p>
           <div class="flex flex-wrap items-center justify-center gap-2 text-xs">
@@ -233,13 +246,15 @@ onMounted(function () {
                   Toastflow ships sensible defaults for accessibility, queue management, and
                   keyboard shortcuts. It is a typed core with a Vue renderer, Nuxt wrapper,
                   CSS-first theming, and headless hooks so you can render the same store logic with
-                  your own UI. The library weighs under 5 kB gzipped, has zero runtime
-                  dependencies, and supports Vue 3.5+ with full TypeScript inference.
+                  your own UI. The library weighs under 5 kB gzipped, has zero runtime dependencies,
+                  and supports Vue 3.5+ with full TypeScript inference.
                 </p>
               </div>
 
               <div class="grid gap-4 md:grid-cols-3">
-                <div class="rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4 dark:border-white/5 dark:bg-slate-800/65">
+                <div
+                  class="rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4 dark:border-white/5 dark:bg-slate-800/65"
+                >
                   <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
                     Accessible toast notifications
                   </h3>
@@ -249,17 +264,21 @@ onMounted(function () {
                     box.
                   </p>
                 </div>
-                <div class="rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4 dark:border-white/5 dark:bg-slate-800/65">
+                <div
+                  class="rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4 dark:border-white/5 dark:bg-slate-800/65"
+                >
                   <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
                     Flexible and customizable UI
                   </h3>
                   <p class="text-slate-600 dark:text-slate-300">
                     Configure placement, alignment, width, action buttons, and HTML support.
-                    Override CSS variables, swap animation classes, or use the headless slot to render
-                    a fully custom toast card while keeping core behaviors.
+                    Override CSS variables, swap animation classes, or use the headless slot to
+                    render a fully custom toast card while keeping core behaviors.
                   </p>
                 </div>
-                <div class="rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4 dark:border-white/5 dark:bg-slate-800/65">
+                <div
+                  class="rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4 dark:border-white/5 dark:bg-slate-800/65"
+                >
                   <h3 class="text-base font-semibold text-slate-900 dark:text-slate-100">
                     Lightweight and SSR-ready
                   </h3>
@@ -282,8 +301,8 @@ onMounted(function () {
                     Install Toastflow for Vue and Nuxt
                   </h2>
                   <p class="text-slate-600 dark:text-slate-300">
-                    Works with Vue 3.5+ and Nuxt 3/4. Install the Vue plugin or the Nuxt module and start
-                    showing toast notifications in minutes.
+                    Works with Vue 3.5+ and Nuxt 3/4. Install the Vue plugin or the Nuxt module and
+                    start showing toast notifications in minutes.
                   </p>
                 </div>
                 <div class="flex gap-2">
@@ -314,8 +333,12 @@ onMounted(function () {
                 </div>
               </div>
 
-              <div class="rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4 dark:border-white/5 dark:bg-slate-800/65">
-                <p class="text-[0.9rem] font-semibold text-slate-900 mb-2 dark:text-slate-100">Install</p>
+              <div
+                class="rounded-2xl border border-slate-200/60 bg-slate-50/60 p-4 dark:border-white/5 dark:bg-slate-800/65"
+              >
+                <p class="text-[0.9rem] font-semibold text-slate-900 mb-2 dark:text-slate-100">
+                  Install
+                </p>
                 <pre
                   class="code-block bg-slate-900 text-slate-100 p-3"
                 ><code>npm install vue-toastflow<br/>npm install nuxt-toastflow</code></pre>
@@ -329,7 +352,9 @@ onMounted(function () {
                   <li>Product launches that need reliable, branded toast notifications</li>
                   <li>Dashboards and admin panels that queue multiple events without overlap</li>
                   <li>Nuxt SSR apps that require server-safe notification components</li>
-                  <li>Teams looking for a typed, accessible Vue toast library with headless support</li>
+                  <li>
+                    Teams looking for a typed, accessible Vue toast library with headless support
+                  </li>
                 </ul>
               </div>
             </section>
@@ -347,23 +372,35 @@ onMounted(function () {
                 </p>
               </div>
               <div class="grid gap-3">
-                <div class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65">
-                  <h3 class="font-semibold text-slate-900 dark:text-slate-100">Is Toastflow accessible?</h3>
+                <div
+                  class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65"
+                >
+                  <h3 class="font-semibold text-slate-900 dark:text-slate-100">
+                    Is Toastflow accessible?
+                  </h3>
                   <p class="text-slate-600 dark:text-slate-300">
                     Yes. Toasts use alert/status live regions, ARIA labels (even for HTML titles), a
                     built-in pause-on-hover, and a prefers-reduced-motion media query to keep
                     animations gentle.
                   </p>
                 </div>
-                <div class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65">
-                  <h3 class="font-semibold text-slate-900 dark:text-slate-100">Does it support SSR?</h3>
+                <div
+                  class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65"
+                >
+                  <h3 class="font-semibold text-slate-900 dark:text-slate-100">
+                    Does it support SSR?
+                  </h3>
                   <p class="text-slate-600 dark:text-slate-300">
                     The core store is isomorphic, the Vue renderer defers DOM access until mounted,
                     and the playground guards window usage, so Nuxt/Vite SSR works out of the box.
                   </p>
                 </div>
-                <div class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65">
-                  <h3 class="font-semibold text-slate-900 dark:text-slate-100">Can I use it outside Vue components?</h3>
+                <div
+                  class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65"
+                >
+                  <h3 class="font-semibold text-slate-900 dark:text-slate-100">
+                    Can I use it outside Vue components?
+                  </h3>
                   <p class="text-slate-600 dark:text-slate-300">
                     Yes. Install the plugin once, then call <code>toast.*</code> from stores or
                     services. In Nuxt, use <code>nuxt-toastflow</code> and call auto-imported
@@ -371,15 +408,21 @@ onMounted(function () {
                     headless <code>toastflow-core</code> store and render your own UI.
                   </p>
                 </div>
-                <div class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65">
-                  <h3 class="font-semibold text-slate-900 dark:text-slate-100">How do I style it to match my brand?</h3>
+                <div
+                  class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65"
+                >
+                  <h3 class="font-semibold text-slate-900 dark:text-slate-100">
+                    How do I style it to match my brand?
+                  </h3>
                   <p class="text-slate-600 dark:text-slate-300">
                     Override CSS variables or animation class names, pass a <code>theme</code> /
                     <code>animation</code> override, or use the headless slot to ship a fully custom
                     card with the same store logic.
                   </p>
                 </div>
-                <div class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65">
+                <div
+                  class="rounded-xl border border-slate-200/60 bg-slate-50/60 p-3 dark:border-white/5 dark:bg-slate-800/65"
+                >
                   <h3 class="font-semibold text-slate-900 dark:text-slate-100">
                     How do I log or react to toast events?
                   </h3>
@@ -413,6 +456,17 @@ onMounted(function () {
     </div>
 
     <ToastContainer />
+
+    <div
+      class="fixed bottom-3 left-3 z-50 inline-flex items-center gap-1.5 rounded-full border border-slate-200/60 bg-white/80 px-2.5 py-1 text-[0.6rem] font-medium text-slate-500 backdrop-blur-md select-none dark:border-slate-700/50 dark:bg-slate-900/70 dark:text-slate-400"
+      :title="`vue-toastflow v${libVersion}`"
+    >
+      <span
+        class="size-1.5 rounded-full"
+        :class="libVersion.includes('beta') ? 'bg-amber-400' : 'bg-emerald-400'"
+      />
+      v{{ libVersion }}
+    </div>
   </div>
 </template>
 

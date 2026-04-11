@@ -498,16 +498,36 @@ export function createToastStore(
       return;
     }
 
-    assertUpdateInput(options);
-
     if (options.type) {
       assertToastType(options.type, "update");
     }
 
+    // Deep-merge nested objects so partial updates don't lose existing sub-fields
     const merged: ToastOptions = {
       ...located.toast,
       ...options,
+      animation: {
+        ...located.toast.animation,
+        ...(options.animation ?? {}),
+      },
+      buttons:
+        located.toast.buttons || options.buttons
+          ? {
+              ...(located.toast.buttons ?? {}),
+              ...(options.buttons ?? {}),
+            }
+          : undefined,
+      css:
+        located.toast.css || options.css
+          ? {
+              ...(located.toast.css ?? {}),
+              ...(options.css ?? {}),
+            }
+          : undefined,
     };
+
+    // Validate the merged result (not the raw input) has content
+    assertContentFields(merged, "update");
 
     const resolved = resolveConfig(resolvedGlobalConfig, merged);
 
@@ -647,6 +667,10 @@ export function createToastStore(
       }
     }
 
+    // Clear queue immediately to prevent processQueue from dequeuing
+    // toasts that already had onClose called during the animation delay.
+    queueByPosition.clear();
+
     syncState(
       state.toasts.map(function (t) {
         return {
@@ -674,7 +698,6 @@ export function createToastStore(
         }
       }
 
-      queueByPosition.clear();
       syncState([]);
       notify();
     }, CLEAR_ALL_DELAY);
@@ -890,10 +913,6 @@ function assertShowInput(options: ToastShowInput, caller: string) {
   assertContentFields(options, caller);
 }
 
-function assertUpdateInput(options: ToastUpdateInput) {
-  assertContentFields(options, "update");
-}
-
 function isNonEmptyString(value: unknown): boolean {
   return typeof value === "string" && value.trim().length > 0;
 }
@@ -908,6 +927,7 @@ function resolveConfig(
     description,
     animation: animationOverride,
     buttons: buttonsOverride,
+    css: cssOverride,
     ...restOverrides
   } = overrides as Partial<ToastOptions>;
 
@@ -924,11 +944,20 @@ function resolveConfig(
         }
       : undefined;
 
+  const css =
+    base.css || cssOverride
+      ? {
+          ...(base.css ?? {}),
+          ...(cssOverride ?? {}),
+        }
+      : undefined;
+
   return {
     ...base,
     ...restOverrides,
     animation,
     buttons,
+    css,
     type: type ?? "default",
     title: title ?? "",
     description: description ?? "",

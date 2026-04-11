@@ -335,6 +335,22 @@ const warningHtmlToast: ToastContentInput = {
   supportHtml: true,
 };
 
+// same visual as docs-brand, but using inline css overrides instead of a CSS class
+const cssOverridesToast: ToastContentInput = {
+  title: "Inline CSS overrides",
+  description: "No CSS class needed — styled entirely from code.",
+  showCreatedAt: true,
+  css: {
+    bg: "#c33232",
+    borderColor: "#f7ede2",
+    color: "#fff7f2",
+    descriptionColor: "#fdeae2",
+    progressBg: "color-mix(in srgb, #f7ede2 20%, transparent)",
+    progressBarBg: "#f7ede2",
+    iconColor: "#fff",
+  },
+};
+
 function pushBranded() {
   toast.info(brandedToast);
 }
@@ -342,15 +358,20 @@ function pushBranded() {
 function pushHtmlWarning() {
   toast.warning(warningHtmlToast);
 }
+
+function pushCssOverrides() {
+  toast.info(cssOverridesToast);
+}
 </script>
 
 <template>
   <main style="padding: 24px; font-family: Inter, system-ui, sans-serif; display: grid; gap: 12px;">
-    <h3 style="margin: 0;">Theming + HTML + buttons</h3>
-    <p style="margin: 0; color: #64748b;">Use custom accent classes and inline action buttons.</p>
+    <h3 style="margin: 0;">Theming + HTML + CSS overrides</h3>
+    <p style="margin: 0; color: #64748b;">Custom accent classes, inline css overrides, and HTML content.</p>
 
-    <div style="display: grid; gap: 8px; max-width: 150px;">
-      <button @click="pushBranded">push branded toast</button>
+    <div style="display: grid; gap: 8px; max-width: 170px;">
+      <button @click="pushBranded">push branded (theme)</button>
+      <button @click="pushCssOverrides">push css overrides</button>
       <button @click="pushHtmlWarning">push html warning</button>
       <button @click="toast.dismissAll()">dismiss all</button>
     </div>
@@ -978,8 +999,10 @@ const spotifyToast: ToastContentInput = {
 const paymentToast: ToastContentInput = {
   title: "Payment received",
   description: "$49.00 — Invoice #1042 has been paid.",
-  accentColor: "#7c3aed",
-  iconColor: "#7c3aed",
+  css: {
+    accentColor: "#7c3aed",
+    iconColor: "#7c3aed",
+  },
 };
 
 // icon hidden, uses a CSS theme for the rest

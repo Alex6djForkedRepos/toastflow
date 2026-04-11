@@ -274,6 +274,12 @@ export interface ToastConfig {
   buttons?: ToastButtonsConfig;
 
   /**
+   * Per-toast CSS variable overrides applied as inline styles on the toast element.
+   * Allows programmatic control over any visual token without writing CSS.
+   */
+  css?: ToastCssOverrides;
+
+  /**
    * When true, title/description may contain HTML. (Default: false)
    */
   supportHtml: boolean;
@@ -310,6 +316,111 @@ export interface ToastConfig {
 }
 
 /**
+ * Per-toast CSS variable overrides applied as inline styles.
+ *
+ * Use `accentColor` as a shorthand to set text, title, description, and
+ * progress bar colors in one go. Individual properties always win over
+ * the shorthand.
+ */
+export interface ToastCssOverrides {
+  // -- Convenience shorthands --
+
+  /**
+   * Sets `color`, `titleColor`, `descriptionColor`, and `progressBarBg` at once.
+   * Individual properties listed below override the shorthand.
+   */
+  accentColor?: string;
+  /**
+   * Overrides the icon SVG color.
+   */
+  iconColor?: string;
+
+  // -- Base --
+
+  /** `--tf-toast-bg` */
+  bg?: string;
+  /** `--tf-toast-color` */
+  color?: string;
+  /** `--tf-toast-border-color` */
+  borderColor?: string;
+  /** `--tf-toast-border-radius` */
+  borderRadius?: string;
+  /** `--tf-toast-border-width` */
+  borderWidth?: string;
+  /** `--tf-toast-padding` */
+  padding?: string;
+  /** `--tf-toast-font-family` */
+  fontFamily?: string;
+  /** `--tf-toast-gap` */
+  gap?: string;
+
+  // -- Title --
+
+  /** `--tf-toast-title-color` */
+  titleColor?: string;
+  /** `--tf-toast-title-font-size` */
+  titleFontSize?: string;
+  /** `--tf-toast-title-font-weight` */
+  titleFontWeight?: string;
+  /** `--tf-toast-title-line-height` */
+  titleLineHeight?: string;
+
+  // -- Description --
+
+  /** `--tf-toast-description-color` */
+  descriptionColor?: string;
+  /** `--tf-toast-description-font-size` */
+  descriptionFontSize?: string;
+  /** `--tf-toast-description-line-height` */
+  descriptionLineHeight?: string;
+
+  // -- Icon --
+
+  /** `--tf-toast-icon-size` */
+  iconSize?: string;
+
+  // -- Progress --
+
+  /** `--tf-toast-progress-bar-bg` */
+  progressBarBg?: string;
+  /** `--tf-toast-progress-bg` */
+  progressBg?: string;
+  /** `--tf-toast-progress-height` */
+  progressHeight?: string;
+
+  // -- Close button --
+
+  /** `--tf-toast-close-bg` */
+  closeBg?: string;
+  /** `--tf-toast-close-color` */
+  closeColor?: string;
+  /** `--tf-toast-close-border-color` */
+  closeBorderColor?: string;
+  /** `--tf-toast-close-size` */
+  closeSize?: string;
+  /** `--tf-toast-close-icon-size` */
+  closeIconSize?: string;
+
+  // -- Action buttons --
+
+  /** `--tf-toast-button-bg` */
+  buttonBg?: string;
+  /** `--tf-toast-button-color` */
+  buttonColor?: string;
+  /** `--tf-toast-button-border-color` */
+  buttonBorderColor?: string;
+
+  // -- Created-at badge --
+
+  /** `--tf-toast-created-at-color` */
+  createdAtColor?: string;
+  /** `--tf-toast-created-at-bg` */
+  createdAtBg?: string;
+  /** `--tf-toast-created-at-border-color` */
+  createdAtBorderColor?: string;
+}
+
+/**
  * Fully resolved options applied to a toast instance.
  */
 export interface ToastOptions extends ToastConfig {
@@ -320,15 +431,6 @@ export interface ToastOptions extends ToastConfig {
    * Custom accent theme applied by the renderer (e.g. "my-theme" -> "tf-toast-accent--my-theme").
    */
   theme?: string;
-  /**
-   * Override the icon color for this toast (CSS color value).
-   */
-  iconColor?: string;
-  /**
-   * Override the accent color for this toast (CSS color value).
-   * Sets text, title, description, and progress bar colors.
-   */
-  accentColor?: string;
 }
 
 /**
@@ -359,9 +461,9 @@ export type ToastShowInput = { type: ToastType } & ToastContentInput;
 
 /**
  * Allowed fields when updating an existing toast.
+ * Title and description are optional — omitted fields keep their current values.
  */
-export type ToastUpdateInput = ToastContentInput &
-  Partial<Omit<ToastOptions, "title" | "description">>;
+export type ToastUpdateInput = Partial<ToastOptions>;
 
 /**
  * Render instructions for the loading helper's success/error states.

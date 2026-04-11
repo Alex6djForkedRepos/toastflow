@@ -47,8 +47,8 @@ import {
   :files="themeFiles"
   main-file="main.ts"
   layout="vertical"
-  title="Custom theme, HTML content, and action buttons"
-  description="Use supportHtml, created-at badges, and per-toast accent classes."
+  title="Custom theme, CSS overrides, HTML content, and action buttons"
+  description="Use theme classes, inline css object, supportHtml, and per-toast accent styling."
   :height="1020"
 />
 
@@ -58,8 +58,8 @@ import {
   :files="customFiles"
   main-file="main.ts"
   layout="vertical"
-  title="type: custom with theme, accentColor, iconColor, and showIcon"
-  description="Three custom toasts: CSS theme class, inline accent/icon color, and hidden icon."
+  title="type: custom with theme, css overrides, and showIcon"
+  description="Three custom toasts: CSS theme class, inline css object, and hidden icon."
   :height="1020"
 />
 
