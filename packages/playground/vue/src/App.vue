@@ -102,6 +102,12 @@ onMounted(function () {
   const savedTheme = window.localStorage.getItem(THEME_STORAGE_KEY);
   if (savedTheme === 'light' || savedTheme === 'dark') {
     setTheme(savedTheme, false);
+    return;
+  }
+  // No saved preference — sync with the inline script that may have
+  // applied dark mode based on the system prefers-color-scheme query.
+  if (document.documentElement.classList.contains('dark')) {
+    applyTheme('dark');
   }
 });
 </script>

@@ -2,17 +2,10 @@
 import { computed, onErrorCaptured, onMounted, ref, shallowRef } from "vue";
 
 type ReplFiles = Record<string, string>;
-declare const __TOASTFLOW_CORE_VERSION__: string;
-declare const __VUE_TOASTFLOW_VERSION__: string;
 
-const TOASTFLOW_CORE_VERSION =
-  typeof __TOASTFLOW_CORE_VERSION__ === "string"
-    ? __TOASTFLOW_CORE_VERSION__
-    : "latest";
-const VUE_TOASTFLOW_VERSION =
-  typeof __VUE_TOASTFLOW_VERSION__ === "string"
-    ? __VUE_TOASTFLOW_VERSION__
-    : "latest";
+const TOASTFLOW_CORE_VERSION = __TOASTFLOW_CORE_VERSION__ || "latest";
+const VUE_TOASTFLOW_VERSION = __VUE_TOASTFLOW_VERSION__ || "latest";
+const IS_LOCAL_DEV = __TOASTFLOW_LOCAL_DEV__;
 
 const props = withDefaults(
   defineProps<{
@@ -62,6 +55,28 @@ onErrorCaptured(function (error) {
   return false;
 });
 
+/**
+ * In local dev mode, rewrite CDN CSS URLs in repl file contents
+ * so the iframe loads styles from the local dist/ build.
+ */
+const CDN_CSS_PATTERN =
+  /https:\/\/cdn\.jsdelivr\.net\/npm\/vue-toastflow@[^"'\s)]+\/dist\/vue-toastflow\.css/g;
+
+function patchFilesForLocalDev(files: ReplFiles): ReplFiles {
+  if (typeof window === "undefined") {
+    return files;
+  }
+
+  const localCssUrl = `${window.location.origin}/@toastflow-local/vue/vue-toastflow.css`;
+
+  return Object.fromEntries(
+    Object.entries(files).map(([name, content]) => [
+      name,
+      content.replace(CDN_CSS_PATTERN, localCssUrl),
+    ]),
+  );
+}
+
 onMounted(async function () {
   if (ready.value) {
     return;
@@ -81,14 +96,22 @@ onMounted(async function () {
       outputMode: ref("preview"),
     });
 
-    await localStore.setFiles(props.files, props.mainFile);
+    await localStore.setFiles(
+      IS_LOCAL_DEV ? patchFilesForLocalDev(props.files) : props.files,
+      props.mainFile,
+    );
 
     localStore.setImportMap(
       {
-        imports: {
-          "toastflow-core": `https://esm.sh/toastflow-core@${TOASTFLOW_CORE_VERSION}?bundle`,
-          "vue-toastflow": `https://cdn.jsdelivr.net/npm/vue-toastflow@${VUE_TOASTFLOW_VERSION}/dist/toastflow.es.js`,
-        },
+        imports: IS_LOCAL_DEV
+          ? {
+              "toastflow-core": `${window.location.origin}/@toastflow-local/core/index.mjs`,
+              "vue-toastflow": `${window.location.origin}/@toastflow-local/vue/toastflow.es.js`,
+            }
+          : {
+              "toastflow-core": `https://esm.sh/toastflow-core@${TOASTFLOW_CORE_VERSION}?bundle`,
+              "vue-toastflow": `https://cdn.jsdelivr.net/npm/vue-toastflow@${VUE_TOASTFLOW_VERSION}/dist/toastflow.es.js`,
+            },
       },
       true,
     );

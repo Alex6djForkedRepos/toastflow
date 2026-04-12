@@ -4,6 +4,7 @@ node_modules/
 # VitePress generated output
 .vitepress/cache/
 .vitepress/dist/
+--port
 
 # Logs
 logs

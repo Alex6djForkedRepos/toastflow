@@ -339,7 +339,11 @@ export interface ToastCssOverrides {
 
   /** `--tf-toast-bg` */
   bg?: string;
-  /** `--tf-toast-color` */
+  /**
+   * `--tf-toast-color` — also cascades to `titleColor` and `descriptionColor`
+   * when those are not explicitly set, because accent classes pin them to
+   * type-specific values that would otherwise ignore a plain `color` override.
+   */
   color?: string;
   /** `--tf-toast-border-color` */
   borderColor?: string;

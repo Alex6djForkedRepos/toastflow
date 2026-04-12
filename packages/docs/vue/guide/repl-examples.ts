@@ -1,9 +1,4 @@
-﻿declare const __VUE_TOASTFLOW_VERSION__: string;
-
-const VUE_TOASTFLOW_VERSION =
-  typeof __VUE_TOASTFLOW_VERSION__ === "string"
-    ? __VUE_TOASTFLOW_VERSION__
-    : "latest";
+﻿const VUE_TOASTFLOW_VERSION = __VUE_TOASTFLOW_VERSION__ || "latest";
 const VUE_TOASTFLOW_CSS_URL = `https://cdn.jsdelivr.net/npm/vue-toastflow@${VUE_TOASTFLOW_VERSION}/dist/vue-toastflow.css`;
 
 export const helperFiles: Record<string, string> = {

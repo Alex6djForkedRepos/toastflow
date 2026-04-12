@@ -92,6 +92,20 @@ toast.custom({
 });
 ```
 
+`color` also cascades to `titleColor` and `descriptionColor` when those are not explicitly set. This is needed because each toast type accent class pins those variables to type-specific values — without the cascade, a plain `color` override would not affect the title or description:
+
+```ts
+toast.info({
+  title: "Branded info",
+  description: "Title and description inherit from color.",
+  css: {
+    bg: "#c33232",
+    color: "#fff7f2",         // → also sets titleColor + descriptionColor
+    descriptionColor: "#fdeae2", // explicit override for description only
+  },
+});
+```
+
 - Every property maps 1:1 to a CSS custom property (e.g. `bg` → `--tf-toast-bg`).
 - Works with any toast type, not just `custom`.
 - When both `theme` (CSS class) and `css` (inline) are set, inline values take precedence.

@@ -1,6 +1,12 @@
 import { defineConfig } from "vitepress";
-import { existsSync, readFileSync } from "node:fs";
-import { resolve } from "node:path";
+import {
+  createReadStream,
+  existsSync,
+  readFileSync,
+  statSync,
+} from "node:fs";
+import { extname, resolve } from "node:path";
+import type { Plugin } from "vite";
 
 const DOCS_HOSTNAME = "https://docs.toastflow.top";
 
@@ -67,6 +73,75 @@ function resolveCanonicalUrl(page: string): string {
   return new URL(pathname, DOCS_HOSTNAME).toString();
 }
 
+const isLocalDev = process.env.NODE_ENV !== "production";
+
+/**
+ * Vite plugin that serves local dist/ builds at /@toastflow-local/*
+ * so the Vue REPL can load them without a published npm version.
+ * Only active in dev mode (vitepress dev).
+ */
+function toastflowLocalDevPlugin(): Plugin {
+  const coreDistDir = resolve(process.cwd(), "../../core/dist");
+  const vueDistDir = resolve(process.cwd(), "../../vue/dist");
+
+  const prefixes: Record<string, string> = {
+    "/@toastflow-local/core/": coreDistDir,
+    "/@toastflow-local/vue/": vueDistDir,
+  };
+
+  const mimeTypes: Record<string, string> = {
+    ".js": "application/javascript",
+    ".mjs": "application/javascript",
+    ".css": "text/css",
+    ".json": "application/json",
+    ".map": "application/json",
+  };
+
+  return {
+    name: "toastflow-local-dev",
+    apply: "serve",
+    configureServer(server) {
+      console.log(
+        "\n  [toastflow] Local dev mode — live examples load from local dist/",
+        '\n  Run "pnpm build" in core + vue if previews look stale.\n',
+      );
+
+      server.middlewares.use(function (req, res, next) {
+        const url = req.url ?? "";
+
+        for (const [prefix, baseDir] of Object.entries(prefixes)) {
+          if (!url.startsWith(prefix)) {
+            continue;
+          }
+
+          const relativePath = url.slice(prefix.length).split("?")[0];
+          const filePath = resolve(baseDir, relativePath);
+
+          if (
+            !filePath.startsWith(baseDir) ||
+            !existsSync(filePath) ||
+            !statSync(filePath).isFile()
+          ) {
+            return next();
+          }
+
+          const ext = extname(filePath);
+          res.setHeader(
+            "Content-Type",
+            mimeTypes[ext] ?? "application/octet-stream",
+          );
+          res.setHeader("Access-Control-Allow-Origin", "*");
+          res.setHeader("Cache-Control", "no-cache");
+          createReadStream(filePath).pipe(res);
+          return;
+        }
+
+        next();
+      });
+    },
+  };
+}
+
 export default defineConfig({
   title: "Toastflow",
   description:
@@ -120,7 +195,9 @@ export default defineConfig({
     define: {
       __TOASTFLOW_CORE_VERSION__: JSON.stringify(TOASTFLOW_CORE_VERSION),
       __VUE_TOASTFLOW_VERSION__: JSON.stringify(VUE_TOASTFLOW_VERSION),
+      __TOASTFLOW_LOCAL_DEV__: JSON.stringify(isLocalDev),
     },
+    plugins: [toastflowLocalDevPlugin()],
     optimizeDeps: {
       exclude: ["@vue/repl"],
     },

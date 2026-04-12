@@ -263,7 +263,18 @@ const toastStyle = computed<CSSProperties>(function () {
     style["--tf-toast-progress-bar-bg"] = accent;
   }
 
-  // Individual properties always override the shorthand
+  // color cascades to title and description when not explicitly provided,
+  // because accent classes pin those variables to type-specific values
+  if (css.color) {
+    if (!css.titleColor) {
+      style["--tf-toast-title-color"] = css.color;
+    }
+    if (!css.descriptionColor) {
+      style["--tf-toast-description-color"] = css.color;
+    }
+  }
+
+  // Individual properties always override the shorthands
   for (const [key, varName] of Object.entries(CSS_VAR_MAP)) {
     const value = css[key as keyof ToastCssOverrides];
     if (value != null) {
