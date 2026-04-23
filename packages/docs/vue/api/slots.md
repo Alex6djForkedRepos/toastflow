@@ -1,6 +1,6 @@
 ﻿---
 title: Slots
-description: Available slots for customizing toast icons, close buttons, progress bars, and content.
+description: Slot API reference for ToastContainer and Toast — customize icons, close buttons, progress bars, and toast content with scoped slots.
 outline: deep
 ---
 

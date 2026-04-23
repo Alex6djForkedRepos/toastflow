@@ -1,6 +1,6 @@
 ﻿---
 title: ToastContainer
-description: The root container component that renders and positions all toast stacks.
+description: ToastContainer is the root renderer component for Toastflow — it manages all toast stacks, positions, animations, and slot overrides in Vue 3.
 outline: deep
 ---
 

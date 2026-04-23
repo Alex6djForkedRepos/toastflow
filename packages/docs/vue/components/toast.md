@@ -1,6 +1,6 @@
 ﻿---
 title: Toast
-description: The Toast component — props, slots, and standalone usage for rendering individual toasts.
+description: The Toast component — full props reference, available slots, and standalone usage for rendering individual toasts outside ToastContainer.
 outline: deep
 ---
 

@@ -1,6 +1,6 @@
 ﻿---
 title: Icons
-description: Built-in SVG icon components for each toast type — success, error, warning, info, and more.
+description: Built-in SVG icon components for each Toastflow toast type — success, error, warning, info, loading, and default — with usage examples.
 outline: deep
 ---
 

@@ -1,6 +1,6 @@
 ﻿---
 title: Controlled Store
-description: Access and control the toast store directly for advanced state management and subscriptions.
+description: Use the Toastflow controlled store for advanced state management — direct store access, reactive subscriptions, and custom rendering without ToastContainer.
 outline: deep
 ---
 

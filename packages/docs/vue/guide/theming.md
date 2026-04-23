@@ -1,6 +1,6 @@
 ﻿---
 title: Theming
-description: Customize toast appearance with CSS variables, accent themes, and per-toast style overrides.
+description: Customize Toastflow toast appearance using CSS variables, accent themes, per-toast css overrides, and custom theme classes for full visual control.
 outline: deep
 ---
 

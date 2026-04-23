@@ -1,6 +1,6 @@
 ﻿---
 title: Toasts
-description: Toast payload model, supported types, show and update semantics in Toastflow.
+description: Toastflow toast model reference — supported types, payload structure, show and update semantics, and how options are resolved per toast.
 outline: deep
 ---
 

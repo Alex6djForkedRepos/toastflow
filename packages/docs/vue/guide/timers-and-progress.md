@@ -1,6 +1,6 @@
 ﻿---
 title: Timers and Progress
-description: Configure auto-dismiss timers, progress bars, pause strategies, and duration controls.
+description: Control toast auto-dismiss timers in Toastflow — configure duration, progress bars, pause on hover, pause strategies, and infinite toasts.
 outline: deep
 ---
 

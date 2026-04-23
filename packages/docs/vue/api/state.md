@@ -1,6 +1,6 @@
 ﻿---
 title: State
-description: Toast state structure, subscriptions, and reactive state access in Toastflow.
+description: Toastflow state shape reference — active toasts, queue, reactive subscriptions, and how to access store state in Vue 3 components.
 outline: deep
 ---
 

@@ -176,7 +176,7 @@ onMounted(function () {
 
           <Button
             variant="primary"
-            href="https://docs.toastflow.top/"
+            href="https://docs.toastflow.top/guide/introduction"
             target="_blank"
             tooltip="Open documentation"
           >
@@ -314,9 +314,9 @@ onMounted(function () {
                 <div class="flex gap-2">
                   <Button
                     variant="primary"
-                    href="https://github.com/adrianjanocko/toastflow"
+                    href="https://docs.toastflow.top/guide/introduction"
                     target="_blank"
-                    tooltip="Read Toastflow docs on GitHub"
+                    tooltip="Read Toastflow docs"
                   >
                     Docs
                   </Button>

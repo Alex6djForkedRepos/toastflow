@@ -1,6 +1,6 @@
 ﻿---
 title: Troubleshooting
-description: Common issues and solutions when using Toastflow with Vue 3 or Nuxt.
+description: Common issues and fixes when using Toastflow with Vue 3 or Nuxt — missing toasts, animation problems, SSR errors, and plugin setup mistakes.
 outline: deep
 ---
 

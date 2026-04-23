@@ -1,6 +1,6 @@
 ﻿---
 title: Programmatic API
-description: Show, update, dismiss, and manage toasts programmatically with the toast helper.
+description: Use the Toastflow programmatic API to show, update, dismiss, and manage toasts from anywhere in your Vue 3 app without component dependencies.
 outline: deep
 ---
 

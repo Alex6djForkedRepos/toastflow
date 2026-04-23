@@ -1,6 +1,6 @@
 ﻿---
 title: Events
-description: Subscribe to toast lifecycle events like duplicates, timer resets, and updates.
+description: Subscribe to Toastflow store events — duplicate detection, timer resets, and update notifications via the subscribeEvents API.
 outline: deep
 ---
 

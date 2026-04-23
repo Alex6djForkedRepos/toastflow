@@ -1,6 +1,6 @@
 ﻿---
 title: Actions
-description: Store actions for showing, updating, dismissing, pausing, and managing toasts.
+description: Full reference for store actions in Toastflow — show, update, dismiss, pause, resume, dismissAll, and queue management with typed signatures.
 outline: deep
 ---
 

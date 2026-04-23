@@ -278,7 +278,7 @@ export default defineConfig({
       { text: "Comparisons", link: "/comparisons/overview" },
       { text: "Toastflow API", link: "/api/configuration" },
       { text: "Components", link: "/components/toast-container" },
-      { text: "Playground", link: "https://toastflow.top/" },
+      { text: "Playground", link: "https://www.toastflow.top/" },
     ],
     sidebar: [
       {

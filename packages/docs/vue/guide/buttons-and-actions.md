@@ -1,6 +1,6 @@
 ﻿---
 title: Buttons and Actions
-description: Add action buttons to toasts with configurable layout, alignment, and click handlers.
+description: Add action buttons to Toastflow toasts — configure layout direction, alignment positions, gap spacing, and per-button click handlers.
 outline: deep
 ---
 

@@ -1,6 +1,6 @@
 ﻿---
 title: ToastProgress
-description: The ToastProgress component for rendering animated progress bars inside toasts.
+description: ToastProgress renders an animated countdown bar inside a toast — supports left-to-right and right-to-left alignment with CSS variable customization.
 outline: deep
 ---
 

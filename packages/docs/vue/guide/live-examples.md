@@ -1,6 +1,6 @@
 ﻿---
 title: Live Examples
-description: Interactive Vue REPL examples demonstrating Toastflow features and configuration.
+description: Interactive Vue REPL examples for Toastflow — try toasts, theming, CSS overrides, buttons, timers, and queue behavior live in the browser.
 outline: deep
 ---
 

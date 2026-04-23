@@ -1,6 +1,6 @@
 ﻿---
 title: Utilities
-description: Helper utilities exported by Toastflow for type validation and formatting.
+description: Helper utilities exported by Toastflow — type guards, ID generators, and formatting helpers for use alongside the toast store.
 outline: deep
 ---
 

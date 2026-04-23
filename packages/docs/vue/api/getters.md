@@ -1,6 +1,6 @@
 ﻿---
 title: Getters
-description: Read-only accessors for toast state and store configuration.
+description: Read-only getters for querying current toast state, active toasts, queued toasts, and resolved store configuration in Toastflow.
 outline: deep
 ---
 

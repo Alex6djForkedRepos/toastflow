@@ -1,6 +1,6 @@
 ﻿---
 title: Configuration
-description: All available Toastflow configuration options for global and per-toast behavior.
+description: Complete reference for all Toastflow configuration options — duration, position, animation, progress bar, queue, close button, and per-toast overrides.
 outline: deep
 ---
 
