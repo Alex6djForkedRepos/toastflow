@@ -5,6 +5,8 @@
   "scripts": {
     "build": "pnpm -r build",
     "test": "pnpm -r test",
+    "site:dev": "pnpm --filter toastflow-site dev",
+    "site:build": "pnpm --filter toastflow-site build",
     "format": "prettier --cache --write .",
     "format:check": "prettier --cache --check .",
     "lint": "eslint .",

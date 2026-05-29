@@ -11,7 +11,7 @@
 </p>
 
 <p align="center">
-  <a href="https://docs.toastflow.top/">📖 Docs</a> · <a href="https://toastflow.top/">🎮 Playground</a>
+  <a href="https://www.toastflow.top/docs">📖 Docs</a> · <a href="https://www.toastflow.top/">🎮 Playground</a>
 </p>
 
 ---

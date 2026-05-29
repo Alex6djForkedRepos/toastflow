@@ -20,14 +20,14 @@
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/vue"
   },
-  "version": "1.2.0-beta.2",
+  "version": "1.2.0-beta.3",
   "main": "./dist/toastflow.umd.js",
   "module": "./dist/toastflow.es.js",
   "types": "./dist/src/index.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/src/index.d.ts",
+        "types": "./dist/src/index.d.mts",
         "default": "./dist/toastflow.es.js"
       },
       "require": {
@@ -39,9 +39,9 @@
     "./src/styles.css": "./src/styles.css"
   },
   "scripts": {
-    "build": "vite build && node -e \"require('fs').copyFileSync('src/styles.css','dist/vue-toastflow.css')\"",
+    "build": "vite build && node ./scripts/post-build.cjs",
     "prepack": "pnpm run build",
-    "test": "vitest"
+    "test": "vitest run --passWithNoTests"
   },
   "files": [
     "dist",
@@ -58,7 +58,6 @@
     "@vitejs/plugin-vue": "^6.0.6",
     "typescript": "^6.0.3",
     "vite": "^8.0.8",
-    "vite-plugin-css-injected-by-js": "5.0.1",
     "vite-plugin-dts": "^4.5.4",
     "vitest": "^4.1.4",
     "vue": "^3.5.27"

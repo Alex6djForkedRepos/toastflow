@@ -186,6 +186,57 @@
   animation-play-state: paused;
 }
 
+.tf-toast-progress-wrapper {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0;
+}
+
+.tf-toast-progress {
+  height: var(--tf-toast-progress-height);
+  width: 100%;
+  border-radius: 0 0 var(--tf-toast-progress-border-radius)
+    var(--tf-toast-progress-border-radius);
+  background: var(--_tf-resolved-progress-bg);
+}
+
+.tf-toast-progress-bar {
+  height: 100%;
+  width: 100%;
+  background: var(--_tf-resolved-progress-bar-bg);
+  transform-origin: left;
+  animation-name: tf-toast-progress-rtl;
+  animation-duration: var(--tf-toast-progress-duration, 5000ms);
+  animation-timing-function: linear;
+  animation-fill-mode: forwards;
+  will-change: transform;
+}
+
+.tf-toast-progress[data-align="left-to-right"] .tf-toast-progress-bar {
+  transform-origin: right;
+  animation-name: tf-toast-progress-ltr;
+}
+
+@keyframes tf-toast-progress-rtl {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+@keyframes tf-toast-progress-ltr {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
 .tf-toast-item[data-position^="top-"] {
   --tf-toast-motion-offset: -10px;
 }
@@ -294,4 +345,556 @@
   .Toastflow__animation-clearAll .tf-toast-motion {
     animation: none;
   }
+}
+
+/* Toast container */
+.tf-toast-root {
+  pointer-events: none;
+  position: fixed;
+  inset: 0;
+}
+
+.tf-toast-stack {
+  position: absolute;
+  height: 100%;
+  display: flex;
+  align-items: flex-start;
+}
+
+.tf-toast-stack-inner {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.tf-toast-stack-inner--scroll {
+  max-height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  padding-top: var(--tf-toast-stack-padding-top);
+  padding-right: var(--tf-toast-stack-padding-right);
+  padding-bottom: var(--tf-toast-stack-padding-bottom);
+  padding-left: var(--tf-toast-stack-padding-left);
+  scroll-padding: var(--tf-toast-stack-padding-top)
+    var(--tf-toast-stack-padding-right) var(--tf-toast-stack-padding-bottom)
+    var(--tf-toast-stack-padding-left);
+}
+
+.tf-toast-stack-inner--bottom {
+  min-height: 100%;
+  justify-content: flex-end;
+}
+
+.tf-toast-stack--left {
+  justify-content: flex-start;
+}
+
+.tf-toast-stack--center {
+  justify-content: center;
+}
+
+.tf-toast-stack--right {
+  justify-content: flex-end;
+}
+
+.tf-toast-item {
+  pointer-events: auto;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+}
+
+/* Toast component */
+.tf-toast-wrapper {
+  pointer-events: auto;
+  width: 100%;
+}
+
+.tf-toast {
+  cursor: pointer;
+  position: relative;
+  width: 100%;
+  --_tf-resolved-bg: var(
+    --tf-toast-bg,
+    var(--_tf-bg, var(--tf-toast-normal-bg-default))
+  );
+  --_tf-resolved-color: var(
+    --tf-toast-color,
+    var(
+      --tf-toast-accent-color,
+      var(--_tf-color, var(--tf-toast-normal-text-default))
+    )
+  );
+  --_tf-resolved-border: var(
+    --tf-toast-border-color,
+    var(--_tf-border-color, var(--tf-toast-normal-border-default))
+  );
+  --_tf-resolved-title-color: var(
+    --tf-toast-title-color,
+    var(
+      --tf-toast-color,
+      var(
+        --tf-toast-accent-color,
+        var(--_tf-title-color, var(--_tf-resolved-color))
+      )
+    )
+  );
+  --_tf-resolved-desc-color: var(
+    --tf-toast-description-color,
+    var(
+      --tf-toast-color,
+      var(
+        --tf-toast-accent-color,
+        var(--_tf-desc-color, var(--_tf-resolved-color))
+      )
+    )
+  );
+  --_tf-resolved-progress-bg: var(
+    --tf-toast-progress-bg,
+    var(
+      --_tf-progress-bg,
+      color-mix(in srgb, var(--_tf-resolved-color) 20%, transparent)
+    )
+  );
+  --_tf-resolved-progress-bar-bg: var(
+    --tf-toast-progress-bar-bg,
+    var(
+      --tf-toast-accent-color,
+      var(--_tf-progress-bar-bg, var(--_tf-resolved-color))
+    )
+  );
+  --tf-toast-button-color: var(--_tf-resolved-color);
+  --tf-toast-button-border-color: var(--_tf-resolved-border);
+  --tf-toast-button-border-width: var(--tf-toast-border-width);
+  --tf-toast-button-bg: var(--_tf-resolved-bg);
+  --tf-toast-close-color: var(--_tf-resolved-color);
+  --tf-toast-close-border-color: var(--_tf-resolved-border);
+  --tf-toast-close-bg: var(--_tf-resolved-bg);
+  --tf-toast-close-ring-color: var(--tf-toast-close-border-color);
+  --tf-toast-created-at-color: var(--_tf-resolved-desc-color);
+  --tf-toast-created-at-border-color: var(--_tf-resolved-border);
+  --tf-toast-created-at-bg: var(--_tf-resolved-bg);
+}
+
+.tf-toast--swipe-enabled {
+  touch-action: pan-y;
+  -webkit-user-select: none;
+  user-select: none;
+  cursor: grab;
+}
+
+.tf-toast--swipe-enabled:active {
+  cursor: grabbing;
+}
+
+.tf-toast[data-align="right"] .tf-toast-main-content {
+  flex-direction: row-reverse;
+}
+
+.tf-toast[data-align="right"] .tf-toast-text {
+  text-align: right;
+}
+
+.tf-toast-accent--default {
+  --_tf-bg: var(--tf-toast-normal-bg-default);
+  --_tf-color: var(--tf-toast-normal-color-default);
+  --_tf-border-color: var(--tf-toast-normal-border-default);
+  --_tf-title-color: var(--tf-toast-normal-title-color-default);
+  --_tf-desc-color: var(--tf-toast-normal-description-color-default);
+  --_tf-progress-bg: var(--tf-toast-normal-progress-bg-default);
+  --_tf-progress-bar-bg: var(--tf-toast-normal-progress-bar-bg-default);
+}
+
+.tf-toast-accent--loading {
+  --_tf-bg: var(--tf-toast-loading-bg-default);
+  --_tf-color: var(--tf-toast-loading-color-default);
+  --_tf-border-color: var(--tf-toast-loading-border-default);
+  --_tf-title-color: var(--tf-toast-loading-title-color-default);
+  --_tf-desc-color: var(--tf-toast-loading-description-color-default);
+  --_tf-progress-bg: var(--tf-toast-loading-progress-bg-default);
+  --_tf-progress-bar-bg: var(--tf-toast-loading-progress-bar-bg-default);
+}
+
+.tf-toast-accent--success {
+  --_tf-bg: var(--tf-toast-success-bg-default);
+  --_tf-color: var(--tf-toast-success-color-default);
+  --_tf-border-color: var(--tf-toast-success-border-default);
+  --_tf-title-color: var(--tf-toast-success-title-color-default);
+  --_tf-desc-color: var(--tf-toast-success-description-color-default);
+  --_tf-progress-bg: var(--tf-toast-success-progress-bg-default);
+  --_tf-progress-bar-bg: var(--tf-toast-success-progress-bar-bg-default);
+}
+
+.tf-toast-accent--error {
+  --_tf-bg: var(--tf-toast-error-bg-default);
+  --_tf-color: var(--tf-toast-error-color-default);
+  --_tf-border-color: var(--tf-toast-error-border-default);
+  --_tf-title-color: var(--tf-toast-error-title-color-default);
+  --_tf-desc-color: var(--tf-toast-error-description-color-default);
+  --_tf-progress-bg: var(--tf-toast-error-progress-bg-default);
+  --_tf-progress-bar-bg: var(--tf-toast-error-progress-bar-bg-default);
+}
+
+.tf-toast-accent--warning {
+  --_tf-bg: var(--tf-toast-warning-bg-default);
+  --_tf-color: var(--tf-toast-warning-color-default);
+  --_tf-border-color: var(--tf-toast-warning-border-default);
+  --_tf-title-color: var(--tf-toast-warning-title-color-default);
+  --_tf-desc-color: var(--tf-toast-warning-description-color-default);
+  --_tf-progress-bg: var(--tf-toast-warning-progress-bg-default);
+  --_tf-progress-bar-bg: var(--tf-toast-warning-progress-bar-bg-default);
+}
+
+.tf-toast-accent--info {
+  --_tf-bg: var(--tf-toast-info-bg-default);
+  --_tf-color: var(--tf-toast-info-color-default);
+  --_tf-border-color: var(--tf-toast-info-border-default);
+  --_tf-title-color: var(--tf-toast-info-title-color-default);
+  --_tf-desc-color: var(--tf-toast-info-description-color-default);
+  --_tf-progress-bg: var(--tf-toast-info-progress-bg-default);
+  --_tf-progress-bar-bg: var(--tf-toast-info-progress-bar-bg-default);
+}
+
+.tf-toast-accent--custom {
+  --_tf-bg: var(
+    --tf-toast-custom-bg-default,
+    var(--tf-toast-normal-bg-default)
+  );
+  --_tf-color: var(
+    --tf-toast-custom-color-default,
+    var(--tf-toast-normal-color-default)
+  );
+  --_tf-border-color: var(
+    --tf-toast-custom-border-default,
+    var(--tf-toast-normal-border-default)
+  );
+  --_tf-title-color: var(
+    --tf-toast-custom-title-color-default,
+    var(--tf-toast-normal-title-color-default)
+  );
+  --_tf-desc-color: var(
+    --tf-toast-custom-description-color-default,
+    var(--tf-toast-normal-description-color-default)
+  );
+  --_tf-progress-bg: var(
+    --tf-toast-custom-progress-bg-default,
+    var(--tf-toast-normal-progress-bg-default)
+  );
+  --_tf-progress-bar-bg: var(
+    --tf-toast-custom-progress-bar-bg-default,
+    var(--tf-toast-normal-progress-bar-bg-default)
+  );
+}
+
+.tf-toast-surface {
+  position: relative;
+  display: block;
+  min-width: 0;
+  padding: var(--tf-toast-padding);
+  border-radius: var(--tf-toast-border-radius);
+  background-color: var(--_tf-resolved-bg);
+  color: var(--_tf-resolved-color);
+  border: var(--tf-toast-border-width) solid var(--_tf-resolved-border);
+  font-family: var(--tf-toast-font-family), sans-serif;
+  overflow: hidden;
+}
+
+.tf-toast-main {
+  display: flex;
+  align-items: stretch;
+  gap: var(--tf-toast-buttons-content-gap);
+  width: 100%;
+}
+
+.tf-toast-main--full > .tf-toast-main-content {
+  width: 100%;
+  min-width: 0;
+  flex: 1 1 100%;
+}
+
+.tf-toast-main--content-end > .tf-toast-main-content {
+  margin-left: auto;
+  max-width: 100%;
+  flex: 0 1 auto;
+}
+
+.tf-toast-main--content-end > .tf-toast-main-content > .tf-toast-body {
+  flex: 0 1 auto;
+  min-width: 0;
+}
+
+.tf-toast-main-content {
+  display: flex;
+  align-items: center;
+  gap: var(--tf-toast-gap);
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
+.tf-toast-meta {
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--tf-toast-gap) / 2);
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+.tf-toast-meta--left {
+  align-items: flex-start;
+}
+
+.tf-toast-meta--right {
+  align-items: flex-end;
+}
+
+.tf-toast-meta-row {
+  display: flex;
+  min-width: 0;
+}
+
+.tf-toast-meta-row--top {
+  margin-bottom: var(--tf-toast-buttons-content-gap);
+}
+
+.tf-toast-meta-row--bottom {
+  margin-top: var(--tf-toast-buttons-content-gap);
+}
+
+.tf-toast-meta-row .tf-toast-actions--start {
+  margin-right: auto;
+}
+
+.tf-toast-meta-row .tf-toast-actions--end {
+  margin-left: auto;
+}
+
+.tf-toast-actions {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--tf-toast-buttons-gap);
+}
+
+.tf-toast-buttons--center {
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.tf-toast-buttons--bottom {
+  margin-top: auto;
+}
+
+.tf-toast-actions--start {
+  justify-content: flex-start;
+}
+
+.tf-toast-actions--end {
+  justify-content: flex-end;
+}
+
+.tf-toast-button {
+  appearance: none;
+  border: var(--tf-toast-button-border-width) solid
+    var(--tf-toast-button-border-color);
+  background: var(--tf-toast-button-bg);
+  color: var(--tf-toast-button-color);
+  border-radius: var(--tf-toast-button-border-radius);
+  font-size: var(--tf-toast-button-font-size);
+  line-height: var(--tf-toast-button-line-height);
+  padding: var(--tf-toast-button-padding-y) var(--tf-toast-button-padding-x);
+  cursor: pointer;
+  user-select: none;
+  font-family: inherit;
+}
+
+.tf-toast-icon-spin {
+  display: inline-block;
+  animation: tf-toast-spin 0.8s linear infinite;
+  transform-origin: center;
+}
+
+@keyframes tf-toast-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.tf-toast-icon-svg {
+  width: var(--tf-toast-icon-size);
+  height: var(--tf-toast-icon-size);
+}
+
+.tf-toast-icon--loading .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-color, var(--tf-toast-icon-loading));
+}
+
+.tf-toast-icon--default .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-color, var(--tf-toast-icon-default));
+}
+
+.tf-toast-icon--success .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-color, var(--tf-toast-icon-success));
+}
+
+.tf-toast-icon--error .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-color, var(--tf-toast-icon-error));
+}
+
+.tf-toast-icon--warning .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-color, var(--tf-toast-icon-warning));
+}
+
+.tf-toast-icon--info .tf-toast-icon-svg {
+  color: var(--tf-toast-icon-color, var(--tf-toast-icon-info));
+}
+
+.tf-toast-icon--custom .tf-toast-icon-svg {
+  color: var(
+    --tf-toast-icon-color,
+    var(--tf-toast-icon-custom, var(--tf-toast-icon-default))
+  );
+}
+
+.tf-toast-body {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.tf-toast-body--has-created-at {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  column-gap: calc(var(--tf-toast-gap) / 2);
+  grid-auto-flow: row;
+}
+
+.tf-toast-body--has-created-at > :not(.tf-toast-created-at) {
+  grid-column: 1;
+}
+
+.tf-toast-text {
+  min-width: 0;
+}
+
+.tf-toast-created-at {
+  color: var(--tf-toast-created-at-color);
+  font-size: var(--tf-toast-created-at-font-size);
+  font-style: italic;
+  white-space: nowrap;
+  align-self: end;
+  justify-self: end;
+  grid-column: 2;
+  grid-row: 1;
+}
+
+.tf-toast[data-align="right"] .tf-toast-created-at {
+  text-align: right;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.tf-toast[data-align="right"] .tf-toast-body--has-created-at {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.tf-toast[data-align="right"]
+  .tf-toast-body--has-created-at
+  > .tf-toast-created-at {
+  grid-column: 1;
+  justify-self: start;
+}
+
+.tf-toast[data-align="right"]
+  .tf-toast-body--has-created-at
+  > :not(.tf-toast-created-at) {
+  grid-column: 2;
+}
+
+.tf-toast-floating-bar {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(
+    calc(var(--tf-toast-close-size) * var(--tf-toast-float-x)),
+    calc(var(--tf-toast-close-size) * var(--tf-toast-float-y))
+  );
+  display: inline-flex;
+  align-items: center;
+  gap: var(--tf-toast-created-at-offset);
+  height: var(--tf-toast-close-size);
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.tf-toast-created-at-float {
+  display: inline-flex;
+  align-items: center;
+  height: var(--tf-toast-close-size);
+  padding: 0 var(--tf-toast-created-at-padding-x);
+  border-radius: var(--tf-toast-created-at-border-radius);
+  border: var(--tf-toast-close-border-width) solid
+    var(--tf-toast-created-at-border-color);
+  background: var(--tf-toast-created-at-bg);
+  color: var(--tf-toast-created-at-color);
+  font-size: var(--tf-toast-created-at-font-size);
+  font-style: italic;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.tf-toast-title {
+  margin: 0;
+  font-size: var(--tf-toast-title-font-size);
+  font-weight: var(--tf-toast-title-font-weight);
+  line-height: var(--tf-toast-title-line-height);
+  color: var(--_tf-resolved-title-color);
+  word-wrap: break-word;
+}
+
+.tf-toast-description {
+  margin: 0;
+  font-size: var(--tf-toast-description-font-size);
+  line-height: var(--tf-toast-description-line-height);
+  color: var(--_tf-resolved-desc-color);
+  word-wrap: break-word;
+}
+
+.tf-toast-close {
+  position: relative;
+  height: var(--tf-toast-close-size);
+  width: var(--tf-toast-close-size);
+  border-radius: var(--tf-toast-close-border-radius);
+  border: var(--tf-toast-close-border-width) solid
+    var(--tf-toast-close-border-color);
+  background: var(--tf-toast-close-bg);
+  color: var(--tf-toast-close-color);
+  font-size: var(--tf-toast-close-font-size);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  cursor: pointer;
+  flex-shrink: 0;
+  pointer-events: auto;
+  z-index: 2;
+}
+
+.tf-toast-close-icon {
+  width: var(--tf-toast-close-icon-size);
+  height: var(--tf-toast-close-icon-size);
+}
+
+.tf-toast-close:focus-visible {
+  outline: 2px solid var(--tf-toast-close-ring-color);
+  outline-offset: 2px;
 }

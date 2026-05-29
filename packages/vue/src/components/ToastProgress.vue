@@ -1,67 +1,42 @@
 <script setup lang="ts">
+import { computed } from "vue";
 import type { ToastProgressAlignment, ToastType } from "toastflow-core";
+
+type ToastSlotProps = Record<string, unknown>;
 
 const props = withDefaults(
   defineProps<{
-    type: ToastType;
+    type?: ToastType;
     progressAlignment?: ToastProgressAlignment;
+    trackProps?: ToastSlotProps;
+    barProps?: ToastSlotProps;
   }>(),
   {
+    type: "default",
     progressAlignment: "right-to-left",
   },
 );
+
+const resolvedTrackProps = computed(function (): ToastSlotProps {
+  return (
+    props.trackProps ?? {
+      class: "tf-toast-progress",
+      "data-align": props.progressAlignment,
+    }
+  );
+});
+
+const resolvedBarProps = computed(function (): ToastSlotProps {
+  return (
+    props.barProps ?? {
+      class: ["tf-toast-progress-bar", `tf-toast-progress-bar--${props.type}`],
+    }
+  );
+});
 </script>
 
 <template>
-  <div class="tf-toast-progress" :data-align="props.progressAlignment">
-    <div
-      class="tf-toast-progress-bar"
-      :class="`tf-toast-progress-bar--${props.type}`"
-    />
+  <div v-bind="resolvedTrackProps">
+    <div v-bind="resolvedBarProps" />
   </div>
 </template>
-
-<style scoped>
-.tf-toast-progress {
-  height: var(--tf-toast-progress-height);
-  width: 100%;
-  border-radius: 0 0 var(--tf-toast-progress-border-radius)
-    var(--tf-toast-progress-border-radius);
-  background: var(--_tf-resolved-progress-bg);
-}
-
-.tf-toast-progress-bar {
-  height: 100%;
-  width: 100%;
-  background: var(--_tf-resolved-progress-bar-bg);
-  transform-origin: left;
-  animation-name: tf-toast-progress-rtl;
-  animation-duration: var(--tf-toast-progress-duration, 5000ms);
-  animation-timing-function: linear;
-  animation-fill-mode: forwards;
-  will-change: transform;
-}
-
-.tf-toast-progress[data-align="left-to-right"] .tf-toast-progress-bar {
-  transform-origin: right;
-  animation-name: tf-toast-progress-ltr;
-}
-
-@keyframes tf-toast-progress-rtl {
-  from {
-    transform: scaleX(1);
-  }
-  to {
-    transform: scaleX(0);
-  }
-}
-
-@keyframes tf-toast-progress-ltr {
-  from {
-    transform: scaleX(0);
-  }
-  to {
-    transform: scaleX(1);
-  }
-}
-</style>

@@ -1,4 +1,4 @@
-import type { ToastConfig } from "vue-toastflow";
+import type { ToastConfig } from "./runtime";
 import {
   addComponent,
   addImports,
@@ -6,6 +6,7 @@ import {
   addTemplate,
   addTypeTemplate,
   defineNuxtModule,
+  useNuxt,
 } from "@nuxt/kit";
 
 export interface NuxtToastflowOptions {
@@ -66,7 +67,12 @@ export default defineNuxtModule<NuxtToastflowOptions>({
     css: true,
     componentName: "ToastContainer",
   },
-  setup(options, nuxt) {
+  setup(options) {
+    const nuxt = useNuxt();
+    const runtimeEntry = "nuxt-toastflow/runtime";
+
+    nuxt.options.build.transpile.push("vue-toastflow");
+
     if (containsFunction(options.config)) {
       console.warn(
         "[nuxt-toastflow] Functions in `toastflow.config` are not serializable in nuxt.config and will be omitted.",
@@ -87,10 +93,10 @@ export default defineNuxtModule<NuxtToastflowOptions>({
       mode: "client",
       getContents: function () {
         return [
-          'import { createToastflow, toast } from "vue-toastflow";',
+          `import { createToastflow, toast } from "${runtimeEntry}";`,
           "",
           "export default defineNuxtPlugin((nuxtApp) => {",
-          `  nuxtApp.vueApp.use(createToastflow(${serializedConfig}));`,
+          `  nuxtApp.vueApp.use(createToastflow(${serializedConfig}, { css: ${options.css ? "true" : "false"} }));`,
           "",
           "  return {",
           "    provide: {",
@@ -109,7 +115,7 @@ export default defineNuxtModule<NuxtToastflowOptions>({
         return [
           'import { useNuxtApp } from "#app";',
           "",
-          'type ToastApi = typeof import("vue-toastflow")["toast"];',
+          `type ToastApi = typeof import("${runtimeEntry}")["toast"];`,
           "",
           "export function useToast(): ToastApi {",
           "  return useNuxtApp().$toast;",
@@ -144,7 +150,7 @@ export default defineNuxtModule<NuxtToastflowOptions>({
       filename: "types/nuxt-toastflow.d.ts",
       getContents: function () {
         return [
-          'type ToastApi = typeof import("vue-toastflow")["toast"];',
+          `type ToastApi = typeof import("${runtimeEntry}")["toast"];`,
           "",
           'declare module "#app" {',
           "  interface NuxtApp {",
@@ -168,28 +174,9 @@ export default defineNuxtModule<NuxtToastflowOptions>({
       addComponent({
         name: options.componentName,
         export: "ToastContainer",
-        filePath: "vue-toastflow",
+        filePath: runtimeEntry,
         mode: "client",
       });
-    }
-
-    if (options.css) {
-      const cssEntry = "vue-toastflow/styles.css";
-      const hasCssEntry = nuxt.options.css.some(function (entry) {
-        if (typeof entry === "string") {
-          return entry === cssEntry;
-        }
-
-        if (Array.isArray(entry) && typeof entry[0] === "string") {
-          return entry[0] === cssEntry;
-        }
-
-        return false;
-      });
-
-      if (!hasCssEntry) {
-        nuxt.options.css.push(cssEntry);
-      }
     }
   },
 });

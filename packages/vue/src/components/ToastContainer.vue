@@ -9,6 +9,7 @@ import {
   watch,
 } from "vue";
 import Toast from "./Toast.vue";
+import ToastSlotProvider from "./ToastSlotProvider.vue";
 import type {
   ToastAnimation,
   ToastConfig,
@@ -389,7 +390,7 @@ watch(
           :data-position="toast.position"
         >
           <div class="tf-toast-motion" :style="{ '--tf-toast-index': i }">
-            <slot
+            <ToastSlotProvider
               v-if="$slots.default"
               :toast="toast"
               :progressResetKey="getProgressResetKey(toast.id)"
@@ -398,8 +399,11 @@ watch(
               :bumpAnimationClass="animationForToast(toast).bump"
               :clearAllAnimationClass="animationForToast(toast).clearAll"
               :updateAnimationClass="animationForToast(toast).update"
-              :dismiss="handleDismiss"
-            />
+            >
+              <template #default="slotProps">
+                <slot v-bind="slotProps" />
+              </template>
+            </ToastSlotProvider>
 
             <Toast
               v-else
@@ -418,64 +422,3 @@ watch(
     </div>
   </div>
 </template>
-
-<style scoped>
-.tf-toast-root {
-  pointer-events: none;
-  position: fixed;
-  inset: 0;
-}
-
-.tf-toast-stack {
-  position: absolute;
-  height: 100%;
-  display: flex;
-  align-items: flex-start;
-}
-
-.tf-toast-stack-inner {
-  display: flex;
-  flex-direction: column;
-  position: relative;
-  width: 100%;
-  box-sizing: border-box;
-}
-
-.tf-toast-stack-inner--scroll {
-  max-height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  overscroll-behavior: contain;
-  padding-top: var(--tf-toast-stack-padding-top);
-  padding-right: var(--tf-toast-stack-padding-right);
-  padding-bottom: var(--tf-toast-stack-padding-bottom);
-  padding-left: var(--tf-toast-stack-padding-left);
-  scroll-padding: var(--tf-toast-stack-padding-top)
-    var(--tf-toast-stack-padding-right) var(--tf-toast-stack-padding-bottom)
-    var(--tf-toast-stack-padding-left);
-}
-
-.tf-toast-stack-inner--bottom {
-  min-height: 100%;
-  justify-content: flex-end;
-}
-
-.tf-toast-stack--left {
-  justify-content: flex-start;
-}
-
-.tf-toast-stack--center {
-  justify-content: center;
-}
-
-.tf-toast-stack--right {
-  justify-content: flex-end;
-}
-
-.tf-toast-item {
-  pointer-events: auto;
-  width: 100%;
-  position: relative;
-  z-index: 1;
-}
-</style>

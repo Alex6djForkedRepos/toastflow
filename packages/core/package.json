@@ -8,7 +8,7 @@
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/core"
   },
-  "version": "1.2.2-beta.1",
+  "version": "1.2.2-beta.2",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -29,9 +29,9 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --format cjs,esm && tsc --emitDeclarationOnly && node -e \"require('fs').copyFileSync('dist/index.d.ts','dist/index.d.mts')\"",
+    "build": "tsup src/index.ts --clean --format cjs,esm && tsc --emitDeclarationOnly && node ./scripts/post-build.cjs",
     "prepack": "pnpm run build",
-    "test": "vitest"
+    "test": "vitest run --passWithNoTests"
   },
   "devDependencies": {
     "tsup": "^8.5.1",

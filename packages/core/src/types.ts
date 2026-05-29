@@ -128,7 +128,14 @@ interface ToastButtonBase {
    * Optional CSS class.
    */
   className?: string;
-
+  /**
+   * Dismiss the toast before `onClick` runs. (Default: false)
+   */
+  dismissOnClick?: boolean;
+  /**
+   * Dismiss the toast automatically after `onClick` runs. (Default: false)
+   */
+  dismissAfterClick?: boolean;
   /**
    * Called when the button is clicked.
    */

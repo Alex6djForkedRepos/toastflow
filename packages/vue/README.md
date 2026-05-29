@@ -15,12 +15,14 @@
 </p>
 
 <p align="center">
-  <a href="https://docs.toastflow.top/">📖 Docs</a> · <a href="https://toastflow.top/">🎮 Playground</a> · <a href="https://docs.toastflow.top/comparisons/overview">⚔️ Comparisons</a>
+  <a href="https://www.toastflow.top/docs">📖 Docs</a> · <a href="https://www.toastflow.top/">🎮 Playground</a> · <a href="https://www.toastflow.top/docs/more/comparisons">⚔️ Comparisons</a>
 </p>
 
 ---
 
 > 💚 Using **Nuxt**? Install [`nuxt-toastflow`](https://www.npmjs.com/package/nuxt-toastflow) instead — it wraps this package with auto-imports and SSR support.
+
+> `createToastflow()` injects Toastflow's default CSS by default. Pass `createToastflow(config, { css: false })` to disable that and import `vue-toastflow/styles.css` manually only when you want the shipped styles.
 
 ## 📦 What's Included
 
@@ -65,7 +67,7 @@ toast.success({ title: "Saved", description: "Your changes are live." });
 </template>
 ```
 
-> 💡 See the full [Getting Started](https://docs.toastflow.top/guide/getting-started) guide for theming, slots, events, and more.
+> 💡 See the full [Vue Quick Start](https://www.toastflow.top/docs/vue/quick-start) guide for theming, slots, events, and more.
 
 ## 📄 License
 

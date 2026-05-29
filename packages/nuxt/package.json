@@ -21,7 +21,7 @@
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/nuxt"
   },
-  "version": "1.0.1",
+  "version": "1.0.2-beta.0",
   "main": "./dist/module.js",
   "module": "./dist/module.mjs",
   "types": "./dist/module.d.ts",
@@ -35,14 +35,25 @@
         "types": "./dist/module.d.ts",
         "default": "./dist/module.js"
       }
-    }
+    },
+    "./runtime": {
+      "import": {
+        "types": "./dist/runtime/index.d.mts",
+        "default": "./dist/runtime/index.mjs"
+      },
+      "require": {
+        "types": "./dist/runtime/index.d.ts",
+        "default": "./dist/runtime/index.js"
+      }
+    },
+    "./styles.css": "./dist/styles.css"
   },
   "files": [
     "dist",
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/module.ts --format cjs,esm && tsc --emitDeclarationOnly && node -e \"require('fs').copyFileSync('dist/module.d.ts','dist/module.d.mts')\"",
+    "build": "tsup src/module.ts src/runtime/index.ts --clean --format cjs,esm && tsc --emitDeclarationOnly && node ./scripts/post-build.cjs",
     "prepack": "pnpm run build"
   },
   "peerDependencies": {

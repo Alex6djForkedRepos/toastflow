@@ -22,8 +22,7 @@ const config: ConfigArray = [
       "**/deps/*.js",
       "**/scripts/*.cjs",
       "*.log",
-      // These packages have their own ESLint configs — lint them separately
-      "packages/playground/vue/**",
+      // Test fixtures are linted separately
       "packages/test/**",
     ],
   },

@@ -1,8 +1,7 @@
-import "./styles.css";
-
 export * from "toastflow-core";
 export * from "./plugin";
 export * from "./toast";
+export type { ToastUI } from "./toast-ui";
 
 export { default as ToastContainer } from "./components/ToastContainer.vue";
 export { default as Toast } from "./components/Toast.vue";

@@ -1,0 +1,26 @@
+{
+  "name": "toastflow-site",
+  "private": true,
+  "type": "module",
+  "description": "Unified Toastflow docs and playground built with Nuxt and Docus.",
+  "scripts": {
+    "dev": "nuxt dev",
+    "build": "nuxt build",
+    "preview": "nuxt preview"
+  },
+  "dependencies": {
+    "@giscus/vue": "^3.1.1",
+    "@highlightjs/vue-plugin": "^2.1.0",
+    "@vue/repl": "^4.7.2",
+    "better-sqlite3": "^12.6.2",
+    "docus": "5.11.0",
+    "highlight.js": "^11.11.1",
+    "nuxt": "^4.3.1",
+    "toastflow-core": "workspace:^",
+    "vue-snowfall": "^1.1.8",
+    "vue-toastflow": "workspace:^"
+  },
+  "devDependencies": {
+    "@iconify-json/tabler": "^1.2.35"
+  }
+}

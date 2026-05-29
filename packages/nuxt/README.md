@@ -15,7 +15,7 @@
 </p>
 
 <p align="center">
-  <a href="https://docs.toastflow.top/">📖 Docs</a> · <a href="https://toastflow.top/">🎮 Playground</a> · <a href="https://docs.toastflow.top/comparisons/overview">⚔️ Comparisons</a>
+  <a href="https://www.toastflow.top/docs">📖 Docs</a> · <a href="https://www.toastflow.top/">🎮 Playground</a> · <a href="https://www.toastflow.top/docs/more/comparisons">⚔️ Comparisons</a>
 </p>
 
 ---
@@ -62,6 +62,17 @@ toast.success({
 
 > 💡 Both `toast` and `useToast()` are auto-imported — no manual imports needed!
 
+If you need the lower-level Vue runtime pieces directly, import them from `nuxt-toastflow/runtime`:
+
+```ts
+import {
+  Toast,
+  ToastProgress,
+  ToastContainer,
+  toast,
+} from "nuxt-toastflow/runtime";
+```
+
 ## ⚙️ Module Options
 
 | Option             | Type                   |      Default       | Description                                |
@@ -77,7 +88,10 @@ toast.success({
 
 - `ToastContainer` is auto-registered as a **client-only** component
 - `toast` and `useToast()` are **auto-imported** — use either one
+- `vue-toastflow` is added to the transpile list so internal components resolve correctly
 - Styles are injected automatically unless `css: false`
+- The module forwards `css` to `createToastflow(..., { css })`, so it uses the same CSS toggle as `vue-toastflow`
+- When you disable CSS and still want the shipped stylesheet manually, import `nuxt-toastflow/styles.css`
 
 </details>
 

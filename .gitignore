@@ -1,3 +1,6 @@
 node_modules/
 .idea/
 /scripts/indexnow-submit.ps1
+packages/nuxt/.output
+packages/nuxt/.nuxt
+packages/nuxt/node_modules

@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="https://docs.toastflow.top/">📖 Docs</a> · <a href="https://toastflow.top/">🎮 Playground</a> · <a href="https://docs.toastflow.top/comparisons/overview">⚔️ Comparisons</a>
+  <a href="https://www.toastflow.top/docs">📖 Docs</a> · <a href="https://www.toastflow.top/">🎮 Playground</a> · <a href="https://www.toastflow.top/docs/more/comparisons">⚔️ Comparisons</a>
 </p>
 
 ---
@@ -67,7 +67,7 @@ export default defineNuxtConfig({
 </tr>
 </table>
 
-> 💡 Check the [Getting Started](https://docs.toastflow.top/guide/getting-started) guide for full setup with examples.
+> 💡 Check the [Vue Quick Start](https://www.toastflow.top/docs/vue/quick-start) or [Nuxt Quick Start](https://www.toastflow.top/docs/nuxt/quick-start) guide for full setup with examples.
 
 ## ✨ Highlights
 
@@ -96,8 +96,7 @@ toastflow/
 │   ├── 🟢 vue/           → vue-toastflow
 │   ├── 💚 nuxt/          → nuxt-toastflow
 │   ├── ⚙️ core/          → toastflow-core
-│   ├── 📖 docs/vue/      → VitePress docs
-│   ├── 🎮 playground/vue → local playground app
+│   ├── 🌐 site/          → unified Nuxt/Docus docs + playground
 │   └── 🧪 test/nuxt/     → Nuxt smoke test
 └── 🖼️ assets/            → shared assets
 ```
