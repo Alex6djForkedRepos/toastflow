@@ -1,8 +1,14 @@
 export default defineAppConfig({
   seo: {
     title: "Toastflow",
+    titleTemplate: "%s | Toastflow",
     description:
       "Accessible toast notifications for Vue, Nuxt, and headless apps.",
+    image: "/banner.png",
+    imageAlt: "Toastflow toast notification playground preview",
+    url: "https://www.toastflow.top",
+    keywords:
+      "vue toast, nuxt toast, toast notifications, toastflow, vue 3 notifications, nuxt module, headless toast renderer",
   },
   header: {
     title: "Toastflow",

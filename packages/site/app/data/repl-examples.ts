@@ -161,7 +161,7 @@ import { createToastflow } from "vue-toastflow";
 createApp(App)
   .use(
     createToastflow({
-      position: "bottom-right",
+      position: "top-right",
       duration: 5000,
       progressBar: true,
       pauseOnHover: true,
@@ -277,7 +277,7 @@ createApp(App)
     createToastflow({
       supportHtml: true,
       showCreatedAt: true,
-      position: "top-center",
+      position: "top-right",
       closeOnClick: false,
     }),
   )
@@ -412,7 +412,7 @@ import { createToastflow } from "vue-toastflow";
 createApp(App)
   .use(
     createToastflow({
-      position: "bottom-left",
+      position: "top-right",
       duration: 4200,
       closeButton: false,
       closeOnClick: false,

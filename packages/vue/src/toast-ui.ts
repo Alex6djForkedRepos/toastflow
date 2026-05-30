@@ -493,6 +493,7 @@ export function useToastUI({
     return {
       class: "tf-toast-progress",
       "data-align": toast.value.progressAlignment,
+      style: progressStyle.value,
     };
   });
 
@@ -960,6 +961,9 @@ function useHoverPause(
   let lastPointerType = "";
 
   function handleMouseEnter() {
+    if (!canUseMouseHover()) {
+      return;
+    }
     if (lastPointerType === "touch" || lastPointerType === "pen") {
       return;
     }
@@ -970,6 +974,9 @@ function useHoverPause(
   }
 
   function handleMouseLeave() {
+    if (!canUseMouseHover()) {
+      return;
+    }
     if (lastPointerType === "touch" || lastPointerType === "pen") {
       lastPointerType = "";
       return;
@@ -1007,6 +1014,16 @@ function useHoverPause(
 
   function isTouchLike(event: PointerEvent) {
     return event.pointerType === "touch" || event.pointerType === "pen";
+  }
+
+  function canUseMouseHover() {
+    if (typeof window === "undefined" || !window.matchMedia) {
+      return true;
+    }
+
+    return window.matchMedia(
+      "(hover: hover), (any-hover: hover) and (any-pointer: fine)",
+    ).matches;
   }
 
   function pause() {

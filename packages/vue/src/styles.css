@@ -248,6 +248,8 @@
 .tf-toast-motion {
   width: 100%;
   transform-origin: center;
+  backface-visibility: hidden;
+  will-change: transform, opacity;
 }
 
 /* MOVE */
@@ -293,6 +295,25 @@
 .Toastflow__animation-leave-to > .tf-toast-motion {
   opacity: 0;
   transform: translate3d(0, var(--tf-toast-motion-offset), 0) scale(0.96);
+}
+
+@media (max-width: 640px) {
+  .tf-toast-item[data-position^="top-"] {
+    --tf-toast-motion-offset: -18px;
+  }
+
+  .tf-toast-item[data-position^="bottom-"] {
+    --tf-toast-motion-offset: 18px;
+  }
+
+  .Toastflow__animation-enter-from > .tf-toast-motion,
+  .Toastflow__animation-appear-from > .tf-toast-motion {
+    transform: translate3d(0, var(--tf-toast-motion-offset), 0) scale(0.98);
+  }
+
+  .Toastflow__animation-leave-to > .tf-toast-motion {
+    transform: translate3d(0, var(--tf-toast-motion-offset), 0) scale(0.98);
+  }
 }
 
 /* CLEAR ALL */

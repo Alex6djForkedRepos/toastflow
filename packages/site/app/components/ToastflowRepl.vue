@@ -57,6 +57,14 @@ const statusLabel = computed(function () {
   return "loading";
 });
 
+const replHeight = computed(function () {
+  return props.height ?? 760;
+});
+
+const replMobileHeight = computed(function () {
+  return Math.min(Math.max(Math.round(replHeight.value * 0.58), 460), 620);
+});
+
 onErrorCaptured(function (error) {
   runtimeError.value =
     error instanceof Error
@@ -153,8 +161,8 @@ onMounted(async function () {
         class="tf-repl-body"
         :data-repl-state="statusLabel"
         :style="{
-          '--tf-repl-height': `${props.height ?? 760}px`,
-          '--tf-repl-height-mobile': `${Math.max((props.height ?? 760) - 80, 420)}px`,
+          '--tf-repl-height': `${replHeight}px`,
+          '--tf-repl-height-mobile': `${replMobileHeight}px`,
         }"
       >
         <component

@@ -1556,14 +1556,14 @@ watch(isOnboardingOpen, function (open) {
 
       <div class="flex flex-wrap items-center justify-between gap-2">
         <div
-          class="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[0.8rem] text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
+          class="flex max-w-full min-w-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-[0.8rem] text-slate-600 dark:border-slate-700 dark:bg-slate-800/80 dark:text-slate-200"
         >
           <span
-            class="text-[0.65rem] uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500"
+            class="shrink-0 whitespace-nowrap text-[0.65rem] uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500"
             >Last toast ID</span
           >
           <span
-            class="block max-w-44 truncate rounded-md px-1 font-mono text-xs text-slate-800 dark:text-slate-100 sm:max-w-[18rem]"
+            class="block min-w-0 max-w-[7.5rem] truncate rounded-md px-1 font-mono text-xs text-slate-800 dark:text-slate-100 sm:max-w-[14rem]"
             :class="{ 'last-toast-value-highlight': lastIdSweepActive }"
             :title="lastId ? String(lastId) : undefined"
           >

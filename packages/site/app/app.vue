@@ -3,6 +3,16 @@ import type { ContentNavigationItem, PageCollections } from "@nuxt/content";
 import * as nuxtUiLocales from "@nuxt/ui/locale";
 import { ToastContainer } from "vue-toastflow";
 
+type ToastflowSeoConfig = {
+  title?: string;
+  titleTemplate?: string;
+  description?: string;
+  image?: string;
+  imageAlt?: string;
+  url?: string;
+  keywords?: string;
+};
+
 function transformNavigation(
   data: ContentNavigationItem[],
   isI18nEnabled: boolean,
@@ -21,8 +31,20 @@ function transformNavigation(
   return data.find((item) => item.path === "/docs")?.children || data;
 }
 
+function normalizeSiteUrl(value: string) {
+  return value.replace(/\/+$/, "");
+}
+
+function absoluteUrl(value: string, baseUrl: string) {
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+
+  return new URL(value, `${baseUrl}/`).href;
+}
+
 const appConfig = useAppConfig();
-const { seo } = appConfig;
+const seo = appConfig.seo as ToastflowSeoConfig;
 const forcedColorMode = (appConfig.docus as { colorMode?: string } | undefined)
   ?.colorMode;
 const faviconHref = computed(
@@ -48,16 +70,59 @@ const collectionName = computed(() =>
   isEnabled.value ? `docs_${locale.value}` : "docs",
 );
 const isDocsRoute = computed(() => route.meta.layout === "docs");
+const siteUrl = computed(() =>
+  normalizeSiteUrl(seo.url || site.url || "https://www.toastflow.top"),
+);
+const canonicalUrl = computed(() =>
+  route.path === "/" ? `${siteUrl.value}/` : `${siteUrl.value}${route.path}`,
+);
+const seoTitle = computed(() => seo.title || site.name || "Toastflow");
+const seoDescription = computed(
+  () =>
+    seo.description ||
+    "Accessible toast notifications for Vue, Nuxt, and headless apps.",
+);
+const seoImage = computed(() =>
+  absoluteUrl(seo.image || "/banner.png", siteUrl.value),
+);
+const seoImageAlt = computed(
+  () => seo.imageAlt || "Toastflow toast notification preview",
+);
 
 useHead({
+  titleTemplate(titleChunk) {
+    if (!titleChunk || titleChunk === seoTitle.value) {
+      return seoTitle.value;
+    }
+
+    return (seo.titleTemplate || "%s | Toastflow").replace("%s", titleChunk);
+  },
   meta: [{ name: "viewport", content: "width=device-width, initial-scale=1" }],
   link: computed(() => [
     {
+      key: "icon-svg",
       rel: "icon",
       href: faviconHref.value,
       type: faviconHref.value.endsWith(".svg") ? "image/svg+xml" : undefined,
     },
-    { rel: "shortcut icon", href: "/favicon.ico" },
+    {
+      key: "icon-png",
+      rel: "icon",
+      type: "image/png",
+      href: "/favicon-96x96.png",
+      sizes: "96x96",
+    },
+    { key: "shortcut-icon", rel: "shortcut icon", href: "/favicon.ico" },
+    {
+      key: "apple-touch-icon",
+      rel: "apple-touch-icon",
+      sizes: "180x180",
+      href: "/apple-touch-icon.png",
+    },
+    { key: "manifest", rel: "manifest", href: "/site.webmanifest" },
+    ...(isDocsRoute.value
+      ? [{ key: "canonical", rel: "canonical", href: canonicalUrl.value }]
+      : []),
   ]),
   htmlAttrs: {
     lang,
@@ -66,10 +131,27 @@ useHead({
 });
 
 useSeoMeta({
-  title: seo.title,
-  description: seo.description,
-  ogSiteName: site.name,
+  title: () => seoTitle.value,
+  description: () => seoDescription.value,
+  keywords: () => seo.keywords,
+  robots: "index,follow",
+  author: "Adrian Janocko",
+  ogType: "website",
+  ogLocale: "en_US",
+  ogUrl: () => canonicalUrl.value,
+  ogSiteName: () => site.name || seoTitle.value,
+  ogTitle: () => seoTitle.value,
+  ogDescription: () => seoDescription.value,
+  ogImage: () => seoImage.value,
+  ogImageAlt: () => seoImageAlt.value,
+  ogImageWidth: 1252,
+  ogImageHeight: 679,
   twitterCard: "summary_large_image",
+  twitterTitle: () => seoTitle.value,
+  twitterDescription: () => seoDescription.value,
+  twitterImage: () => seoImage.value,
+  twitterImageAlt: () => seoImageAlt.value,
+  themeColor: "#0ea5e9",
 });
 
 if (isEnabled.value) {

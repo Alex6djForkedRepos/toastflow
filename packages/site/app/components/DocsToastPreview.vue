@@ -1,6 +1,12 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
-import { toast, type ToastId } from "vue-toastflow";
+import { computed, provide, ref, type InjectionKey } from "vue";
+import {
+  createToastStore,
+  toast,
+  ToastContainer,
+  type ToastId,
+  type ToastStore,
+} from "vue-toastflow";
 
 type PreviewVariant =
   | "create"
@@ -22,6 +28,17 @@ const props = withDefaults(
 
 const isLoading = ref(false);
 const updateId = ref<ToastId | null>(null);
+const stylingPreviewStore = createToastStore({
+  duration: 6500,
+  position: "top-right",
+  progressBar: true,
+  width: "350px",
+});
+const toastStoreKey = Symbol.for(
+  "vue-toastflow.toast-store",
+) as InjectionKey<ToastStore>;
+
+provide(toastStoreKey, stylingPreviewStore);
 const previewDescription = computed(() => {
   switch (props.variant) {
     case "create":
@@ -33,7 +50,7 @@ const previewDescription = computed(() => {
     case "loading":
       return "Button mirrors the loading helper example shown above.";
     case "styling":
-      return "Buttons mirror the theme class and inline css examples above. Global variables are app-wide.";
+      return "Buttons mirror the global variables, theme class, and inline css examples above.";
     case "timers":
       return "Button mirrors the timed progress-bar example shown above.";
     case "update":
@@ -146,8 +163,17 @@ function showTimedToast() {
   });
 }
 
+function showGlobalStyledToast() {
+  stylingPreviewStore.show({
+    type: "info",
+    title: "Global variables",
+    description: "Font, radius, and color tokens from :root.",
+  });
+}
+
 function showStyledToast() {
-  toast.info({
+  stylingPreviewStore.show({
+    type: "info",
     title: "Release",
     description: "v1.0.0 is out.",
     theme: "brand",
@@ -155,14 +181,19 @@ function showStyledToast() {
 }
 
 function showInlineStyledToast() {
-  toast.custom({
-    title: "Custom accent",
-    description: "One-off runtime style.",
+  stylingPreviewStore.show({
+    type: "custom",
+    title: "Runtime accent",
+    description: "One-off color override, inherited global structure.",
     css: {
-      bg: "#0f172a",
-      color: "#f8fafc",
-      borderColor: "#334155",
-      iconColor: "#f8fafc",
+      bg: "#450a0a",
+      color: "#fff1f2",
+      titleColor: "#ffe4e6",
+      descriptionColor: "#fecdd3",
+      borderColor: "#fb7185",
+      iconColor: "#fbbf24",
+      progressBg: "color-mix(in srgb, #fbbf24 20%, transparent)",
+      progressBarBg: "#fbbf24",
     },
   });
 }
@@ -255,6 +286,9 @@ function showUpdateToast() {
       </div>
 
       <div v-else-if="props.variant === 'styling'" class="flex flex-wrap gap-2">
+        <UButton icon="i-tabler-world" @click="showGlobalStyledToast">
+          Global variables
+        </UButton>
         <UButton icon="i-tabler-palette" @click="showStyledToast">
           Theme class
         </UButton>
@@ -273,16 +307,37 @@ function showUpdateToast() {
         </UButton>
       </div>
     </div>
+
+    <div v-if="props.variant === 'styling'" class="docs-styling-toast-scope">
+      <ToastContainer />
+    </div>
   </UCard>
 </template>
 
 <style>
+.docs-styling-toast-scope {
+  --tf-toast-font-family:
+    "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  --tf-toast-border-radius: 4px;
+  --tf-toast-padding: 18px;
+  --tf-toast-bg: #fff7ed;
+  --tf-toast-color: #431407;
+  --tf-toast-title-color: #431407;
+  --tf-toast-description-color: #7c2d12;
+  --tf-toast-border-color: #fb923c;
+  --tf-toast-icon-color: #ea580c;
+  --tf-toast-progress-bg: color-mix(in srgb, #ea580c 18%, transparent);
+  --tf-toast-progress-bar-bg: #ea580c;
+}
+
 .tf-toast-accent--brand {
-  --tf-toast-bg: #101828;
-  --tf-toast-color: #f8fafc;
-  --tf-toast-border-color: #1f2937;
-  --tf-toast-progress-bg: color-mix(in srgb, #10b981 20%, transparent);
-  --tf-toast-progress-bar-bg: #10b981;
-  --tf-toast-icon-color: #10b981;
+  --tf-toast-bg: #ecfeff;
+  --tf-toast-color: #164e63;
+  --tf-toast-border-color: #67e8f9;
+  --tf-toast-title-color: #0e7490;
+  --tf-toast-description-color: #155e75;
+  --tf-toast-progress-bg: color-mix(in srgb, #0891b2 20%, transparent);
+  --tf-toast-progress-bar-bg: #0891b2;
+  --tf-toast-icon-color: #0891b2;
 }
 </style>
