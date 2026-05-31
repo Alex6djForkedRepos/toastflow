@@ -12,27 +12,17 @@
   "dependencies": {
     "@giscus/vue": "^3.1.1",
     "@highlightjs/vue-plugin": "^2.1.0",
+    "@nuxt/content": "^3.14.0",
     "@vue/repl": "^4.7.2",
-    "better-sqlite3": "^12.6.2",
+    "better-sqlite3": "^12.10.0",
     "docus": "5.11.0",
     "highlight.js": "^11.11.1",
-    "nuxt": "^4.4.4",
-    "@nuxt/content": "^3.14.0",
+    "nuxt": "^4.4.6",
     "toastflow-core": "workspace:^",
     "vue-snowfall": "^1.1.8",
     "vue-toastflow": "workspace:^"
   },
   "devDependencies": {
     "@iconify-json/tabler": "^1.2.35"
-  },
-  "pnpm": {
-    "overrides": {
-      "@nuxt/content": "3.14.0",
-      "nuxt": "4.4.4"
-    },
-    "onlyBuiltDependencies": [
-      "better-sqlite3",
-      "sqlite3"
-    ]
   }
 }

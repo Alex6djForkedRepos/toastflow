@@ -20,18 +20,18 @@
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/vue"
   },
-  "version": "1.2.0-beta.4",
+  "version": "1.2.0-beta.5",
   "main": "./dist/toastflow.umd.js",
   "module": "./dist/toastflow.es.js",
-  "types": "./dist/src/index.d.ts",
+  "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "import": {
-        "types": "./dist/src/index.d.mts",
+        "types": "./dist/index.d.mts",
         "default": "./dist/toastflow.es.js"
       },
       "require": {
-        "types": "./dist/src/index.d.ts",
+        "types": "./dist/index.d.ts",
         "default": "./dist/toastflow.umd.js"
       }
     },
@@ -55,11 +55,11 @@
     "toastflow-core": "workspace:^"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^6.0.6",
+    "@vitejs/plugin-vue": "^6.0.7",
     "typescript": "^6.0.3",
-    "vite": "^8.0.8",
-    "vite-plugin-dts": "^4.5.4",
-    "vitest": "^4.1.4",
-    "vue": "^3.5.27"
+    "vite": "^8.0.14",
+    "vite-plugin-dts": "^5.0.1",
+    "vitest": "^4.1.7",
+    "vue": "^3.5.35"
   }
 }

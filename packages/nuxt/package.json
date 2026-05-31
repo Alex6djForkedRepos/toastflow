@@ -21,7 +21,7 @@
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/nuxt"
   },
-  "version": "1.0.2-beta.0",
+  "version": "1.0.2-beta.1",
   "main": "./dist/module.js",
   "module": "./dist/module.mjs",
   "types": "./dist/module.d.ts",
@@ -60,7 +60,7 @@
     "nuxt": "^3.0.0 || ^4.0.0"
   },
   "dependencies": {
-    "@nuxt/kit": "^4.4.2",
+    "@nuxt/kit": "^4.4.6",
     "vue-toastflow": "workspace:^"
   },
   "devDependencies": {
