@@ -150,15 +150,15 @@ function dismissLast() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -172,7 +172,7 @@ function dismissLast() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -310,15 +310,15 @@ function pushManualInfo() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -332,7 +332,7 @@ function pushManualInfo() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -483,15 +483,15 @@ function pushCssOverrides() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -505,7 +505,7 @@ function pushCssOverrides() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -1382,7 +1382,7 @@ function showMindblowingToast() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 
@@ -1390,9 +1390,9 @@ function showMindblowingToast() {
   margin: 0;
 }
 
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 
 .controls-grid {
@@ -1409,7 +1409,7 @@ function showMindblowingToast() {
 }
 
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -2416,15 +2416,15 @@ function pushUpdateTarget() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -2438,7 +2438,7 @@ function pushUpdateTarget() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -2619,15 +2619,15 @@ function clearSaved() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -2641,7 +2641,7 @@ function clearSaved() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -2797,15 +2797,15 @@ function resumeQueueFlow() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -2819,7 +2819,7 @@ function resumeQueueFlow() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -2939,15 +2939,15 @@ function pushSystem() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -2961,7 +2961,7 @@ function pushSystem() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -3126,15 +3126,15 @@ function resumeLast() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -3148,7 +3148,7 @@ function resumeLast() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;
@@ -3295,15 +3295,15 @@ function pushDefault() {
   display: grid;
   gap: 12px;
   padding: 24px;
-  color: #0f172a;
+  color: #f8fafc;
   font-family: Inter, system-ui, sans-serif;
 }
 .demo-shell h3 {
   margin: 0;
 }
-.demo-shell p {
+.demo-shell > div:first-child p {
   margin: 0;
-  color: #64748b;
+  color: #94a3b8;
 }
 .controls-grid {
   display: grid;
@@ -3317,7 +3317,7 @@ function pushDefault() {
   gap: 8px;
 }
 .control-label {
-  color: #475569;
+  color: #93c5fd;
   font-size: 11px;
   font-weight: 700;
   text-transform: uppercase;

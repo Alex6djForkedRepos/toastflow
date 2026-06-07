@@ -33,6 +33,9 @@ const colorMode = useColorMode();
 const { stars: githubStars } = useGitHubStars("adrianjanocko", "toastflow");
 
 const libVersion = String(runtimeConfig.public.toastflowVersion ?? "0.0.0");
+const libReleasedAt = String(
+  runtimeConfig.public.toastflowReleasedAt ?? "",
+).trim();
 const seasonalMode = String(
   runtimeConfig.public.seasonalMode ?? "off",
 ).toLowerCase();
@@ -49,6 +52,32 @@ const themeMode = computed<ThemeMode>(function () {
 });
 const isDarkTheme = computed(function () {
   return themeMode.value === "dark";
+});
+const formattedReleaseDate = computed(function () {
+  if (!libReleasedAt) {
+    return "";
+  }
+
+  const date = new Date(libReleasedAt);
+
+  if (Number.isNaN(date.getTime())) {
+    return libReleasedAt;
+  }
+
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Europe/Bratislava",
+    timeZoneName: "short",
+  }).format(date);
+});
+const versionBadgeTitle = computed(function () {
+  return formattedReleaseDate.value
+    ? `vue-toastflow v${libVersion} - Released ${formattedReleaseDate.value}`
+    : `vue-toastflow v${libVersion}`;
 });
 const themeToggleLabel = computed(function () {
   if (!hasMounted.value) {
@@ -725,14 +754,19 @@ function openMore(targetId = "more-info", offsetPx = 20) {
     <ToastContainer />
 
     <div
-      class="fixed bottom-3 left-3 z-50 inline-flex items-center gap-1.5 rounded-full border border-slate-200/60 bg-white/80 px-2.5 py-1 text-[0.6rem] font-medium text-slate-500 backdrop-blur-md select-none dark:border-slate-700/50 dark:bg-slate-900/70 dark:text-slate-400"
-      :title="`vue-toastflow v${libVersion}`"
+      class="fixed bottom-3 left-3 z-50 inline-flex items-center gap-1.5 rounded-full border border-slate-300/80 bg-white/90 px-2.5 py-1 text-[0.6rem] font-semibold text-slate-600 backdrop-blur-md transition-colors select-none hover:border-slate-400 hover:bg-white hover:text-slate-900 dark:border-white/10 dark:bg-slate-900/80 dark:text-slate-300 dark:hover:border-slate-500/60 dark:hover:bg-slate-900 dark:hover:text-slate-100"
+      :title="versionBadgeTitle"
+      :aria-label="versionBadgeTitle"
     >
-      <span
-        class="size-1.5 rounded-full"
-        :class="libVersion.includes('beta') ? 'bg-amber-400' : 'bg-emerald-400'"
-      />
-      v{{ libVersion }}
+      <span class="relative flex size-2" aria-hidden="true">
+        <span
+          class="relative inline-flex size-1.5 rounded-full"
+          :class="
+            libVersion.includes('beta') ? 'bg-amber-400' : 'bg-emerald-400'
+          "
+        />
+      </span>
+      <span>v{{ libVersion }}</span>
     </div>
   </div>
 </template>

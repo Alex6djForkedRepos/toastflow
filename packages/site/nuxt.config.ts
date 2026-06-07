@@ -42,6 +42,51 @@ function nonEmptyEnvValue(name: string, defaultValue: string) {
   return value ? value : defaultValue;
 }
 
+async function npmReleasedAt(packageName: string, version?: string) {
+  const override = process.env.NUXT_PUBLIC_TOASTFLOW_RELEASED_AT?.trim();
+
+  if (override) {
+    return override;
+  }
+
+  if (!version || version === "latest") {
+    return "";
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(function () {
+    controller.abort();
+  }, 1500);
+
+  try {
+    const response = await fetch(
+      `https://registry.npmjs.org/${encodeURIComponent(packageName)}`,
+      {
+        signal: controller.signal,
+      },
+    );
+
+    if (!response.ok) {
+      return "";
+    }
+
+    const metadata = (await response.json()) as {
+      time?: Record<string, string>;
+    };
+
+    return metadata.time?.[version] ?? "";
+  } catch {
+    return "";
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+const toastflowReleasedAt = await npmReleasedAt(
+  "vue-toastflow",
+  toastflowPackage.version,
+);
+
 function envFlag(name: string, defaultValue = false) {
   const value = process.env[name]?.trim().toLowerCase();
 
@@ -250,6 +295,7 @@ export default defineNuxtConfig({
   runtimeConfig: {
     public: {
       toastflowVersion: toastflowPackage.version ?? "0.0.0",
+      toastflowReleasedAt,
       seasonalMode: envValue("NUXT_PUBLIC_SEASONAL_MODE", "off"),
       umamiWebsiteId: envValue("NUXT_PUBLIC_UMAMI_WEBSITE_ID"),
       giscus: {
