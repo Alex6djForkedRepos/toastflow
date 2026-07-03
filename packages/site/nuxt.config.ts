@@ -43,6 +43,40 @@ function nonEmptyEnvValue(name: string, defaultValue: string) {
   return value ? value : defaultValue;
 }
 
+// Old docs lived on docs.toastflow.top; that domain now 308s to www with the
+// path preserved, and these rules map the legacy paths to the new structure.
+const legacyDocsPathMap: Record<string, string> = {
+  "/guide/introduction": "/docs/global/overview",
+  "/guide/getting-started": "/docs/vue/quick-start",
+  "/guide/toasts": "/docs/vue/toasts",
+  "/guide/timers-and-progress": "/docs/vue/timers-and-progress",
+  "/guide/buttons-and-actions": "/docs/vue/buttons-and-actions",
+  "/guide/theming": "/docs/global/styling",
+  "/guide/controlled-store": "/docs/headless/core-store",
+  "/guide/live-examples": "/docs/examples/live-examples",
+  "/guide/programmatic-api": "/docs/api/actions",
+  "/api/actions": "/docs/api/actions",
+  "/api/configuration": "/docs/api/configuration",
+  "/api/events": "/docs/api/events",
+  "/api/state": "/docs/api/state",
+  "/api/getters": "/docs/api/state",
+  "/api/slots": "/docs/headless/headless-slot",
+  "/api/utilities": "/docs/api/runtime-exports",
+  "/troubleshooting": "/docs/more/troubleshooting",
+};
+
+function buildLegacyDocsRedirects() {
+  const rules: Record<string, { redirect: { to: string; statusCode: 301 } }> =
+    {};
+
+  for (const [from, to] of Object.entries(legacyDocsPathMap)) {
+    rules[from] = { redirect: { to, statusCode: 301 } };
+    rules[`${from}.html`] = { redirect: { to, statusCode: 301 } };
+  }
+
+  return rules;
+}
+
 async function npmReleasedAt(packageName: string, version?: string) {
   const override = process.env.NUXT_PUBLIC_TOASTFLOW_RELEASED_AT?.trim();
 
@@ -284,6 +318,16 @@ export default defineNuxtConfig({
     },
   },
   routeRules: {
+    ...buildLegacyDocsRedirects(),
+    "/guide/**": {
+      redirect: { to: "/docs/global/overview", statusCode: 301 },
+    },
+    "/components/**": {
+      redirect: { to: "/docs/global/overview", statusCode: 301 },
+    },
+    "/comparisons/**": {
+      redirect: { to: "/docs/more/comparisons", statusCode: 301 },
+    },
     "/docs": {
       redirect: "/docs/global/overview",
     },
