@@ -5,6 +5,7 @@ import {
   onBeforeUpdate,
   onMounted,
   onUnmounted,
+  onUpdated,
   ref,
   watch,
 } from "vue";
@@ -33,6 +34,7 @@ const positions: ToastPosition[] = [
 const injectedStore = inject<ToastStore | null>(toastStoreKey, null);
 const store: ToastStore = injectedStore ?? getToastStore();
 
+const rootEl = ref<HTMLElement | null>(null);
 const toasts = ref<ToastInstance[]>([]);
 
 const DEFAULT_ENTER_DURATION = 260;
@@ -124,7 +126,13 @@ const globalZIndex = computed(function () {
   if (!toasts.value.length) {
     return baseConfig.zIndex;
   }
-  return Math.max(...toasts.value.map((toast) => toast.zIndex));
+  let max = -Infinity;
+  for (const toast of toasts.value) {
+    if (toast.zIndex > max) {
+      max = toast.zIndex;
+    }
+  }
+  return max;
 });
 
 function stackConfig(position: ToastPosition): ToastConfig {
@@ -220,34 +228,173 @@ function refreshTransitionDurations() {
   };
 }
 
-// Snapshot positions before Vue patches the DOM so beforeLeave can
-// place leaving elements where they were visually, not where the
-// post-patch layout puts them.
+// Vue's TransitionGroup FLIP measures positions while previously started
+// move transitions are still running (removing the move class does not
+// cancel a running CSS transition), so interrupted moves teleport and
+// leaving elements get spurious offsets. The move handling is therefore
+// done here: Vue's own move logic is disabled via a no-op move-class
+// (hasCSSTransform check fails), positions are snapshotted visually in
+// onBeforeUpdate, in-flight transforms are neutralized before measuring
+// the new layout, and the FLIP delta is animated with the move class.
 interface CachedPosition {
-  top: number;
+  layoutTop: number;
   height: number;
   parentHeight: number;
   parentWidth: number;
+  viewportTop: number;
+  viewportLeft: number;
 }
 
-const leavePositionCache = new WeakMap<Element, CachedPosition>();
+const positionCache = new WeakMap<Element, CachedPosition>();
+const moveCleanup = new WeakMap<Element, () => void>();
+
+// layoutTop/height (offset-based, ignores transforms) anchor the leave pin;
+// viewportTop/Left (visual, includes in-flight transforms) feed the FLIP.
+function measurePosition(el: HTMLElement, parent: HTMLElement): CachedPosition {
+  const rect = el.getBoundingClientRect();
+  return {
+    layoutTop: el.offsetTop,
+    height: el.offsetHeight,
+    parentHeight: parent.clientHeight,
+    parentWidth: parent.clientWidth,
+    viewportTop: rect.top,
+    viewportLeft: rect.left,
+  };
+}
+
+// Cancel a running move transition so the element sits at its layout
+// position and subsequent measurements are transform-free.
+function cancelMove(element: HTMLElement) {
+  const cleanup = moveCleanup.get(element);
+  if (cleanup) {
+    cleanup();
+  }
+  element.style.transition = "none";
+  element.style.transform = "";
+}
+
+function moveClassFor(element: HTMLElement): string {
+  const position = (element.dataset.position ?? "") as ToastPosition;
+  const name =
+    stackConfigs.value[position]?.animation.name ?? baseConfig.animation.name;
+  return `${name}-move`;
+}
+
+function collectItems(): HTMLElement[] {
+  const root = rootEl.value;
+  if (!root) {
+    return [];
+  }
+  return Array.from(root.querySelectorAll<HTMLElement>(".tf-toast-item"));
+}
 
 onBeforeUpdate(function () {
-  const items = document.querySelectorAll(".tf-toast-item");
-  for (let i = 0; i < items.length; i++) {
-    const el = items[i] as HTMLElement;
+  for (const el of collectItems()) {
     const parent = el.parentElement;
     if (!parent) {
       continue;
     }
-    leavePositionCache.set(el, {
-      top: el.offsetTop,
-      height: el.offsetHeight,
-      parentHeight: parent.clientHeight,
-      parentWidth: parent.clientWidth,
-    });
+    positionCache.set(el, measurePosition(el, parent));
   }
 });
+
+onUpdated(function () {
+  const moved: Array<{ el: HTMLElement; dx: number; dy: number }> = [];
+
+  for (const el of collectItems()) {
+    // Leaving elements are pinned absolutely by beforeLeave.
+    if (el.style.position === "absolute") {
+      continue;
+    }
+    const old = positionCache.get(el);
+    if (!old) {
+      continue;
+    }
+    cancelMove(el);
+    const rect = el.getBoundingClientRect();
+    const dx = old.viewportLeft - rect.left;
+    const dy = old.viewportTop - rect.top;
+    if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) {
+      el.style.transition = "";
+      continue;
+    }
+    el.style.transform = `translate(${dx}px, ${dy}px)`;
+    moved.push({ el, dx, dy });
+  }
+
+  if (!moved.length) {
+    return;
+  }
+
+  // Commit the offsets in one reflow, then release them so the move
+  // transition animates each element back to its layout position.
+  void document.body.offsetHeight;
+
+  for (const { el } of moved) {
+    const moveClass = moveClassFor(el);
+    el.style.transition = "";
+    el.classList.add(moveClass);
+    el.style.transform = "";
+
+    if (!parseFloat(getComputedStyle(el).transitionDuration)) {
+      // Transition disabled (e.g. prefers-reduced-motion) — snap.
+      el.classList.remove(moveClass);
+      continue;
+    }
+
+    const done = function () {
+      el.removeEventListener("transitionend", onEnd);
+      el.classList.remove(moveClass);
+      moveCleanup.delete(el);
+    };
+    const onEnd = function (event: TransitionEvent) {
+      if (event.target === el && event.propertyName.endsWith("transform")) {
+        done();
+      }
+    };
+    el.addEventListener("transitionend", onEnd);
+    moveCleanup.set(el, done);
+  }
+});
+
+const FOCUSABLE_SELECTOR =
+  "button, a[href], input, select, textarea, [tabindex]:not([tabindex='-1'])";
+
+// When the dismissed toast holds keyboard focus, hand it to the nearest
+// remaining toast instead of letting it fall back to <body>.
+function moveFocusToNeighbour(element: HTMLElement, parent: HTMLElement) {
+  const active = document.activeElement;
+  if (!(active instanceof HTMLElement) || !element.contains(active)) {
+    return;
+  }
+
+  const siblings = Array.from(
+    parent.querySelectorAll<HTMLElement>(".tf-toast-item"),
+  ).filter(function (item) {
+    return item !== element && item.style.position !== "absolute";
+  });
+
+  const following = siblings.filter(function (item) {
+    return Boolean(
+      element.compareDocumentPosition(item) & Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+  const preceding = siblings
+    .filter(function (item) {
+      return !following.includes(item);
+    })
+    .reverse();
+
+  for (const candidate of [...following, ...preceding]) {
+    const focusable = candidate.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+    if (focusable) {
+      focusable.focus({ preventScroll: true });
+      return;
+    }
+  }
+
+  active.blur();
+}
 
 function beforeLeave(el: Element) {
   const element = el as HTMLElement;
@@ -256,18 +403,21 @@ function beforeLeave(el: Element) {
     return;
   }
 
-  const cached = leavePositionCache.get(element);
+  moveFocusToNeighbour(element, parent);
+
+  const cached = positionCache.get(element) ?? measurePosition(element, parent);
 
   const position = element.dataset.position ?? "";
   const isBottom =
     position.startsWith("bottom-") ||
     parent.classList.contains("tf-toast-stack-inner--bottom");
 
-  const top = cached?.top ?? element.offsetTop;
-  const height = cached?.height ?? element.offsetHeight;
-  const parentHeight = cached?.parentHeight ?? parent.clientHeight;
-  const parentWidth = cached?.parentWidth ?? parent.clientWidth;
+  const { layoutTop: top, height, parentHeight, parentWidth } = cached;
 
+  // Pin at the layout position (one slot past the visible window when the
+  // removal follows an eviction insert) and keep any in-flight move
+  // transition running: the leaving toast glides out past the stack edge
+  // instead of freezing under the neighbour that shifts into its place.
   element.style.position = "absolute";
   element.style.zIndex = "0";
   element.style.width = `${parentWidth}px`;
@@ -294,6 +444,8 @@ function afterLeave(el: Element) {
   element.style.right = "";
   element.style.top = "";
   element.style.bottom = "";
+  element.style.transition = "";
+  element.style.transform = "";
 }
 
 watch(
@@ -360,7 +512,7 @@ watch(
 </script>
 
 <template>
-  <div class="tf-toast-root" :style="{ zIndex: globalZIndex }">
+  <div ref="rootEl" class="tf-toast-root" :style="{ zIndex: globalZIndex }">
     <div
       v-for="position in positions"
       :key="position"
@@ -372,6 +524,7 @@ watch(
         appear
         :duration="transitionDurations"
         :name="stackConfig(position).animation.name"
+        move-class="tf-toast-move-noop"
         @before-leave="beforeLeave"
         @after-leave="afterLeave"
         tag="div"

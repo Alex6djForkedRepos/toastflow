@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import "@vue/repl/style.css";
 import {
   computed,
+  onBeforeUnmount,
   onErrorCaptured,
   onMounted,
   ref,
@@ -93,14 +93,48 @@ function patchFilesForLocalDev(files: ReplFiles): ReplFiles {
   );
 }
 
-onMounted(async function () {
+const shellEl = ref<HTMLElement | null>(null);
+let visibilityObserver: IntersectionObserver | null = null;
+
+// The REPL bundle (editor + compiler) is heavy — defer loading it until the
+// shell is near the viewport.
+onMounted(function () {
+  const el = shellEl.value;
+
+  if (typeof IntersectionObserver === "undefined" || !el) {
+    void initRepl();
+    return;
+  }
+
+  visibilityObserver = new IntersectionObserver(
+    function (entries) {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        visibilityObserver?.disconnect();
+        visibilityObserver = null;
+        void initRepl();
+      }
+    },
+    { rootMargin: "200px" },
+  );
+  visibilityObserver.observe(el);
+});
+
+onBeforeUnmount(function () {
+  visibilityObserver?.disconnect();
+  visibilityObserver = null;
+});
+
+async function initRepl() {
   if (ready.value) {
     return;
   }
 
   try {
-    const replModule = await import("@vue/repl");
-    const codeMirrorModule = await import("@vue/repl/codemirror-editor");
+    const [replModule, codeMirrorModule] = await Promise.all([
+      import("@vue/repl"),
+      import("@vue/repl/codemirror-editor"),
+      import("@vue/repl/style.css"),
+    ]);
 
     const { useStore, useVueImportMap, Repl } = replModule;
     const { importMap: builtinImportMap, vueVersion } = useVueImportMap();
@@ -146,11 +180,11 @@ onMounted(async function () {
         : "Failed to initialize Vue REPL.";
     console.error("[toastflow-site] Vue REPL init error", error);
   }
-});
+}
 </script>
 
 <template>
-  <div class="tf-repl-shell">
+  <div ref="shellEl" class="tf-repl-shell">
     <div v-if="title || description" class="tf-repl-header">
       <p v-if="title" class="tf-repl-title">{{ title }}</p>
       <p v-if="description" class="tf-repl-description">{{ description }}</p>

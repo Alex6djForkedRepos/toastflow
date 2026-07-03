@@ -290,6 +290,13 @@ export interface ToastConfig {
    * When true, title/description may contain HTML. (Default: false)
    */
   supportHtml: boolean;
+  /**
+   * Sanitizes HTML before it is rendered via `supportHtml` or `button.html`
+   * (e.g. wire up DOMPurify here). When omitted, HTML renders as-is — only
+   * enable HTML for trusted content in that case. If the sanitizer throws,
+   * the content is dropped instead of rendered raw.
+   */
+  sanitizer?: (html: string) => string;
 
   /**
    * Show the createdAt timestamp in the rendered toast. (Default: false)
@@ -590,4 +597,10 @@ export interface ToastStore {
     input: ToastLoadingInput<T>,
     config: ToastLoadingConfig<T>,
   ): ToastLoadingResult<T>;
+
+  /**
+   * Cancel all pending timers, clear state, and drop all listeners.
+   * The store must not be used after calling this.
+   */
+  destroy(): void;
 }

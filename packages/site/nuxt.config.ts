@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { createServer } from "node:net";
 import { fileURLToPath } from "node:url";
 
 const toastflowPackage = JSON.parse(
@@ -136,6 +137,37 @@ function devServerPort() {
   );
 }
 
+function isPortFree(port: number): Promise<boolean> {
+  return new Promise(function (resolve) {
+    const probe = createServer();
+    probe.once("error", function () {
+      resolve(false);
+    });
+    probe.once("listening", function () {
+      probe.close(function () {
+        resolve(true);
+      });
+    });
+    probe.listen(port, "localhost");
+  });
+}
+
+// Resolve the dev port before Nuxt does: when the preferred port is taken,
+// Nuxt silently bumps to the next one, but config-time consumers (the Docus
+// assistant MCP URL below) would still point at the dead port and the
+// assistant fails with "fetch failed". Picking the free port here and
+// pinning devServer.port keeps both in sync.
+async function resolveDevPort(): Promise<number> {
+  let port = Number(devServerPort());
+  while (!(await isPortFree(port))) {
+    port += 1;
+  }
+  return port;
+}
+
+const resolvedDevPort =
+  process.env.NODE_ENV !== "production" ? await resolveDevPort() : null;
+
 function docusMcpServer() {
   const override = process.env.NUXT_DOCUS_MCP_SERVER?.trim();
 
@@ -143,8 +175,10 @@ function docusMcpServer() {
     return override;
   }
 
-  if (process.env.NODE_ENV !== "production") {
-    return `http://127.0.0.1:${devServerPort()}/mcp`;
+  if (resolvedDevPort !== null) {
+    // "localhost", not 127.0.0.1: on Windows the dev server may listen on
+    // the IPv6 loopback (::1) only, and a hardcoded IPv4 address is refused.
+    return `http://localhost:${resolvedDevPort}/mcp`;
   }
 
   return "/mcp";
@@ -182,6 +216,7 @@ function dropDevOnlyRootPrerender(nitroConfig: {
 
 export default defineNuxtConfig({
   extends: ["docus"],
+  ...(resolvedDevPort !== null ? { devServer: { port: resolvedDevPort } } : {}),
   devtools: {
     enabled: envFlag("NUXT_DEVTOOLS"),
   },

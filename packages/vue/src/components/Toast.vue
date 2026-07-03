@@ -50,6 +50,8 @@ const {
   createdAtAriaLabel,
   titleAriaLabel,
   descriptionAriaLabel,
+  sanitizedTitle,
+  sanitizedDescription,
   buttons,
   buttonsClasses,
   handleButtonClick,
@@ -130,7 +132,7 @@ const {
                   v-else-if="toast.title && toast.supportHtml"
                   class="tf-toast-title"
                   :aria-label="titleAriaLabel || undefined"
-                  v-html="toast.title"
+                  v-html="sanitizedTitle"
                 ></p>
 
                 <p
@@ -144,7 +146,7 @@ const {
                   v-else-if="toast.description && toast.supportHtml"
                   class="tf-toast-description"
                   :aria-label="descriptionAriaLabel || undefined"
-                  v-html="toast.description"
+                  v-html="sanitizedDescription"
                 ></p>
               </div>
 

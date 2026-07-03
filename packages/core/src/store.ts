@@ -80,7 +80,17 @@ export function createToastStore(
   const timers = new Map<ToastId, TimerState>();
   const promiseRuns = new Map<ToastId, symbol>();
   const queueByPosition = new Map<ToastPosition, ToastInstance[]>();
+  // Internal delays (phase-2 removal, clear-all) tracked so destroy() can cancel them.
+  const pendingTimeouts = new Set<TimeoutHandle>();
   let queuePaused = false;
+
+  function scheduleInternal(fn: () => void, delay: number): void {
+    const handle: TimeoutHandle = setTimeout(function () {
+      pendingTimeouts.delete(handle);
+      fn();
+    }, delay);
+    pendingTimeouts.add(handle);
+  }
 
   const resolvedGlobalConfig: ToastConfig = getConfig();
 
@@ -582,7 +592,7 @@ export function createToastStore(
 
     // Phase 2: remove after the current render cycle so the leave
     // animation starts from where the toast was actually visible.
-    setTimeout(function () {
+    scheduleInternal(function () {
       const still = state.toasts.find(function (t) {
         return t.id === id;
       });
@@ -603,6 +613,27 @@ export function createToastStore(
       notify();
       processQueue(toast.position);
     }, 0);
+  }
+
+  // Cancel all pending timers, clear state, and drop all listeners.
+  function destroy(): void {
+    for (const timer of timers.values()) {
+      if (timer.timeout) {
+        clearTimeout(timer.timeout);
+      }
+    }
+    timers.clear();
+
+    for (const handle of pendingTimeouts) {
+      clearTimeout(handle);
+    }
+    pendingTimeouts.clear();
+
+    promiseRuns.clear();
+    queueByPosition.clear();
+    listeners.clear();
+    eventListeners.clear();
+    state = { toasts: [], queue: [] };
   }
 
   // Clear all toasts in their current positions.
@@ -646,7 +677,7 @@ export function createToastStore(
 
     notify();
 
-    setTimeout(function () {
+    scheduleInternal(function () {
       for (const toast of current) {
         if (toast.onUnmount) {
           toast.onUnmount(toContext(toast));
@@ -803,6 +834,7 @@ export function createToastStore(
     pause,
     resume,
     getConfig,
+    destroy,
   };
 }
 

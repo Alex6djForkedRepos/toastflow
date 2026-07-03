@@ -8,7 +8,8 @@
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/core"
   },
-  "version": "1.2.2-beta.3",
+  "version": "1.2.2-beta.4",
+  "sideEffects": false,
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "types": "./dist/index.d.ts",
@@ -29,13 +30,14 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/index.ts --clean --format cjs,esm && tsc --emitDeclarationOnly && node ./scripts/post-build.cjs",
+    "build": "tsup src/index.ts --clean --format cjs,esm --sourcemap && tsc -p tsconfig.build.json --emitDeclarationOnly && node ./scripts/post-build.cjs",
     "prepack": "pnpm run build",
-    "test": "vitest run --passWithNoTests"
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "tsup": "^8.5.1",
     "typescript": "^6.0.3",
-    "vitest": "^4.1.7"
+    "vitest": "^4.1.9"
   }
 }

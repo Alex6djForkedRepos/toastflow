@@ -374,6 +374,16 @@ export function useToastUI({
     return toast.value.showIcon !== false;
   });
 
+  // HTML passed through the configured sanitizer, ready for v-html when
+  // supportHtml is enabled.
+  const sanitizedTitle = computed(function () {
+    return applySanitizer(toast.value, toast.value.title);
+  });
+
+  const sanitizedDescription = computed(function () {
+    return applySanitizer(toast.value, toast.value.description);
+  });
+
   function handlePointerDown(event: PointerEvent) {
     handlePausePointerDown(event);
     handleSwipePointerDown(event);
@@ -455,6 +465,7 @@ export function useToastUI({
       "data-align": toast.value.alignment,
       style: toastStyle.value,
       onClick: handleClick,
+      onKeydown: handleKeydown,
       onMouseenter: handleMouseEnter,
       onMouseleave: handleMouseLeave,
       onPointerdown: handlePointerDown,
@@ -463,6 +474,15 @@ export function useToastUI({
       onPointercancel: handlePointerCancel,
     };
   });
+
+  // Escape dismisses the toast when focus is inside it (e.g. on a button).
+  function handleKeydown(event: KeyboardEvent) {
+    if (event.key !== "Escape") {
+      return;
+    }
+    event.stopPropagation();
+    handleCloseClick();
+  }
 
   const closeProps = computed<ToastSlotProps>(function () {
     return {
@@ -687,6 +707,8 @@ export function useToastUI({
     titleAriaLabel,
     descriptionAriaLabel,
     toastAriaLabel,
+    sanitizedTitle,
+    sanitizedDescription,
     duration,
     progressStyle,
     showProgressBar,
@@ -724,6 +746,21 @@ export function useToastUI({
     showFloatingCreatedAt,
     ui,
   };
+}
+
+function applySanitizer(toast: ToastInstance, html: string): string {
+  const sanitizer = toast.sanitizer;
+  if (typeof sanitizer !== "function") {
+    return html;
+  }
+
+  try {
+    return sanitizer(html);
+  } catch (error) {
+    console.error("[vue-toastflow] Something failed in sanitizer", error);
+    // Fail closed: dropping the content beats rendering it unsanitized.
+    return "";
+  }
 }
 
 function resolveToastType(value: unknown): ToastType {
@@ -1311,7 +1348,13 @@ function useClickHandlers(
 
 function useButtons(toast: Ref<ToastInstance>, dismiss: () => void) {
   const buttons = computed<ToastButton[]>(function () {
-    return toast.value.buttons?.buttons ?? [];
+    const items = toast.value.buttons?.buttons ?? [];
+    return items.map(function (button) {
+      if (!button.html) {
+        return button;
+      }
+      return { ...button, html: applySanitizer(toast.value, button.html) };
+    });
   });
 
   const buttonsLayout = computed<ToastButtonsLayout>(function () {
@@ -1480,14 +1523,16 @@ function stripHtmlToText(value: string): string {
 
   const fallback = normalizeWhitespace(value.replace(/<[^>]*>/g, " "));
 
-  if (typeof window === "undefined" || !window.document) {
+  if (typeof window === "undefined" || !window.DOMParser) {
     return fallback;
   }
 
+  // DOMParser yields an inert document: unlike innerHTML on a detached
+  // element, nothing loads or executes (e.g. <img onerror>), so untrusted
+  // titles/descriptions are safe to strip even without supportHtml.
   try {
-    const container = window.document.createElement("div");
-    container.innerHTML = value;
-    return normalizeWhitespace(container.textContent ?? "");
+    const doc = new window.DOMParser().parseFromString(value, "text/html");
+    return normalizeWhitespace(doc.body.textContent ?? "");
   } catch {
     return fallback;
   }

@@ -258,6 +258,12 @@
   will-change: transform;
 }
 
+/* Keeps Vue's TransitionGroup hasCSSTransform probe negative, so its
+   built-in FLIP stays disabled — ToastContainer runs its own move logic. */
+.tf-toast-move-noop {
+  transition: none !important;
+}
+
 /* ENTER */
 .Toastflow__animation-enter-from > .tf-toast-motion,
 .Toastflow__animation-appear-from > .tf-toast-motion {

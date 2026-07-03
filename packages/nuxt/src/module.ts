@@ -22,36 +22,87 @@ export interface NuxtToastflowOptions {
    * Auto-register ToastContainer under this name. Set false to disable.
    */
   componentName: string | false;
+  /**
+   * Auto-register the remaining vue-toastflow components (Toast,
+   * ToastProgress, and the icon components) under their export names.
+   * Set false if any name collides with your own components — they stay
+   * importable from "nuxt-toastflow/runtime".
+   */
+  components: boolean;
 }
 
-function containsFunction(
+// Compiled SFCs are plain objects carrying `setup` and/or `render`; every
+// other runtime export (functions, the `toast` object, symbols, sets) has
+// neither. This keeps the registration list derived from the actual public
+// exports instead of a hard-coded name list.
+function isVueComponent(value: unknown): boolean {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    ("setup" in value || "render" in value)
+  );
+}
+
+// Full `toastflow` key typing (including every ToastConfig field) in
+// nuxt.config — without this, editors offer no completion for the key.
+declare module "@nuxt/schema" {
+  interface NuxtConfig {
+    toastflow?: Partial<NuxtToastflowOptions>;
+  }
+  interface NuxtOptions {
+    toastflow?: NuxtToastflowOptions;
+  }
+}
+
+interface UnserializableEntry {
+  path: string;
+  kind: "function" | "Date" | "RegExp";
+}
+
+// JSON.stringify silently omits functions and mangles Date/RegExp values, so
+// collect their exact config paths to warn the user by name.
+function collectUnserializable(
   value: unknown,
+  path: string = "toastflow.config",
   visited: Set<unknown> = new Set(),
-): boolean {
+  found: UnserializableEntry[] = [],
+): UnserializableEntry[] {
   if (typeof value === "function") {
-    return true;
+    found.push({ path, kind: "function" });
+    return found;
   }
 
   if (!value || typeof value !== "object") {
-    return false;
+    return found;
+  }
+
+  if (value instanceof Date) {
+    found.push({ path, kind: "Date" });
+    return found;
+  }
+
+  if (value instanceof RegExp) {
+    found.push({ path, kind: "RegExp" });
+    return found;
   }
 
   if (visited.has(value)) {
-    return false;
+    return found;
   }
   visited.add(value);
 
   if (Array.isArray(value)) {
-    return value.some(function (item: unknown): boolean {
-      return containsFunction(item, visited);
+    value.forEach(function (item: unknown, index: number) {
+      collectUnserializable(item, `${path}[${index}]`, visited, found);
     });
+    return found;
   }
 
-  const objectValues = Object.values(value as Record<string, unknown>);
+  for (const [key, item] of Object.entries(value as Record<string, unknown>)) {
+    collectUnserializable(item, `${path}.${key}`, visited, found);
+  }
 
-  return objectValues.some(function (item: unknown): boolean {
-    return containsFunction(item, visited);
-  });
+  return found;
 }
 
 export default defineNuxtModule<NuxtToastflowOptions>({
@@ -66,17 +117,25 @@ export default defineNuxtModule<NuxtToastflowOptions>({
     config: {},
     css: true,
     componentName: "ToastContainer",
+    components: true,
   },
-  setup(options) {
+  async setup(options) {
     const nuxt = useNuxt();
     const runtimeEntry = "nuxt-toastflow/runtime";
 
     nuxt.options.build.transpile.push("vue-toastflow");
 
-    if (containsFunction(options.config)) {
-      console.warn(
-        "[nuxt-toastflow] Functions in `toastflow.config` are not serializable in nuxt.config and will be omitted.",
-      );
+    const unserializable = collectUnserializable(options.config);
+    for (const entry of unserializable) {
+      if (entry.kind === "function") {
+        console.warn(
+          `[nuxt-toastflow] \`${entry.path}\` is a function and will be omitted — functions are not serializable in nuxt.config. Configure it at runtime instead (e.g. in a plugin).`,
+        );
+      } else {
+        console.warn(
+          `[nuxt-toastflow] \`${entry.path}\` is a ${entry.kind} and will not survive JSON serialization in nuxt.config. Use a plain serializable value instead.`,
+        );
+      }
     }
 
     let serializedConfig = "{}";
@@ -178,6 +237,28 @@ export default defineNuxtModule<NuxtToastflowOptions>({
         filePath: runtimeEntry,
         mode: "client",
       });
+    }
+
+    if (options.components) {
+      const runtime = await import("vue-toastflow");
+      const componentNames = Object.entries(runtime)
+        .filter(function ([name, value]) {
+          // The container is governed by the componentName option above.
+          return name !== "ToastContainer" && isVueComponent(value);
+        })
+        .map(function ([name]) {
+          return name;
+        })
+        .sort();
+
+      for (const name of componentNames) {
+        addComponent({
+          name,
+          export: name,
+          filePath: runtimeEntry,
+          mode: "client",
+        });
+      }
     }
   },
 });

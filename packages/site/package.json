@@ -12,12 +12,12 @@
   "dependencies": {
     "@giscus/vue": "^3.1.1",
     "@highlightjs/vue-plugin": "^2.1.0",
-    "@nuxt/content": "^3.14.0",
+    "@nuxt/content": "^3.15.0",
     "@vue/repl": "^4.7.2",
-    "better-sqlite3": "^12.10.0",
+    "better-sqlite3": "^12.11.1",
     "docus": "5.11.0",
     "highlight.js": "^11.11.1",
-    "nuxt": "^4.4.6",
+    "nuxt": "^4.4.8",
     "toastflow-core": "workspace:^",
     "vue-snowfall": "^1.1.8",
     "vue-toastflow": "workspace:^"
