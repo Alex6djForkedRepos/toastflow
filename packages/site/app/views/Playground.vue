@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import "highlight.js/styles/atom-one-dark.css";
 import {
   computed,
   nextTick,
@@ -99,6 +100,31 @@ const defaultToastConfig: ToastConfig = {
   },
 };
 const config = import.meta.client ? toast.getConfig() : defaultToastConfig;
+// Baseline used by the live-code snippet: only options the user changed
+// away from these values are printed.
+const snippetDefaults = {
+  position: config.position,
+  alignment: config.alignment,
+  progressAlignment: config.progressAlignment,
+  offset: config.offset,
+  gap: config.gap,
+  width: config.width,
+  zIndex: config.zIndex,
+  overflowScroll: config.overflowScroll,
+  queue: config.queue,
+  duration: config.duration,
+  maxVisible: config.maxVisible,
+  preventDuplicates: config.preventDuplicates,
+  order: config.order,
+  progressBar: config.progressBar,
+  pauseOnHover: config.pauseOnHover,
+  pauseStrategy: config.pauseStrategy,
+  closeButton: config.closeButton,
+  closeOnClick: config.closeOnClick,
+  swipeToDismiss: config.swipeToDismiss,
+  supportHtml: config.supportHtml,
+  showCreatedAt: config.showCreatedAt,
+} as const;
 const hasWindow = typeof window !== "undefined";
 const MAX_LOG_ENTRIES = 80;
 const ONBOARDING_STORAGE_KEY = "toastflow-playground-onboarding-v1";
@@ -1370,8 +1396,11 @@ function buildOptionsLines(
   toastType: ToastType,
 ) {
   const lines: string[] = [];
-  const add = function (key: string, value: unknown) {
+  const add = function (key: string, value: unknown, defaultValue?: unknown) {
     if (value === undefined || value === "") {
+      return;
+    }
+    if (defaultValue !== undefined && value === defaultValue) {
       return;
     }
     lines.push(`${key}: ${formatValue(value)},`);
@@ -1380,27 +1409,35 @@ function buildOptionsLines(
   add("type", toastType);
   add("title", content.title);
   add("description", content.description);
-  add("position", position.value);
-  add("alignment", alignment.value);
-  add("progressAlignment", progressAlignment.value);
-  add("offset", offset.value);
-  add("gap", gap.value);
-  add("width", width.value);
-  add("zIndex", zIndex.value);
-  add("overflowScroll", overflowScroll.value);
-  add("queue", queue.value);
-  add("duration", duration.value);
-  add("maxVisible", maxVisible.value);
-  add("preventDuplicates", preventDuplicates.value);
-  add("order", order.value);
-  add("progressBar", progressBar.value);
-  add("pauseOnHover", pauseOnHover.value);
-  add("pauseStrategy", pauseStrategy.value);
-  add("closeButton", closeButton.value);
-  add("closeOnClick", closeOnClick.value);
-  add("swipeToDismiss", swipeToDismiss.value);
-  add("supportHtml", supportHtml.value);
-  add("showCreatedAt", showCreatedAt.value);
+  add("position", position.value, snippetDefaults.position);
+  add("alignment", alignment.value, snippetDefaults.alignment);
+  add(
+    "progressAlignment",
+    progressAlignment.value,
+    snippetDefaults.progressAlignment,
+  );
+  add("offset", offset.value, snippetDefaults.offset);
+  add("gap", gap.value, snippetDefaults.gap);
+  add("width", width.value, snippetDefaults.width);
+  add("zIndex", zIndex.value, snippetDefaults.zIndex);
+  add("overflowScroll", overflowScroll.value, snippetDefaults.overflowScroll);
+  add("queue", queue.value, snippetDefaults.queue);
+  add("duration", duration.value, snippetDefaults.duration);
+  add("maxVisible", maxVisible.value, snippetDefaults.maxVisible);
+  add(
+    "preventDuplicates",
+    preventDuplicates.value,
+    snippetDefaults.preventDuplicates,
+  );
+  add("order", order.value, snippetDefaults.order);
+  add("progressBar", progressBar.value, snippetDefaults.progressBar);
+  add("pauseOnHover", pauseOnHover.value, snippetDefaults.pauseOnHover);
+  add("pauseStrategy", pauseStrategy.value, snippetDefaults.pauseStrategy);
+  add("closeButton", closeButton.value, snippetDefaults.closeButton);
+  add("closeOnClick", closeOnClick.value, snippetDefaults.closeOnClick);
+  add("swipeToDismiss", swipeToDismiss.value, snippetDefaults.swipeToDismiss);
+  add("supportHtml", supportHtml.value, snippetDefaults.supportHtml);
+  add("showCreatedAt", showCreatedAt.value, snippetDefaults.showCreatedAt);
 
   lines.push(...buildButtonsSnippetLines());
 

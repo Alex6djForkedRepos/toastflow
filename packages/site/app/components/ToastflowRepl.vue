@@ -8,6 +8,7 @@ import {
   shallowRef,
   type Component,
 } from "vue";
+import LoadingPanel from "@/components/LoadingPanel.vue";
 
 type ReplFiles = Record<string, string>;
 
@@ -223,13 +224,15 @@ async function initRepl() {
           }"
         />
 
-        <div v-else class="tf-repl-fallback">
-          {{ runtimeError || errorMessage || "Loading Vue REPL..." }}
+        <div v-else-if="runtimeError || errorMessage" class="tf-repl-fallback">
+          {{ runtimeError || errorMessage }}
         </div>
+
+        <LoadingPanel v-else label="Loading Vue REPL…" plain class="h-full" />
       </div>
 
       <template #fallback>
-        <div class="tf-repl-fallback">Loading Vue REPL...</div>
+        <LoadingPanel label="Loading Vue REPL…" min-height="200px" plain />
       </template>
     </ClientOnly>
   </div>

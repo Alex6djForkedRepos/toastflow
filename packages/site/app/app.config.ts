@@ -1,4 +1,10 @@
 export default defineAppConfig({
+  ui: {
+    colors: {
+      primary: "sky",
+      neutral: "slate",
+    },
+  },
   seo: {
     title: "Toastflow",
     titleTemplate: "%s | Toastflow",

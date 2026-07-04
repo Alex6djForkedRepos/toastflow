@@ -8,6 +8,7 @@ definePageMeta({
 import {
   computed,
   defineAsyncComponent,
+  h,
   nextTick,
   onBeforeUnmount,
   onMounted,
@@ -16,10 +17,18 @@ import {
 import { toast, ToastContainer } from "vue-toastflow";
 import Button from "@/components/Button.vue";
 import Badge from "@/components/Badge.vue";
+import LoadingPanel from "@/components/LoadingPanel.vue";
 import { useGitHubStars } from "@/composables/useGitHubStars";
 
 const Playground = defineAsyncComponent({
   loader: () => import("@/views/Playground.vue"),
+  delay: 0,
+  suspensible: false,
+  loadingComponent: () =>
+    h(LoadingPanel, {
+      label: "Loading playground…",
+      class: "max-w-5xl min-h-150 lg:min-h-180",
+    }),
 });
 
 type ThemeMode = "light" | "dark";
@@ -90,8 +99,7 @@ const siteUrl = "https://www.toastflow.top/";
 const siteTitle = "Toast Notifications Playground for Vue and Nuxt | Toastflow";
 const siteDescription =
   "Test Toastflow toast notifications for Vue 3 and Nuxt. Configure positions, timing, animations, and behaviors in an interactive live playground.";
-const siteImage =
-  "https://raw.githubusercontent.com/adrianjanocko/toastflow/main/assets/banner.png";
+const siteImage = "https://www.toastflow.top/banner.png";
 const umamiWebsiteId = String(runtimeConfig.public.umamiWebsiteId ?? "").trim();
 
 function toggleTheme() {
@@ -129,7 +137,6 @@ useHead({
   title: siteTitle,
   titleTemplate: "%s",
   link: [
-    { rel: "canonical", href: siteUrl },
     { rel: "manifest", href: "/site.webmanifest" },
     {
       rel: "apple-touch-icon",
@@ -144,17 +151,6 @@ useHead({
     },
     { rel: "icon", type: "image/svg+xml", href: "/favicon.svg" },
     { rel: "shortcut icon", href: "/favicon.ico" },
-    { rel: "preconnect", href: "https://fonts.googleapis.com" },
-    { rel: "preconnect", href: "https://fonts.gstatic.com", crossorigin: "" },
-    {
-      rel: "preload",
-      as: "style",
-      href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap",
-    },
-    {
-      rel: "stylesheet",
-      href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap",
-    },
   ],
   meta: [
     {
@@ -203,7 +199,7 @@ useHead({
         "@type": "Organization",
         name: "Toastflow",
         url: siteUrl,
-        logo: siteImage,
+        logo: "https://www.toastflow.top/web-app-manifest-512x512.png",
         sameAs: [
           "https://github.com/adrianjanocko/toastflow",
           "https://www.npmjs.com/package/vue-toastflow",
@@ -451,33 +447,10 @@ function openMore(targetId = "more-info", offsetPx = 20) {
         <ClientOnly>
           <Playground :theme-mode="themeMode" />
           <template #fallback>
-            <div
-              class="flex w-full max-w-5xl items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 dark:border-slate-700 dark:bg-slate-900"
-              style="min-height: 600px"
-            >
-              <div class="flex flex-col items-center gap-3 text-slate-400">
-                <svg
-                  class="size-6 animate-spin"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                >
-                  <circle
-                    class="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    stroke-width="4"
-                  />
-                  <path
-                    class="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-                <span class="text-sm">Loading playground…</span>
-              </div>
-            </div>
+            <LoadingPanel
+              label="Loading playground…"
+              class="max-w-5xl min-h-150 lg:min-h-180"
+            />
           </template>
         </ClientOnly>
 

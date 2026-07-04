@@ -1,5 +1,6 @@
 import type { DefinedCollection } from "@nuxt/content";
 import { defineCollection, defineContentConfig, z } from "@nuxt/content";
+import { defineSitemapSchema } from "@nuxtjs/sitemap/content";
 
 const createDocsSchema = () =>
   z.object({
@@ -13,6 +14,7 @@ const createDocsSchema = () =>
         }),
       )
       .optional(),
+    sitemap: defineSitemapSchema({ z }),
   });
 
 const collections: Record<string, DefinedCollection> = {

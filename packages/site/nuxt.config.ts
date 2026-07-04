@@ -250,11 +250,11 @@ function dropDevOnlyRootPrerender(nitroConfig: {
 
 export default defineNuxtConfig({
   extends: ["docus"],
+  modules: ["@nuxtjs/sitemap"],
   ...(resolvedDevPort !== null ? { devServer: { port: resolvedDevPort } } : {}),
   devtools: {
     enabled: envFlag("NUXT_DEVTOOLS"),
   },
-  css: ["highlight.js/styles/atom-one-dark.css"],
   app: {
     head: {
       htmlAttrs: {

@@ -1,0 +1,15 @@
+@source "./";
+
+@theme static {
+  --font-sans: "Manrope", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+}
+
+.dark {
+  /* Match the landing canvas (--tf-ui-canvas-top dark) */
+  --ui-bg: #0a0f1d;
+}
+
+.tf-docs-shell main :is(h1, h2, h3) {
+  font-family: "Fraunces", Georgia, serif;
+  letter-spacing: -0.01em;
+}
