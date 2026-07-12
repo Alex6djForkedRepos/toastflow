@@ -17,7 +17,7 @@
     "@nuxtjs/sitemap": "^8.2.2",
     "@vue/repl": "^4.7.2",
     "better-sqlite3": "^12.11.1",
-    "docus": "5.11.0",
+    "docus": "5.12.3",
     "highlight.js": "^11.11.1",
     "nuxt": "^4.4.8",
     "toastflow-core": "workspace:^",
@@ -26,6 +26,6 @@
   },
   "devDependencies": {
     "@iconify-json/tabler": "^1.2.35",
-    "vue-tsc": "^3.3.6"
+    "vue-tsc": "^3.3.7"
   }
 }
