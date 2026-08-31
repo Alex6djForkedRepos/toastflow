@@ -33,13 +33,7 @@ export type PauseStrategy = "resume" | "reset";
  * Semantic type that controls the toast's appearance.
  */
 export type ToastType =
-  | "loading"
-  | "default"
-  | "success"
-  | "error"
-  | "info"
-  | "warning"
-  | "custom";
+  "loading" | "default" | "success" | "error" | "info" | "warning" | "custom";
 /**
  * Internal lifecycle markers used for animations and cleanup.
  */
@@ -494,8 +488,7 @@ export type ToastUpdateInput = Partial<ToastOptions>;
  * Render instructions for the loading helper's success/error states.
  */
 export type ToastLoadingRender<T> =
-  | ToastContentInput
-  | ((value: T) => ToastContentInput);
+  ToastContentInput | ((value: T) => ToastContentInput);
 
 /**
  * Promise returned from the loading helper that also exposes the toast id.
@@ -555,7 +548,10 @@ export interface ToastStore {
    */
   show(options: ToastShowInput): ToastId;
 
-  show(content: string | ToastTextInput, options?: ToastShowOptions): ToastId;
+  show(
+    content: string | ToastTextInput | ToastShowInput,
+    options?: ToastShowOptions,
+  ): ToastId;
 
   /**
    * Update an existing toast by id.

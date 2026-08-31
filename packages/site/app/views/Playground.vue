@@ -953,6 +953,7 @@ function updateLast() {
   );
 
   toast.update(lastId.value, {
+    ...baseConfig.value,
     title: updatedTitle ? `${updatedTitle} (updated)` : "",
     description: updatedDescription,
   });

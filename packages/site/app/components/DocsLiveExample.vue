@@ -1,54 +1,13 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import { toast } from "vue-toastflow";
 
-const isLoading = ref(false);
+const { isLoading, showActionToast, showLoadingToast } = useToastDemos();
 
 function showSuccessToast() {
   toast.success({
     title: "Saved",
     description: "This toast came from a live docs example.",
   });
-}
-
-function showActionToast() {
-  toast.info({
-    title: "File archived",
-    description: "Use an action when the user can immediately recover.",
-    buttons: {
-      alignment: "bottom-right",
-      buttons: [
-        {
-          label: "Undo",
-          dismissAfterClick: true,
-          onClick() {
-            toast.success({ title: "Restored" });
-          },
-        },
-      ],
-    },
-  });
-}
-
-async function showLoadingToast() {
-  if (isLoading.value) {
-    return;
-  }
-
-  isLoading.value = true;
-
-  try {
-    await toast.loading(
-      new Promise((resolve) => window.setTimeout(resolve, 900)),
-      {
-        loading: { title: "Saving" },
-        success: { title: "Saved" },
-        error: { title: "Failed" },
-      },
-    );
-  } finally {
-    isLoading.value = false;
-  }
 }
 </script>
 

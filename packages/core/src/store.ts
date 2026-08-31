@@ -1,5 +1,6 @@
 import type {
   ToastConfig,
+  ToastContentInput,
   ToastContext,
   ToastEvent,
   ToastId,
@@ -21,7 +22,7 @@ import type {
 import {
   defaultCreatedAtFormatter,
   generateUuid,
-  isNumberFinite,
+  isPositiveFiniteNumber,
   VALID_TOAST_TYPES,
 } from "./util";
 
@@ -266,6 +267,29 @@ export function createToastStore(
     return samePos.length < toast.maxVisible;
   }
 
+  // Evict until the new toast fits (a per-toast maxVisible smaller than the
+  // stack needs more than one eviction). Queue processing stays suspended so
+  // dismiss() can't promote queued toasts into the slots being freed.
+  function evictUntilFits(toastInstance: ToastInstance): void {
+    const wasQueuePaused = queuePaused;
+    queuePaused = true;
+    try {
+      while (!hasCapacityFor(toastInstance)) {
+        const toEvict = pickOverflowToast(
+          getVisibleAt(toastInstance.position, toastInstance.containerId),
+          toastInstance.order,
+          toastInstance.position,
+        );
+        if (!toEvict) {
+          break;
+        }
+        dismiss(toEvict.id);
+      }
+    } finally {
+      queuePaused = wasQueuePaused;
+    }
+  }
+
   function processQueue(position: ToastPosition, containerId?: string): void {
     if (queuePaused) {
       return;
@@ -341,7 +365,7 @@ export function createToastStore(
   // Show a toast, handling duplicates and auto-dismiss scheduling.
   function show(options: ToastShowInput): ToastId;
   function show(
-    content: string | ToastTextInput,
+    content: string | ToastTextInput | ToastShowInput,
     options?: ToastShowOptions,
   ): ToastId;
   function show(
@@ -374,16 +398,15 @@ export function createToastStore(
           createdAt: duplicate.toast.createdAt,
         };
 
-        clearAutoDismiss(duplicate.toast.id);
-
         if (duplicate.location === "visible") {
-          scheduleAutoDismiss(updated);
+          rescheduleAutoDismiss(updated);
           syncState(
             state.toasts.map(function (t) {
               return t.id === updated.id ? updated : t;
             }),
           );
         } else {
+          clearAutoDismiss(duplicate.toast.id);
           replaceQueuedToast(duplicate.scope, duplicate.index, updated);
         }
 
@@ -401,14 +424,7 @@ export function createToastStore(
         return toastInstance.id;
       }
 
-      const toEvict = pickOverflowToast(
-        getVisibleAt(toastInstance.position, toastInstance.containerId),
-        toastInstance.order,
-        toastInstance.position,
-      );
-      if (toEvict) {
-        dismiss(toEvict.id);
-      }
+      evictUntilFits(toastInstance);
     }
 
     syncState(insertToast(state.toasts, toastInstance));
@@ -441,6 +457,21 @@ export function createToastStore(
     const toastId = show(loadingOptions);
     promiseRuns.set(toastId, runToken);
 
+    // Reset only the loading-phase overrides back to the global config;
+    // everything else set in config.loading (position, containerId,
+    // buttons, ...) is preserved by update()'s merge.
+    function settledOptions(
+      resolved: ToastContentInput,
+      type: ToastType,
+    ): ToastShowInput {
+      return {
+        duration: resolvedGlobalConfig.duration,
+        progressBar: resolvedGlobalConfig.progressBar,
+        ...resolved,
+        type,
+      };
+    }
+
     function successOptions(value: T): ToastShowInput {
       const resolved =
         typeof config.success === "function"
@@ -449,11 +480,7 @@ export function createToastStore(
 
       assertContentFields(resolved, "loading.success");
 
-      return {
-        ...resolvedGlobalConfig,
-        ...resolved,
-        type: "success",
-      };
+      return settledOptions(resolved, "success");
     }
 
     function errorOptions(error: unknown): ToastShowInput {
@@ -462,11 +489,7 @@ export function createToastStore(
 
       assertContentFields(resolved, "loading.error");
 
-      return {
-        ...resolvedGlobalConfig,
-        ...resolved,
-        type: "error",
-      };
+      return settledOptions(resolved, "error");
     }
 
     function applyIfActive(options: ToastShowInput) {
@@ -520,24 +543,7 @@ export function createToastStore(
     const merged: ToastOptions = {
       ...located.toast,
       ...options,
-      animation: {
-        ...located.toast.animation,
-        ...(options.animation ?? {}),
-      },
-      buttons:
-        located.toast.buttons || options.buttons
-          ? {
-              ...(located.toast.buttons ?? {}),
-              ...(options.buttons ?? {}),
-            }
-          : undefined,
-      css:
-        located.toast.css || options.css
-          ? {
-              ...(located.toast.css ?? {}),
-              ...(options.css ?? {}),
-            }
-          : undefined,
+      ...mergeOptionSlices(located.toast, options),
     };
 
     // Validate the merged result (not the raw input) has content
@@ -550,11 +556,25 @@ export function createToastStore(
       createdAt: located.toast.createdAt,
     };
 
+    const scopeChanged =
+      updated.position !== located.toast.position ||
+      updated.containerId !== located.toast.containerId;
+    const canMove =
+      located.toast.phase !== "leaving" && located.toast.phase !== "clear-all";
+
     if (located.location === "visible") {
-      clearAutoDismiss(id);
-      scheduleAutoDismiss(updated);
-      syncState(state.toasts.map((t) => (t.id === id ? updated : t)));
-      emitEvent({ id, kind: "timer-reset" });
+      if (scopeChanged && canMove) {
+        moveVisibleToast(located.toast, updated);
+      } else {
+        rescheduleAutoDismiss(updated);
+        syncState(state.toasts.map((t) => (t.id === id ? updated : t)));
+        emitEvent({ id, kind: "timer-reset" });
+      }
+    } else if (scopeChanged) {
+      // Move between queue buckets so the toast waits in its new scope.
+      removeQueuedToast(located.scope, located.index);
+      enqueueToast(updated);
+      processQueue(updated.position, updated.containerId);
     } else {
       replaceQueuedToast(located.scope, located.index, updated);
     }
@@ -569,6 +589,15 @@ export function createToastStore(
     if (!located) {
       clearAutoDismiss(id);
       promiseRuns.delete(id);
+      return;
+    }
+
+    // Already leaving (or clear-all): a second dismiss must not re-run
+    // onClose or schedule another removal.
+    if (
+      located.location === "visible" &&
+      (located.toast.phase === "leaving" || located.toast.phase === "clear-all")
+    ) {
       return;
     }
 
@@ -662,7 +691,10 @@ export function createToastStore(
       return !scoped || t.containerId === filter.containerId;
     };
 
-    const current = state.toasts.filter(matches);
+    // Skip toasts already leaving/clear-all: their onClose already ran.
+    const current = state.toasts.filter(function (t) {
+      return matches(t) && t.phase !== "leaving" && t.phase !== "clear-all";
+    });
     const queued = flattenQueue().filter(matches);
 
     if (!current.length && !queued.length) {
@@ -755,8 +787,60 @@ export function createToastStore(
     }
   }
 
+  // Reschedule a toast's timer, preserving a paused state so updates or
+  // duplicate re-shows during hover don't silently restart (and later fire)
+  // the auto-dismiss while the user is still interacting with the toast.
+  function rescheduleAutoDismiss(toastInstance: ToastInstance): void {
+    const wasPaused = timers.get(toastInstance.id)?.paused === true;
+    clearAutoDismiss(toastInstance.id);
+
+    if (!isPositiveFiniteNumber(toastInstance.duration)) {
+      return;
+    }
+
+    if (wasPaused) {
+      timers.set(toastInstance.id, {
+        timeout: null,
+        startTime: Date.now(),
+        remaining: toastInstance.duration,
+        paused: true,
+      });
+      return;
+    }
+
+    scheduleAutoDismiss(toastInstance);
+  }
+
+  // Move a visible toast to another position/container: free the old slot,
+  // apply the destination's capacity rules, then backfill the old scope.
+  function moveVisibleToast(
+    previous: ToastInstance,
+    updated: ToastInstance,
+  ): void {
+    syncState(
+      state.toasts.filter(function (t) {
+        return t.id !== updated.id;
+      }),
+    );
+
+    if (!hasCapacityFor(updated)) {
+      if (updated.queue) {
+        clearAutoDismiss(updated.id);
+        enqueueToast(updated);
+        processQueue(previous.position, previous.containerId);
+        return;
+      }
+      evictUntilFits(updated);
+    }
+
+    syncState(insertToast(state.toasts, updated));
+    rescheduleAutoDismiss(updated);
+    emitEvent({ id: updated.id, kind: "timer-reset" });
+    processQueue(previous.position, previous.containerId);
+  }
+
   function scheduleAutoDismiss(toastInstance: ToastInstance) {
-    if (!isNumberFinite(toastInstance.duration)) {
+    if (!isPositiveFiniteNumber(toastInstance.duration)) {
       timers.delete(toastInstance.id);
       return;
     }
@@ -817,7 +901,7 @@ export function createToastStore(
       return;
     }
 
-    if (!isNumberFinite(toastInstance.duration)) {
+    if (!isPositiveFiniteNumber(toastInstance.duration)) {
       timers.delete(id);
       return;
     }
@@ -827,6 +911,11 @@ export function createToastStore(
     let remaining: number;
 
     if (!timer || !timer.paused) {
+      // Restarting a running (non-paused) timer: drop the old timeout so the
+      // original deadline can't dismiss the toast early.
+      if (timer?.timeout) {
+        clearTimeout(timer.timeout);
+      }
       remaining = toastInstance.duration;
       if (strategy === "reset") {
         emitEvent({ id, kind: "timer-reset" });
@@ -922,7 +1011,23 @@ function normalizeShowArgs(
   }
 
   if ("type" in arg1) {
-    return arg1;
+    if (!arg2) {
+      return arg1;
+    }
+    // Same precedence as the other call forms: options override everything
+    // except the content fields, which the input owns.
+    const {
+      title: optionsTitle,
+      description: optionsDescription,
+      ...rest
+    } = arg2;
+    return {
+      ...arg1,
+      ...rest,
+      type: rest.type ?? arg1.type,
+      title: arg1.title ?? optionsTitle ?? "",
+      description: arg1.description ?? optionsDescription ?? "",
+    };
   }
 
   const { title: inputTitle, description: inputDescription } = arg1;
@@ -985,36 +1090,45 @@ function resolveConfig(
     ...restOverrides
   } = overrides as Partial<ToastOptions>;
 
-  const animation = {
-    ...base.animation,
-    ...(animationOverride ?? {}),
-  };
-
-  const buttons =
-    base.buttons || buttonsOverride
-      ? {
-          ...(base.buttons ?? {}),
-          ...(buttonsOverride ?? {}),
-        }
-      : undefined;
-
-  const css =
-    base.css || cssOverride
-      ? {
-          ...(base.css ?? {}),
-          ...(cssOverride ?? {}),
-        }
-      : undefined;
-
   return {
     ...base,
     ...restOverrides,
-    animation,
-    buttons,
-    css,
+    ...mergeOptionSlices(base, {
+      animation: animationOverride,
+      buttons: buttonsOverride,
+      css: cssOverride,
+    }),
     type: type ?? "default",
     title: title ?? "",
     description: description ?? "",
+  };
+}
+
+// Deep-merge the nested option slices so partial overrides don't drop the
+// existing sub-fields. Shared by resolveConfig() and update().
+function mergeOptionSlices(
+  base: Partial<Pick<ToastOptions, "animation" | "buttons" | "css">>,
+  overrides: Partial<Pick<ToastOptions, "animation" | "buttons" | "css">>,
+): Pick<ToastConfig, "animation" | "buttons" | "css"> {
+  return {
+    animation: {
+      ...base.animation,
+      ...(overrides.animation ?? {}),
+    },
+    buttons:
+      base.buttons || overrides.buttons
+        ? {
+            ...(base.buttons ?? {}),
+            ...(overrides.buttons ?? {}),
+          }
+        : undefined,
+    css:
+      base.css || overrides.css
+        ? {
+            ...(base.css ?? {}),
+            ...(overrides.css ?? {}),
+          }
+        : undefined,
   };
 }
 
@@ -1022,7 +1136,7 @@ function insertToast(
   existing: ToastInstance[],
   next: ToastInstance,
 ): ToastInstance[] {
-  if (!isNumberFinite(next.duration)) {
+  if (!isPositiveFiniteNumber(next.duration)) {
     next.progressBar = false;
   }
 

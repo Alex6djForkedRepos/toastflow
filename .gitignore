@@ -4,3 +4,6 @@ node_modules/
 packages/nuxt/.output
 packages/nuxt/.nuxt
 packages/nuxt/node_modules
+other/
+.fallowrc.jsonc
+CLAUDE.md

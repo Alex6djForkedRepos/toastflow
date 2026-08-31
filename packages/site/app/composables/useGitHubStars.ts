@@ -1,6 +1,5 @@
 import { onMounted, ref } from "vue";
 
-const CACHE_KEY = "toastflow-github-stars";
 const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
 
 interface CachedStars {
@@ -9,18 +8,32 @@ interface CachedStars {
 }
 
 export function useGitHubStars(owner: string, repo: string) {
+  const cacheKey = `toastflow-github-stars:${owner}/${repo}`;
   const stars = ref<number | null>(null);
   const isLoading = ref(false);
   const error = ref<string | null>(null);
 
+  function isCachedStars(value: unknown): value is CachedStars {
+    if (!value || typeof value !== "object") {
+      return false;
+    }
+    const entry = value as Partial<CachedStars>;
+    return (
+      typeof entry.count === "number" && typeof entry.fetchedAt === "number"
+    );
+  }
+
   function readCache(): CachedStars | null {
     try {
-      const raw = localStorage.getItem(CACHE_KEY);
+      const raw = localStorage.getItem(cacheKey);
       if (!raw) {
         return null;
       }
-      const parsed: CachedStars = JSON.parse(raw);
-      if (Date.now() - parsed.fetchedAt > CACHE_TTL_MS) {
+      const parsed: unknown = JSON.parse(raw);
+      if (
+        !isCachedStars(parsed) ||
+        Date.now() - parsed.fetchedAt > CACHE_TTL_MS
+      ) {
         return null;
       }
       return parsed;
@@ -32,7 +45,7 @@ export function useGitHubStars(owner: string, repo: string) {
   function writeCache(count: number) {
     try {
       const entry: CachedStars = { count, fetchedAt: Date.now() };
-      localStorage.setItem(CACHE_KEY, JSON.stringify(entry));
+      localStorage.setItem(cacheKey, JSON.stringify(entry));
     } catch {
       // storage full or unavailable
     }

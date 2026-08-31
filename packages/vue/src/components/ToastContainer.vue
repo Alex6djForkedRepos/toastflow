@@ -171,16 +171,17 @@ const stackConfigs = ref<Record<ToastPosition, ToastConfig>>({
 });
 
 const globalZIndex = computed(function () {
-  if (!toasts.value.length) {
-    return baseConfig.zIndex;
-  }
   let max = -Infinity;
   for (const toast of toasts.value) {
+    // Only toasts rendered by this container may drive its z-index.
+    if (toast.containerId !== props.id) {
+      continue;
+    }
     if (toast.zIndex > max) {
       max = toast.zIndex;
     }
   }
-  return max;
+  return max === -Infinity ? baseConfig.zIndex : max;
 });
 
 function stackConfig(position: ToastPosition): ToastConfig {

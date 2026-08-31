@@ -9,13 +9,7 @@ import {
 } from "vue-toastflow";
 
 type PreviewVariant =
-  | "create"
-  | "buttons"
-  | "import"
-  | "loading"
-  | "styling"
-  | "timers"
-  | "update";
+  "create" | "buttons" | "import" | "loading" | "styling" | "timers" | "update";
 
 const props = withDefaults(
   defineProps<{
@@ -26,7 +20,7 @@ const props = withDefaults(
   },
 );
 
-const isLoading = ref(false);
+const { isLoading, showActionToast, showLoadingToast } = useToastDemos();
 const updateId = ref<ToastId | null>(null);
 const stylingPreviewStore = createToastStore({
   duration: 6500,
@@ -80,47 +74,6 @@ function showTypedHelper() {
     title: "Saved",
     description: "Done",
   });
-}
-
-function showActionToast() {
-  toast.info({
-    title: "File archived",
-    description: "Use an action when the user can recover immediately.",
-    buttons: {
-      alignment: "bottom-right",
-      buttons: [
-        {
-          id: "undo",
-          label: "Undo",
-          dismissAfterClick: true,
-          onClick() {
-            toast.success({ title: "Restored" });
-          },
-        },
-      ],
-    },
-  });
-}
-
-async function showLoadingToast() {
-  if (isLoading.value) {
-    return;
-  }
-
-  isLoading.value = true;
-
-  try {
-    await toast.loading(
-      new Promise((resolve) => window.setTimeout(resolve, 900)),
-      {
-        loading: { title: "Saving" },
-        success: { title: "Saved" },
-        error: { title: "Failed" },
-      },
-    );
-  } finally {
-    isLoading.value = false;
-  }
 }
 
 async function showImportToast() {

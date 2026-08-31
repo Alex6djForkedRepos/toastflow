@@ -1,7 +1,7 @@
 export * from "./types";
 export * from "./store";
 export {
-  isNumberFinite,
+  isPositiveFiniteNumber,
   generateUuid,
   defaultCreatedAtFormatter,
   VALID_TOAST_TYPES,

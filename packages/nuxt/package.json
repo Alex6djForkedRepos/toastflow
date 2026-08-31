@@ -21,7 +21,7 @@
     "url": "https://github.com/adrianjanocko/toastflow.git",
     "directory": "packages/nuxt"
   },
-  "version": "1.0.3",
+  "version": "1.0.4",
   "sideEffects": [
     "**/*.css"
   ],
@@ -56,7 +56,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsup src/module.ts src/runtime/index.ts --clean --format cjs,esm --sourcemap && tsc --emitDeclarationOnly && node ./scripts/post-build.cjs",
+    "build": "tsup src/module.ts src/runtime/index.ts --clean --format cjs,esm --sourcemap && tsc --emitDeclarationOnly && node ../../scripts/post-build.cjs --copy-styles ../vue/src/styles.css dist/styles.css",
     "prepack": "pnpm run build",
     "typecheck": "tsc --noEmit"
   },

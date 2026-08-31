@@ -52,7 +52,9 @@ function createToastCaller<T extends Exclude<ToastType, "loading"> | undefined>(
     options: T extends undefined ? ToastShowInput : ToastContentInput,
   ): ToastId;
   function showTypedToast(
-    content: string | ToastTextInput,
+    content: T extends undefined
+      ? string | ToastTextInput | ToastShowInput
+      : string | ToastTextInput,
     options?: Options,
   ): ToastId;
   function showTypedToast(

@@ -34,6 +34,31 @@ describe("createToastStore", () => {
       expect(() => store.show("")).toThrow(/non-empty title or description/);
     });
 
+    it("merges the options argument into a full show-input object", () => {
+      const store = createToastStore({ duration: Infinity });
+      const id = store.show(
+        { type: "success", title: "Saved" },
+        { duration: 1000, position: "bottom-center" },
+      );
+
+      const toast = store.getState().toasts.find((t) => t.id === id)!;
+      expect(toast.type).toBe("success");
+      expect(toast.duration).toBe(1000);
+      expect(toast.position).toBe("bottom-center");
+    });
+
+    it("options override input fields except title and description", () => {
+      const store = createToastStore({ duration: Infinity });
+      const id = store.show(
+        { type: "success", title: "Saved", position: "top-left" },
+        { position: "bottom-right", title: "Ignored" },
+      );
+
+      const toast = store.getState().toasts.find((t) => t.id === id)!;
+      expect(toast.position).toBe("bottom-right");
+      expect(toast.title).toBe("Saved");
+    });
+
     it("notifies subscribers immediately and on changes", () => {
       const store = createToastStore();
       const listener = vi.fn();
@@ -86,6 +111,48 @@ describe("createToastStore", () => {
       const titles = store.getState().toasts.map((t) => t.title);
       expect(titles).toHaveLength(2);
       expect(titles).not.toContain("one");
+    });
+
+    it("evicts as many toasts as needed for a smaller per-toast maxVisible", () => {
+      const store = createToastStore({ maxVisible: 3, duration: Infinity });
+      store.show("one");
+      store.show("two");
+      store.show("three");
+      store.show("four", { maxVisible: 2 });
+      vi.advanceTimersByTime(0);
+
+      const titles = store
+        .getState()
+        .toasts.map((t) => t.title)
+        .sort();
+      expect(titles).toEqual(["four", "three"]);
+    });
+
+    it("eviction does not drain queued toasts into the freed slots", () => {
+      const store = createToastStore({
+        maxVisible: 2,
+        queue: true,
+        duration: Infinity,
+      });
+      store.show("one");
+      store.show("two");
+      store.show("three");
+      store.show("four");
+
+      expect(store.getState().toasts).toHaveLength(2);
+      expect(store.getState().queue).toHaveLength(2);
+
+      store.show("urgent", { queue: false });
+      vi.advanceTimersByTime(0);
+
+      const titles = store.getState().toasts.map((t) => t.title);
+      expect(titles).toContain("urgent");
+      expect(titles).toContain("two");
+      // The queued toasts stayed queued instead of being mounted+dismissed.
+      expect(store.getState().queue.map((t) => t.title)).toEqual([
+        "three",
+        "four",
+      ]);
     });
 
     it("keeps evicting FIFO across bursts", () => {
@@ -189,6 +256,51 @@ describe("createToastStore", () => {
       expect(store.getState().toasts).toHaveLength(0);
     });
 
+    it("resume without a preceding pause restarts the full duration and cancels the old timeout", () => {
+      const store = createToastStore({ duration: 1000 });
+      const id = store.show("Hello");
+
+      vi.advanceTimersByTime(500);
+      store.resume(id);
+
+      // The original deadline (t=1000) must not fire early.
+      vi.advanceTimersByTime(999);
+      expect(visibleToasts(store)).toHaveLength(1);
+      vi.advanceTimersByTime(1);
+      vi.runOnlyPendingTimers();
+      expect(store.getState().toasts).toHaveLength(0);
+    });
+
+    it("update while paused keeps the timer paused", () => {
+      const store = createToastStore({ duration: 1000 });
+      const id = store.show("Before");
+
+      store.pause(id);
+      store.update(id, { title: "After" });
+
+      vi.advanceTimersByTime(10_000);
+      expect(visibleToasts(store)).toHaveLength(1);
+
+      store.resume(id);
+      vi.advanceTimersByTime(1000);
+      vi.runOnlyPendingTimers();
+      expect(store.getState().toasts).toHaveLength(0);
+    });
+
+    it("duplicate show while paused keeps the timer paused", () => {
+      const store = createToastStore({
+        duration: 1000,
+        preventDuplicates: true,
+      });
+      const id = store.show("Same");
+
+      store.pause(id);
+      store.show("Same");
+
+      vi.advanceTimersByTime(10_000);
+      expect(visibleToasts(store)).toHaveLength(1);
+    });
+
     it("reset strategy restarts the full duration and emits timer-reset", () => {
       const store = createToastStore({
         duration: 1000,
@@ -260,6 +372,62 @@ describe("createToastStore", () => {
       vi.runOnlyPendingTimers();
       expect(store.getState().toasts).toHaveLength(0);
     });
+
+    it("moves the toast to a new position and backfills the old one", () => {
+      const store = createToastStore({
+        maxVisible: 1,
+        queue: true,
+        duration: Infinity,
+      });
+      const first = store.show("one");
+      store.show("two");
+
+      expect(store.getState().queue).toHaveLength(1);
+
+      store.update(first, { position: "bottom-left" });
+
+      const toasts = store.getState().toasts;
+      expect(toasts.find((t) => t.id === first)?.position).toBe("bottom-left");
+      // The freed slot is filled from the old position's queue.
+      expect(toasts.find((t) => t.title === "two")?.position).toBe("top-right");
+      expect(store.getState().queue).toHaveLength(0);
+    });
+
+    it("evicts to make room when moving to a full position", () => {
+      const store = createToastStore({ maxVisible: 1, duration: Infinity });
+      const moved = store.show("mover");
+      store.show("occupant", { position: "bottom-left" });
+
+      store.update(moved, { position: "bottom-left" });
+      vi.advanceTimersByTime(0);
+
+      const toasts = store.getState().toasts;
+      expect(toasts).toHaveLength(1);
+      expect(toasts[0]?.title).toBe("mover");
+      expect(toasts[0]?.position).toBe("bottom-left");
+    });
+
+    it("queues the toast when moving to a full position in queue mode", () => {
+      const store = createToastStore({
+        maxVisible: 1,
+        queue: true,
+        duration: Infinity,
+      });
+      const moved = store.show("mover");
+      const occupant = store.show("occupant", { position: "bottom-left" });
+
+      store.update(moved, { position: "bottom-left" });
+
+      expect(store.getState().toasts.map((t) => t.title)).toEqual(["occupant"]);
+      expect(store.getState().queue.map((t) => t.title)).toEqual(["mover"]);
+
+      store.dismiss(occupant);
+      vi.advanceTimersByTime(0);
+
+      const toasts = store.getState().toasts;
+      expect(toasts.map((t) => t.title)).toEqual(["mover"]);
+      expect(toasts[0]?.position).toBe("bottom-left");
+    });
   });
 
   describe("dismiss", () => {
@@ -285,9 +453,43 @@ describe("createToastStore", () => {
       const store = createToastStore();
       expect(() => store.dismiss("missing")).not.toThrow();
     });
+
+    it("calls onClose only once when dismissed twice", () => {
+      const onClose = vi.fn();
+      const store = createToastStore({ duration: Infinity });
+      const id = store.show({ type: "default", title: "Hello", onClose });
+
+      store.dismiss(id);
+      store.dismiss(id);
+      vi.advanceTimersByTime(0);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(store.getState().toasts).toHaveLength(0);
+    });
   });
 
   describe("dismissAll", () => {
+    it("does not re-run onClose/onUnmount for toasts already dismissed", () => {
+      const onClose = vi.fn();
+      const onUnmount = vi.fn();
+      const store = createToastStore({ duration: Infinity });
+      const id = store.show({
+        type: "default",
+        title: "Hello",
+        onClose,
+        onUnmount,
+      });
+      store.show("Other");
+
+      store.dismiss(id);
+      store.dismissAll();
+      vi.advanceTimersByTime(100);
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+      expect(onUnmount).toHaveBeenCalledTimes(1);
+      expect(store.getState().toasts).toHaveLength(0);
+    });
+
     it("marks all toasts as clear-all, then empties state and queue", () => {
       const store = createToastStore({
         maxVisible: 1,
@@ -458,6 +660,28 @@ describe("createToastStore", () => {
       expect(toast.id).toBe(result.toastId);
       expect(toast.type).toBe("success");
       expect(toast.title).toBe("Done: ok");
+    });
+
+    it("keeps per-toast options from the loading phase on success", async () => {
+      const store = createToastStore({ duration: 5000 });
+
+      const result = store.loading(Promise.resolve("ok"), {
+        loading: {
+          title: "Loading...",
+          position: "bottom-left",
+          containerId: "a",
+        },
+        success: { title: "Done" },
+        error: { title: "Failed" },
+      });
+      await result;
+
+      const toast = store.getState().toasts[0]!;
+      expect(toast.position).toBe("bottom-left");
+      expect(toast.containerId).toBe("a");
+      // Loading-phase overrides are reset back to the global config.
+      expect(toast.duration).toBe(5000);
+      expect(toast.progressBar).toBe(true);
     });
 
     it("updates to the error toast and rejects on failure", async () => {

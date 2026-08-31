@@ -13,7 +13,7 @@ import type {
 } from "toastflow-core";
 import {
   defaultCreatedAtFormatter,
-  isNumberFinite,
+  isPositiveFiniteNumber,
   VALID_TOAST_TYPES,
 } from "toastflow-core";
 import ArrowPath from "./components/icons/ArrowPath.vue";
@@ -244,7 +244,7 @@ export function useToastUI({
   updateAnimationClass,
 }: UseToastUIOptions) {
   const toast = computed<ToastInstance>(function () {
-    const createdAt = isNumberFinite(toastProp.value.createdAt)
+    const createdAt = isPositiveFiniteNumber(toastProp.value.createdAt)
       ? toastProp.value.createdAt
       : Date.now();
     const baseConfig = store.getConfig();
@@ -811,7 +811,8 @@ function useAria(toast: Ref<ToastInstance>) {
 
   const hasCreatedAt = computed(function () {
     return Boolean(
-      toast.value.showCreatedAt && isNumberFinite(toast.value.createdAt),
+      toast.value.showCreatedAt &&
+      isPositiveFiniteNumber(toast.value.createdAt),
     );
   });
 
@@ -845,12 +846,18 @@ function useAria(toast: Ref<ToastInstance>) {
     return `Sent at ${createdAtText.value}`;
   });
 
+  // Only HTML content needs stripping — plain-text titles keep the visible
+  // text as their accessible label (angle brackets included).
   const titleAriaLabel = computed(function () {
-    return stripHtmlToText(toast.value.title);
+    return toast.value.supportHtml
+      ? stripHtmlToText(toast.value.title)
+      : normalizeWhitespace(toast.value.title);
   });
 
   const descriptionAriaLabel = computed(function () {
-    return stripHtmlToText(toast.value.description);
+    return toast.value.supportHtml
+      ? stripHtmlToText(toast.value.description)
+      : normalizeWhitespace(toast.value.description);
   });
 
   const toastAriaLabel = computed(function () {
@@ -893,7 +900,7 @@ function useProgress(
   duplicateKey?: Ref<number | undefined>,
 ) {
   const duration = computed<number | undefined>(function () {
-    if (!isNumberFinite(toast.value.duration)) {
+    if (!isPositiveFiniteNumber(toast.value.duration)) {
       return undefined;
     }
     return toast.value.duration;
@@ -1018,7 +1025,9 @@ function useHoverPause(
       lastPointerType = "";
       return;
     }
-    if (!canPause()) {
+    // Always resume a toast this handler paused, even if pauseOnHover or
+    // duration changed mid-hover — otherwise the timer stays paused forever.
+    if (!isHovered.value && !canPause()) {
       return;
     }
     resume();

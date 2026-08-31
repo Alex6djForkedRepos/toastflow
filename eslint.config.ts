@@ -7,6 +7,8 @@ const config: ConfigArray = [
   {
     ignores: [
       "node_modules/**",
+      // Local-only scratch projects (gitignored)
+      "other/**",
       "pnpm-lock.yaml",
       "**/dist/**",
       "**/build/**",
