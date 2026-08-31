@@ -752,8 +752,7 @@ function goToNextOnboardingStep() {
 /* ----- computed config for show() ----- */
 
 const buttonsConfig = computed(function ():
-  | ToastOptions["buttons"]
-  | undefined {
+  ToastOptions["buttons"] | undefined {
   if (!enableButtons.value) {
     return undefined;
   }
