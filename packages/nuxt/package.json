@@ -64,10 +64,11 @@
     "nuxt": "^3.0.0 || ^4.0.0"
   },
   "dependencies": {
-    "@nuxt/kit": "^4.4.8",
+    "@nuxt/kit": "^4.5.2",
     "vue-toastflow": "workspace:^"
   },
   "devDependencies": {
+    "@nuxt/schema": "^4.5.2",
     "tsup": "^8.5.1",
     "typescript": "^7.0.2"
   }

@@ -13,19 +13,19 @@
   "dependencies": {
     "@giscus/vue": "^3.1.1",
     "@highlightjs/vue-plugin": "^2.1.0",
-    "@nuxt/content": "^3.15.0",
-    "@nuxtjs/sitemap": "^8.2.2",
+    "@nuxt/content": "^3.16.0",
+    "@nuxtjs/sitemap": "^8.5.0",
     "@vue/repl": "^4.7.2",
     "better-sqlite3": "^12.11.1",
-    "docus": "5.12.3",
-    "highlight.js": "^11.11.1",
-    "nuxt": "^4.4.8",
+    "docus": "5.13.0",
+    "highlight.js": "^11.12.0",
+    "nuxt": "^4.5.2",
     "toastflow-core": "workspace:^",
     "vue-snowfall": "^1.1.8",
     "vue-toastflow": "workspace:^"
   },
   "devDependencies": {
-    "@iconify-json/tabler": "^1.2.35",
-    "vue-tsc": "^3.3.7"
+    "@iconify-json/tabler": "^1.2.38",
+    "vue-tsc": "^3.3.11"
   }
 }

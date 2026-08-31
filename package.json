@@ -15,10 +15,10 @@
   },
   "packageManager": "pnpm@9.12.3",
   "devDependencies": {
-    "eslint": "^10.7.0",
-    "eslint-plugin-vue": "~10.9.2",
-    "prettier": "3.9.5",
+    "eslint": "^10.9.1",
+    "eslint-plugin-vue": "~10.10.0",
+    "prettier": "3.9.6",
     "typescript": "npm:@typescript/typescript6@^6.0.2",
-    "typescript-eslint": "^8.68.0"
+    "typescript-eslint": "^8.69.0"
   }
 }
